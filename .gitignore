@@ -1,0 +1,11 @@
+Manifest.toml
+examples/.ipynb_checkpoints/**
+examples/dev_tests/.ipynb_checkpoints/**
+examples/local/**
+data/**
+local_tests
+.vscode/**
+.DS_Store
+.DS_Store
+docs/build/**
+examples/jdp.mplstyle

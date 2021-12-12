@@ -18,7 +18,7 @@ For a detailed description of the package and examples, see the [stable document
 
 ## Simple example
 Let's find the steady states of a driven Duffing oscillator with nonlinear damping, its equation of motion is:
-![alt text](https://github.com/NonlinearOscillations/HarmonicBalance.jl/docs/images/DuffingEq.png?raw=true)
+<img src="/docs/images/DuffingEq.png" width="450">
 ```julia
 using HarmonicBalance
 @variables α, ω, ω0, F, t, T, a, x(t) # declare constant variables and a function x(t)
@@ -47,7 +47,9 @@ Classes: stable, physical, Hopf, binary_labels
 ```julia
 plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)"]);
 ```
-![alt text](https://github.com/NonlinearOscillations/HarmonicBalance.jl/docs/images/DuffingPlot.png?raw=true)
+
+<img src="/docs/images/DuffingPlot.png" width="500">
+
 ## Citation
 
 If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this paper](https://arxiv.org/):

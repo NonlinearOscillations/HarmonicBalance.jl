@@ -21,4 +21,8 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
       - uses: julia-actions/julia-buildpkg@v1
+        env:
+          PYTHON: ""
       - uses: julia-actions/julia-runtest@v1
+        env:
+          PYTHON: ""

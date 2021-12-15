@@ -25,6 +25,8 @@ function load(filename)
 
         # automatic saving fails for some objects: reconstruct these manually
         _parse_loaded(loaded)
+    else
+        return loaded
     end
 end
 

@@ -226,7 +226,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
     to_evaluate = [to_evaluate[i] .* numbers[i] for (i,_) in enumerate(numbers)] 
 
     nsolsmax  = length(res.solutions[1])
-    f,ax = subplots(1,nsolsmax,figsize=(5*nsolsmax,5))
+    f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
     if nsolsmax==1
         ax = add_dim([ax])
     end
@@ -350,7 +350,8 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     # rearrange num_of_sols to match imshow output
     im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=maximum(obs_2D))
     if isnothing(input_ax) 
-        colorbar(im,ax=ax)
+        Nmax = maximum(obs_2D)
+        colorbar(im,ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
     end
 
     px,py =string.([x,y])#swept parameter strings
@@ -472,7 +473,7 @@ function plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,Z
     fixed_params = Dict(k=>parse(ComplexF64,string(v))  for (k,v) in pairs(merge(res.fixed_parameters,Dict(fixed_pair))))
     fixed_params = Num_to_Variable(fixed_params)
     
-    Jac = HomotopyContinuation.evaluate(res.problem.jacobian,collect(keys(fixed_params))=>collect(values(fixed_params))) #maybe make this work witj HarmonicBalance.Jacobian?
+    Jac = HomotopyContinuation.evaluate(res.problem.jacobian,collect(keys(fixed_params))=>collect(values(fixed_params))) #maybe make this work with HarmonicBalance.Jacobian?
     
     swept_p      = Num_to_Variable(parameter_cut[1][1]) #swept parameter symbolic variable
     swept_values = parameter_cut[1][2] #swept parameter values

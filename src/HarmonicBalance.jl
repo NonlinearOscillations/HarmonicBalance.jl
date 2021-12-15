@@ -13,6 +13,7 @@ module HarmonicBalance
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
     Float64(x::Complex{Num}) = Float64(ComplexF64(x))
+    Float64(x::Num) = Float64(x.val)
 
    # default global settings
    export im_tol

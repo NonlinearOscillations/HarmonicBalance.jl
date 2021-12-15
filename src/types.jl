@@ -127,9 +127,28 @@ function show(io::IO, eom::HarmonicEquation)
     println(io, "A set of ", length(eom.equations), " harmonic equations")
     println(io, "Variables: ", join(string.(get_variables(eom)), ", ")) 
     println(io, "Parameters: ", join(string.(eom.parameters), ", "))
+    println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
+    println(io, "\nHarmonic equations:")
     [println(io, "\n", eq) for eq in eom.equations]
 end
 
+
+function _show_ansatz(var::HarmonicVariable)
+    terms = Dict("u" => "cos", "v" => "sin")
+    indep_var = var.natural_variable.val.arguments
+    indep_var = length(indep_var) == 1 ? string(indep_var[1]) : error("more than 1 independent variable")
+    join([string(var_name(s)) * "*" * terms[var.types[i]] * "(" * string(var.ω) * indep_var * ")" for (i,s) in enumerate(var.symbols)], " + ")
+end
+
+function _show_ansatz(eom::HarmonicEquation)
+    output = ""
+    for nat_var in get_variables(eom.natural_equation)
+        harm_vars = filter(x -> isequal(nat_var, x.natural_variable), eom.variables)
+        ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
+        output *= "\n" * string(nat_var) * " = " * ansatz
+    end 
+    output
+end
 
 """
 $(TYPEDEF)

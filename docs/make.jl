@@ -19,6 +19,7 @@ makedocs(
 			"manual/plotting.md"
 			"manual/time_dependent.md"
 			"manual/linear_response.md"
+			"manual/saving.md"
 			]
 		]
 )

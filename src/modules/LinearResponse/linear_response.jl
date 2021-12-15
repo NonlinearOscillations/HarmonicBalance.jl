@@ -20,15 +20,15 @@ end
 
 
 """Evaluate the response matrix `resp` for the steady state `s` at (lab-frame) frequency `Ω`."""
-function get_response_matrix(resp::ResponseMatrix, s::StateDict, Ω)
+function evaluate_response_matrix(resp::ResponseMatrix, s::StateDict, Ω)
     values = cat([s[var] for var in resp.symbols], [Ω], dims=1)
     f = resp.matrix
     return [Base.invokelatest(el, values) for el in f]
 end
 
 
-function _get_response_vector(rmat::ResponseMatrix, s::StateDict, Ω)
-    m=get_response_matrix(rmat, s, Ω)
+function _evaluate_response_vector(rmat::ResponseMatrix, s::StateDict, Ω)
+    m=evaluate_response_matrix(rmat, s, Ω)
     force_pert = cat([[1.0, 1.0*im] for n in 1:size(m)[1]/2]..., dims=1)
     return inv(m) * force_pert
 end
@@ -44,8 +44,8 @@ function get_response(rmat::ResponseMatrix, s::StateDict, Ω)
     resp = 0
     for (i,ω) in enumerate(rmat.ωs)
         this_ω = Float64(substitute_all(ω, s))
-        uv1 = _get_response_vector(rmat, s, Ω-this_ω)[2*i-1:2*i]
-        uv2 = _get_response_vector(rmat, s, -Ω+this_ω)[2*i-1:2*i]
+        uv1 = _evaluate_response_vector(rmat, s, Ω-this_ω)[2*i-1:2*i]
+        uv2 = _evaluate_response_vector(rmat, s, -Ω+this_ω)[2*i-1:2*i]
         resp += sqrt(_plusamp(uv1)^2 + _minusamp(uv2)^2)
     end
     resp

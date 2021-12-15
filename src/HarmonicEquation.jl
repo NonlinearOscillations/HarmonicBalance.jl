@@ -162,8 +162,8 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Extract the Fourier components of `eom` as per the harmonics specified in `eom.variables`.
-For each harmonic of each variable, 2 equations are generated (cos and sin Fourier transform).
+Extract the Fourier components of `eom` corresponding to the harmonics specified in `eom.variables`.
+For each harmonic of each variable, 2 equations are generated (cos and sin Fourier coefficients).
 `time` does not appear in the resulting equations anymore.
 
 Underlying assumption: all time-dependences are harmonic.
@@ -209,17 +209,30 @@ By default, all products of order > 1 of `slow_time`-derivatives are dropped,
 which means the equations are linear in the time-derivatives.
 
 # Example
-```julia
-@variables t, T, x(t), ω0, ω, F
+```julia-repl
+julia> @variables t, T, x(t), ω0, ω, F;
 
 # enter the simple harmonic oscillator
-diff_eom = DifferentialEquation( d(x,t,2) + ω0^2 * x ~ F *cos(ω*t), x)
+julia> diff_eom = DifferentialEquation( d(x,t,2) + ω0^2 * x ~ F *cos(ω*t), x);
 
 # expand x in the harmonic ω
-add_harmonic!(diff_eom, x, ω)
+julia> add_harmonic!(diff_eom, x, ω);
 
 # get equations for the harmonics evolving in the slow time T
-harmonic_eom = get_harmonic_equations(diff_eom, fast_time=t, slow_time=T)
+julia> harmonic_eom = get_harmonic_equations(diff_eom, fast_time=t, slow_time=T)
+
+A set of 2 harmonic equations
+Variables: u1(T), v1(T)
+Parameters: ω0, ω, F
+
+Harmonic ansatz: 
+x(t) = u1*cos(ωt) + v1*sin(ωt)
+
+Harmonic equations:
+
+(ω0^2)*u1(T) + (2//1)*ω*Differential(T)(v1(T)) - (ω^2)*u1(T) ~ F
+
+(ω0^2)*v1(T) - (ω^2)*v1(T) - (2//1)*ω*Differential(T)(u1(T)) ~ 0
 ```
 
 """

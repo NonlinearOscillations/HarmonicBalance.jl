@@ -1,6 +1,7 @@
 using Symbolics
 using DataStructures
 import HomotopyContinuation
+import Base.convert; export convert
 
 export DifferentialEquation, HarmonicVariable, HarmonicEquation,Problem, Result
 
@@ -25,21 +26,22 @@ end
 $(TYPEDEF)
 
 Holds differential equation(s) of motion and a set of harmonics to expand each variable.
-This is the primary input for `HarmonicBalance.jl`
+This is the primary input for `HarmonicBalance.jl` ; after inputting the equations, the harmonics
+    ansatz needs to be specified using `add_harmonic!`.
 
 # Fields
 $(TYPEDFIELDS)
 
-# Example
-```julia
-@variables t, x(t), y(t), ω0, ω, F, k
+## Example
+```julia-repl
+julia> @variables t, x(t), y(t), ω0, ω, F, k;
 
 # equivalent ways to enter the simple harmonic oscillator
-DifferentialEquation(d(x,t,2) + ω0^2 * x - F * cos(ω*t), x) 
-DifferentialEquation(d(x,t,2) + ω0^2 * x ~ F * cos(ω*t), x)
+julia> DifferentialEquation(d(x,t,2) + ω0^2 * x - F * cos(ω*t), x);
+julia> DifferentialEquation(d(x,t,2) + ω0^2 * x ~ F * cos(ω*t), x);
 
 # two coupled oscillators, one of them driven
-DifferentialEquation([d(x,t,2) + ω0^2 * x - k*y, d(y,t,2) + ω0^2 * y - k*x] .~ [F * cos(ω*t), 0], [x,y])
+julia> DifferentialEquation([d(x,t,2) + ω0^2 * x - k*y, d(y,t,2) + ω0^2 * y - k*x] .~ [F * cos(ω*t), 0], [x,y]);
 ```
 """
 mutable struct DifferentialEquation
@@ -132,7 +134,7 @@ function show(io::IO, eom::HarmonicEquation)
     [println(io, "\n", eq) for eq in eom.equations]
 end
 
-
+"""Gives the relation between `var` and the underlying natural variable."""
 function _show_ansatz(var::HarmonicVariable)
     terms = Dict("u" => "cos", "v" => "sin")
     indep_var = var.natural_variable.val.arguments
@@ -140,6 +142,8 @@ function _show_ansatz(var::HarmonicVariable)
     join([string(var_name(s)) * "*" * terms[var.types[i]] * "(" * string(var.ω) * indep_var * ")" for (i,s) in enumerate(var.symbols)], " + ")
 end
 
+
+"""Gives the full harmonic ansatz used to construct `eom`."""
 function _show_ansatz(eom::HarmonicEquation)
     output = ""
     for nat_var in get_variables(eom.natural_equation)
@@ -150,15 +154,18 @@ function _show_ansatz(eom::HarmonicEquation)
     output
 end
 
+
 """
 $(TYPEDEF)
+
+Holds a set of algebraic equations describing the steady state of a system.
 
 # Fields
 $(TYPEDFIELDS)
 
-#  Constructor
+#  Constructors
 ```julia
-Problem(eom::HarmonicEquation; Jacobian=true) # automatically find the Jacobian
+Problem(eom::HarmonicEquation; Jacobian=true) # find and store the symbolic Jacobian
 Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian for now
 Problem(eom::HarmonicEquation; Jacobian::Matrix) # use the given matrix as the Jacobian
 ```
@@ -192,10 +199,11 @@ end
 """
 $(TYPEDEF)
 
+Stores the steady states of a HarmonicEquation.
+
 # Fields
 $(TYPEDFIELDS)
 
-Stores the steady states of a HarmonicEquation.
 """
 mutable struct Result
     "The variable values of steady-state solutions."
@@ -206,7 +214,7 @@ mutable struct Result
     fixed_parameters::ParameterList
     "The `Problem` used to generate this."
     problem::Problem
-    "Maps string such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions."
+    "Maps strings such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions (see method `classify_solutions!`)."
     classes::Dict{String, Array}
     "The Jacobian with `fixed_parameters` already substituted. Accepts a dictionary specifying the solution.
     If problem.jacobian is a symbolic matrix, this holds a compiled function.

@@ -2,6 +2,8 @@
 
 Once a `DifferentialEquation` is defined and its harmonics specified, one can extract the harmonic equations using `get_harmonic_equations`, which itself is composed of the subroutines `harmonic_ansatz`, `slow_flow`, `fourier_transform!` and `drop_powers`. 
 
+The harmonic equations use an additional time variable specified as `slow_time` in `get_harmonic_equations`. This is essentially a label distinguishing the time dependence of the harmonic variables (expected to be slow)
+from that of the oscillating terms (expeted to be fast). When the equations are Fourier-transformed to remove oscillating terms, `slow_time` is treated as a constant. Such an approach is exact when looking for steady states. 
 
 ```@docs
 get_harmonic_equations
@@ -13,7 +15,7 @@ HarmonicBalance.drop_powers
 
 ## HarmonicVariable and HarmonicEquation types
 
-The equations governing the harmonics are stored using the two following structs. When going from the original to the harmonic equations, the harmonic ansatz $x_i(t) = \sum_{j=1}^M u_i^{(j)}  (T)  \cos(\omega_j^{(i)} t)+ v_i^{(j)} (T) \sin(\omega_j^{(i)} t)$ is used. Internally, each pair $(u_i^{(j)}, v_i^{(j)})$ is stored as a `HarmonicVariable`. This includes the identification of $\omega_j^{(i)}$ and $x_i(t)$, which is needed to later reconstruct the solutions in the non-rotating frame.
+The equations governing the harmonics are stored using the two following structs. When going from the original to the harmonic equations, the harmonic ansatz $x_i(t) = \sum_{j=1}^M u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j}(T) \sin(\omega_{i,j} t)$ is used. Internally, each pair $(u_{i,j}, v_{i,j})$ is stored as a `HarmonicVariable`. This includes the identification of $\omega_{i,j}$ and $x_i(t)$, which is needed to later reconstruct $x_i(t)$.
 
 ```@docs
 HarmonicVariable

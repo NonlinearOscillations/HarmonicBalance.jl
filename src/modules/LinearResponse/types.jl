@@ -50,7 +50,7 @@ struct ResponseMatrix
     """Any symbolic variables in `matrix` to be substituted at evaluation."""
     symbols::Vector{Num}
     """The frequencies of the harmonic variables underlying `matrix`. These are needed to transform
-    the harmonic variables to the lab frame."""
+    the harmonic variables to the non-rotating frame."""
     ωs::Vector{Num}
 
     ResponseMatrix(matrix, symbols, ωs) = new(matrix, symbols, ωs)

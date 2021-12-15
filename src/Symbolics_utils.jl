@@ -70,13 +70,15 @@ $(SIGNATURES)
 Remove parts of `expr` where the combined power of `vars` is => `deg`.
 
 # Example
-```julia
-@variables x,y
-drop_powers((x+y)^2, x, 2)  ->  y^2 + 2*x*y
-drop_powers((x+y)^2, [x,y], 2)  ->  0
-drop_powers((x+y)^2 + (x+y)^3, [x,y], 3) -> x^2 + y^2 + 2*x*y
+```julia-repl
+julia> @variables x,y;
+julia>drop_powers((x+y)^2, x, 2)
+y^2 + 2*x*y
+julia>drop_powers((x+y)^2, [x,y], 2)
+0
+julia>drop_powers((x+y)^2 + (x+y)^3, [x,y], 3)
+x^2 + y^2 + 2*x*y
 ```
-
 """
 function drop_powers(expr::Num, vars::Vector{Num}, deg::Int)
     @variables ϵ

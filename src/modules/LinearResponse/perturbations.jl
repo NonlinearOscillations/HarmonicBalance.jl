@@ -83,7 +83,7 @@ end
 
 Obtain the symbolic linear response matrix of a `diff_eq` corresponding to a perturbation frequency `freq`.
 This routine cannot accept a `HarmonicEquation` since there, some time-derivatives are already dropped.
-`order` denotes the higher differential order to be considered.
+`order` denotes the highest differential order to be considered.
 
 """
 function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)::Matrix
@@ -104,43 +104,3 @@ function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2):
     M = substitute_all(M, [var => HarmonicBalance.declare_variable(var_name(var)) for var in get_variables(eom)])
     substitute_all(expand_derivatives.(M), i => im)
 end
-
-
-#=
-function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)::Matrix
-
-    # define i and later replace with im, Symbolics.jl throws errors for Complex types
-    @variables δT, i
-    time = get_independent_variables(diff_eq)[1]
-
-    eom = HarmonicBalance.harmonic_ansatz(diff_eq, time)
-
-    # replace the time-dependence of harmonic variables by slow time BUT do not drop any derivatives
-    eom = HarmonicBalance.slow_flow(eom, fast_time=time, slow_time=δT, degree=order+1)
-
-    eom = HarmonicBalance.fourier_transform(eom, time)
-
-    # replace each variable u by u+δu, expand to first order in δu
-    vars = get_variables(eom)
-    old_vars = [HarmonicBalance.declare_variable(var_name(var)) for var in vars]
-    new_vars = [HarmonicBalance.declare_variable("δ" * var_name(var), Num(var.val.arguments...)) for var in vars]
-    rules = [var => old_vars[i] + new_vars[i] for (i, var) in enumerate(vars)]
-
-    equations = [eq.lhs - eq.rhs for eq in eom.equations]
-    equations = [substitute_all(eq, rules) for eq in equations]
-    equations = expand_derivatives.([drop_powers(eq, new_vars, 2) for eq in equations])
-
-    # substitute the oscillatory form of all δu (=perturbation oscillates even in the harmonic frame)
-    rot_rules = [d(var, δT, n) => (i*freq)^n * var for var in new_vars for n in 1:order]
-
-    equations = [substitute(eq, Dict(rot_rules)) for eq in equations]
-
-    # return a matrix which does NOT contain any δu
-    M = equations_to_matrix(equations, new_vars)
-    substitute_all.(M, i => im)
-
-end
-
-=#
-
-

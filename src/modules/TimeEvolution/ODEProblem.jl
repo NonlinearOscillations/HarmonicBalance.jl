@@ -1,16 +1,16 @@
 using LinearAlgebra
-import DifferentialEquations: ODEProblem
+
 
 """ 
 
     ODEProblem(
-        eom::HarmonicEquation;
-        fixed_parameters::ParameterList,
-        x0::Vector,
-        steady_solution::Dict
-        sweep::ParameterSweep,
-        timespan::Tuple
-        )
+            eom::HarmonicEquation;
+            fixed_parameters::ParameterList,
+            x0::Vector,
+            steady_solution::Dict
+            sweep::ParameterSweep,
+            timespan::Tuple
+            )
 
 Creates an ODEProblem object used by DifferentialEquations.jl from the equations in `eom` to simulate time-evolution within `timespan`.
 To manually input parameter values and initial conditions, use the keywords `fixed_parameters` and `x0`.
@@ -41,7 +41,7 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
         end
     end
 
-    return ODEProblem(f!,x0,timespan)
+    return DifferentialEquations.ODEProblem(f!,x0,timespan)
 end
 
 # evolving from a steady-state solution found with homotopy continuation

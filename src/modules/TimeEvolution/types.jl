@@ -4,12 +4,26 @@ export +, getindex
 """ 
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.
+During a sweep, the selected parameters vary linearly over some timespan and are constant elsewhere.
 
 Sweeps of different variables can be combined using `+`.
 
 # Fields
 $(TYPEDFIELDS)
 
+## Examples
+```julia-repl
+# create a sweep of parameter a from 0 to 1 over time 0 -> 100
+julia> @variables a,b;
+julia> sweep = ParameterSweep(a => [0., 1.], (0, 100));
+julia> sweep[a](50)
+0.5
+julia> sweep[a](200)
+1.0
+
+# do the same, varying two parameters simultaneously
+julia> sweep = ParameterSweep([a => [0.,1.], b => [0., 1.]], (0,100))
+```
 """
 struct ParameterSweep
     """Maps each swept parameter to a function."""

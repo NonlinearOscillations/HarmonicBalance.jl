@@ -15,13 +15,17 @@ function save(filename, x::Result)
 end
 
 function load(filename)
-    loaded = JLD2.load(filename)["object"]
+    loaded = JLD2.load(filename)
     
-    # we need the symbols in our namespace to parse strings with `transform_solutions`
-    _parse_symbol_names(loaded)
+    if haskey(loaded,"object") #otherwise save data is from a plot
+        loaded = loaded["object"]
+        
+        # we need the symbols in our namespace to parse strings with `transform_solutions`
+        _parse_symbol_names(loaded)
 
-    # automatic saving fails for some objects: reconstruct these manually
-    _parse_loaded(loaded)
+        # automatic saving fails for some objects: reconstruct these manually
+        _parse_loaded(loaded)
+    end
 end
 
 

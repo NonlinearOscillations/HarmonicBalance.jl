@@ -68,9 +68,9 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
+    transform_solutions(res::Result, f::String; rules=Dict())
 
-Takes a Result object and a string `f` representing a SymPy expression.
+Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
 Returns an array with the values of `f` evaluated for the respective solutions.
 Additional substitution rules can be specified in `rules` in the format ("a" => val) or (a => val)
 """
@@ -137,15 +137,34 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
 
-Make a 1D plot of a Result object. Functions to be plotted are taken as strings (Symbolics.jl format). Keyword arguments allow a basic filtering of solutions (by physicality or stability) and plotting settings.
-The pair of strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = ["ω^15* sqrt(u1^2 + v1^2) < 0.1" , "cool"]`, 
-for a system with harmonic variables u1,v1, then solutions are classified as `cool` according to that criterion and `not cool` according to its complement. 
-If `marker_classification=stable` or `marker_classification = nothing`a regular analysis of the stability of the solutions in terms of Jacobian eigenvalues is presented.  
-If `save_data=true` points and markers are saved to a JLD2 file `filename.jld2`.  
+Make a 1D plot of a `Result` object.
+
+    plot_1D_solutions(res::Result; 
+        x::String, 
+        y::String, 
+        x_scale=1.0, 
+        y_scale=1.0, 
+        marker="o",
+        xscale="linear",
+        yscale="linear",
+        plot_only=["physical"],
+        marker_classification="stable",
+        filename=nothing)
+
+Keyword arguments
+- `x`, `y`: Expressions to plot on the x and y axes (parsed into Symbolics.jl)
+- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with
+- `marker`: The point marker to use
+- `xscale`, `yscale` = x_scale
+- `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
+- `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
+- `filename`: where to save the result, the extension ".jld2" is used
+
+The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
+for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
-function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification=nothing,save_data=false,filename="plot_1D")
+function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing)
     set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
@@ -162,23 +181,15 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     #filtering of the solutions according to keyword arguments
     "stable" in plot_only && "physical" ∉ plot_only && error("Stability is not defined for unphysical solutions!")
     ~(sum([class in keys(res.classes) for class in plot_only])==length(plot_only)) && error("Class not found. Solutions are classified according to ", keys(res.classes))
-    ("binary_labels" in plot_only) && print("Binary label is not Boolean and thus was ignored")
+    ("binary_labels" in plot_only) && print("Binary label is not Boolean and thus was ignored in plotting")
     
     for class in plot_only 
         if  class!="binary_labels" 
             Y = filter_solutions.(Y, res.classes[class])
         end
     end
-    
-    #further, user defined classes
-    if ~isnothing(marker_classification) && length(marker_classification)>1 #user-defined class
-        sol_type, not_sol_type = marker_classification[2], string("not ",marker_classification[2])
-        classify_solutions!(res, marker_classification[1] , sol_type)
-    elseif (marker_classification  == ["stable"]) || isnothing(marker_classification)
-        sol_type, not_sol_type = "stable","unstable" #and solutions are already classified in get_steady_states
-    elseif marker_classification  == ["Hopf"]
-        sol_type, not_sol_type = "Hopf","Hopf unstable"
-    end
+
+    sol_type, not_sol_type = _classify_plot_data(res, marker_classification)
 
     Ys, Yu = filter_solutions.(Y, res.classes[sol_type]), filter_solutions.(Y, [.!el for el in res.classes[sol_type]])
     lines = ax.plot(X, Ys, marker) #Nan solutions are ignored 
@@ -188,11 +199,11 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type, markerfacecolor="k", markersize=10),
             plt.Line2D([0], [0], marker="X", color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
 
-    if save_data
+    if !isnothing(filename)
         xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
         markers = [line.get_marker() for line in lines]
         marker_dict = Dict(marker=>sol_type,"X"=>not_sol_type)
-        JLD2.save(string(filename,".jld2"), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
+        JLD2.save(_jld2_name(filename), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
     end
 
     ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
@@ -206,14 +217,40 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
 end
 
 
+""" For a plotted `marker_classification`, classify the data in `res`. 
+If `marker_classification` is an existing class, choose that class. If an inequality, parse it to create a new class."""
+function _classify_plot_data(res, marker_classification)
+    if marker_classification ∈ keys(res.classes)
+        sol_type, not_sol_type = marker_classification, "not " * marker_classification
+    elseif ~isnothing(marker_classification) # if an inequality is supplied, create a new class
+        try
+            classify_solutions!(res, marker_classification, "custom class")
+        catch
+            error(marker_classification * " is not a valid classification or an inequality!")
+        end
+        sol_type, not_sol_type = "custom class", "not custom class"
+    end
+    sol_type, not_sol_type
+end
+
+
+
 
 """
-$(TYPEDSIGNATURES)
 
-Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a Result object. X axis to be plotted are taken as strings (Symbolics.jl format).
-Keyword arguments allow a basic filtering of solutions (by physicality or stability) and set plot settings.   If `save_data=true` points and markers (splitting real and imaginary parts) are exported to a JLD2 file `filename.jld2`. 
+Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a `Result` object.
+
+    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
+
+Keyword arguments
+
+- `x`: The function on the x axis (a string parsed into Symbolics.jl)
+- `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown
+- `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues
+- `filename`: where to save the result, the extension ".jld2" is used
+
 """
-function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",save_data=false,filename="plot_1D_jacobian")
+function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
     set_plotting_settings()
 
     xplot = transform_solutions(res, x) #indepedenent variable to plot
@@ -250,7 +287,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
         ax[branch].axhline(0,ls=":",lw=4) #reference value for unstability test 
     end 
 
-    if save_data
+    if !isnothing(filename)
         save_dict =  Dict(zip(["re","im"],[Dict("data"=>Dict(),"marker"=>[]) for d in ["re","im"]]))
         for (axis,lines,marker) in zip(["re","im"],[lines_re,lines_im],[marker_re,marker_im])
             xdata = [line.get_xdata() for line in lines]
@@ -259,7 +296,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
             save_dict[axis]["marker"] = marker
         end
         
-        JLD2.save(string(filename,".jld2"), save_dict)
+        JLD2.save(_jld2_name(filename), save_dict)
     end
 
     legend_elements = [plt.Line2D([0], [0], marker=marker_re, color="w", label=L"\Re({\mathrm{eig}(J)})",
@@ -270,12 +307,13 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
 end
 
 """
-$(TYPEDSIGNATURES)
 
-Make a 2D plot of each ofsolutions vs swept parameters for a Result object. 
-If `save_data = true`, solutions and parameter ranges are exported to JLD2 file `filename.jld2`    
+Make a 2D plot of each of solutions vs swept parameters for a `Result` object (@JAVI `ax ?`). The data is saved into `filename`.
+
+    plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
+
 """
-function plot_2D_solutions(res::Result,ax=nothing; save_data=false,filename="plot_2D_solutions")
+function plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
     set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
@@ -300,7 +338,7 @@ function plot_2D_solutions(res::Result,ax=nothing; save_data=false,filename="plo
             a = ax[l,m].imshow(physical_sols[m,l,:,end:-1:1]',extent=extent,aspect="auto")
             ax[l,m].set_xlabel(Latexify.latexify(px),fontsize=24); 
             ax[l,m].set_ylabel(Latexify.latexify(py),fontsize=24); 
-            if save_data
+            if !isnothing(filename)
                 save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
                 string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
             end
@@ -309,19 +347,24 @@ function plot_2D_solutions(res::Result,ax=nothing; save_data=false,filename="plo
     end
     f.tight_layout()
 
-    if save_data
-        JLD2.save(string(filename,".jld2"), save_dict)
+    if !isnothing(filename)
+        JLD2.save(_jld2_name(filename), save_dict)
     end
 end
 
 
 """
-$(TYPEDSIGNATURES)
 
-Make a 2D plot of the number of solutions of the solution label, vs swept parameters for a Result object. 
-If `save_data = true`, the phase diagram data is saved as a JLD2 file `filename.jld2`  
+Make a 2D plot of the number of solutions of the solution label, vs swept parameters for a `Result` object. 
+
+    plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
+
+Keyword arguments @JAVI
+
+- `filename`: where to save the result, the extension ".jld2" is used
+
 """
-function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing,save_data=false,filename="plot_2D_phase_diagram")
+function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
     set_plotting_settings()
     observable_choice = ["nsols", "binary"]
     observable ∈ observable_choice || error("Only the following 2D observables are allowed:  ", observable_choice)
@@ -360,8 +403,8 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     ax.set_ylabel(Latexify.latexify(py),fontsize=24)
     ax.set_title(pd_title)
 
-    if save_data
-        JLD2.save(string(filename,".jld2"), Dict("observable"=>observable,"data"=>im.get_array(),
+    if !isnothing(filename)
+        JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
                                                  string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
     end
 end
@@ -386,7 +429,7 @@ reshape_for_plot(arr,L,M,N) = reshape(reduce(hcat,reduce(hcat,arr)),L,M,N) #some
 get_var_name_labels(res::Result) = string.(res.problem.variables) 
 
 "Preprocess solution arrays to be plotted. Extract parameter information for labelling and setting axes of interactive plots"
-function get_interactive_plot_variables(res::Result,cut_type; string_f,marker_classification=nothing)
+function get_interactive_plot_variables(res::Result,cut_type; string_f, marker_classification)
     x,y = collect(keys(res.swept_parameters))
 
     X,Y = collect(values(res.swept_parameters))
@@ -397,12 +440,7 @@ function get_interactive_plot_variables(res::Result,cut_type; string_f,marker_cl
     nvars     = length(res.solutions[1][1])
     nsolsmax  = length(res.solutions[1])
 
-    if isnothing(marker_classification) #default is to filter by stability
-        sol_type, not_sol_type = "stable","unstable"
-    else
-        sol_type, not_sol_type = marker_classification[2], string("not ",marker_classification[2])
-        classify_solutions!(res, marker_classification[1] , marker_classification[2])
-    end
+    sol_type, not_sol_type = _classify_plot_data(res, marker_classification)
     
     #prepare solution arrays for plotting
     if cut_type =="transform"
@@ -466,7 +504,7 @@ end
 
 
 "Plotter of Jacobian eigenvalues along a cut of a 2D solutions. TODO: condense this with  plot_1D_jacobian_eigenvalues"
-function plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,Z::Vector{Float64},ax::PyCall.PyObject)
+function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,Z::Vector{Float64},ax::PyCall.PyObject)
     
      # pre-evaluate the Jacobian with fixed parameters
     fixed_pair     = parameter_cut[2]
@@ -521,11 +559,29 @@ function prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cut
 end
 
 """
-$(TYPEDSIGNATURES)
 
-Interactive phase diagram of 2D solutions stored in `Result`. This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing solutions, functions of solutions, or Jacobian eigenvalues.
+Interactive phase diagram of 2D solutions stored in `Result`. 
+This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing solutions, functions of solutions, or Jacobian eigenvalues.
+
+    plot_2D_phase_diagram_interactive(res::Result;
+     observable="nsols",
+      stable=false,nrows=2,
+      ncols=2,cut_dim="1",
+      cut_type="solutions",
+      string_f=nothing,
+      marker_classification="stable")
+
+Keyword arguments (@JAVI)
+
+- `observable`: The data to be plotted ("nsols" - number of solutions)
+- `ncols`, `nrows`: number of rows and columns of the plot window
+- `cut_type`: 
+- `string_f`: 
+- `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
+
+
 """
-function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stable=false,nrows=2,ncols=2,cut_dim="1",cut_type="solutions",string_f=nothing,marker_classification=nothing)
+function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stable=false,nrows=2,ncols=2,cut_dim="1",cut_type="solutions",string_f=nothing,marker_classification="stable")
     pygui(true) #opens a separate window
     set_plotting_settings()
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
@@ -614,7 +670,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
             for l in 1:nsolsmax
                 ax[l+1].axhline(0,ls=":",lw=4) #reference value for unstability test 
                 for sols in remove_singleton!.([solution_cut_s[:,l,:]',solution_cut_u[:,l,:]'])
-                    plot_2D_solutions_jacobian_cut(res,sols,parameter_val,Z,ax[l+1])         
+                    _plot_2D_solutions_jacobian_cut(res,sols,parameter_val,Z,ax[l+1])         
                 end
             end
         elseif cut_type=="transform"  

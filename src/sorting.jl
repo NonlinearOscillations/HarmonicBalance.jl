@@ -3,6 +3,16 @@ using BijectiveHilbert
 using LinearAlgebra
 import Distances
 
+
+"""
+    $(TYPEDSIGNATURES)
+
+Sorts `solutions` into branches according to the method `sorting`.
+
+`solutions` is an n-dimensional array of Vector{Vector}. Each element describes a set of solutions for a given parameter set.
+The output is a similar array, with each solution set rearranged such that neighboring solution sets have the smallest Euclidean distance.
+
+"""
 function sort_solutions(solutions::Array; sorting="hilbert")
     sorting_schemes = ["none", "hilbert", "naive"]
     sorting ∈ sorting_schemes || error("Only the following sorting options are allowed:  ", sorting_schemes)

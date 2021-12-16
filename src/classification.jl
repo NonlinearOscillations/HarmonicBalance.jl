@@ -12,7 +12,6 @@ By default, only physical (=real) solutions are classified, `false` is returned 
 
 # Example
 ```julia
-
 # solve a previously-defined problem
 res = get_steady_states(problem, swept_parameters, fixed_parameters)
 

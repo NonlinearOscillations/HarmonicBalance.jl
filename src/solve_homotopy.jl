@@ -41,29 +41,50 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
                             show_progress=true)
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
-`swept_parameters` accepts a Dictionary mapping symbolic types to arrays or `LinRange`.
-`fixed_parameters` accepts a Dictionary mapping symbolic types to numbers. 
+`swept_parameters` accepts a Dictionary mapping symbolic variables to arrays or `LinRange`.
+`fixed_parameters` accepts a Dictionary mapping symbolic variables to numbers. 
 
 If `random_warmup=true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths.
 The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving.
 If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths.
 This takes far longer but can be more reliable.
 
+`sorting` determines the method used by `sort_solutions` to get continuous solutions branches. The current options are
+`"hilbert"`, `"naive"` and `"none"`.
+
 Example: solving a simple harmonic oscillator ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)``
 to obtain the response as a function of ``ω``
-```julia
-swept = ParameterRange(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
-fixed = ParameterList(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
-get_steady_states(prob, swept, fixed)
+```julia-repl
+# having obtained a Problem object, let's find steady states
+julia> range = ParameterRange(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
+julia> fixed = ParameterList(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
+julia> get_steady_states(problem, range, fixed)
+
+A steady state result for 100 parameter points
+
+    Solution branches:   1
+       of which real:    1
+       of which stable:  1
+    
+    Classes: stable, physical, Hopf, binary_labels
+    
 ```
 
 It is also possible to create multi-dimensional solutions plots. 
-```julia
+```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
-swept = ParameterRange(ω => LinRange(0.8,1.2,100), F => LinRange(0.1,1.0,10) ) # 100x10 parameter sets
+julia> range = ParameterRange(ω => LinRange(0.8,1.2,100), F => LinRange(0.1,1.0,10) ) # 100x10 parameter sets
 
-# The swept parameters take precedence over fixed -> the F in fixed is ignored
-get_steady_states(prob, swept, fixed)
+# The swept parameters take precedence over fixed -> the F in fixed is now ignored
+julia> get_steady_states(problem, range, fixed)
+
+A steady state result for 1000 parameter points
+
+    Solution branches:   1
+       of which real:    1
+       of which stable:  1
+    
+    Classes: stable, physical, Hopf, binary_labels
 ```
 
 """
@@ -110,7 +131,11 @@ function _compile_Jacobian(prob::Problem, swept_parameters::ParameterRange, fixe
     compiled_J
 end
 
-
+"""
+Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
+Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments
+    in the order set in `variables`.
+"""
 function compile_matrix(matrix, variables, fixed_parameters)
     J = substitute_all(matrix, fixed_parameters)
     matrix = [build_function(el, variables) for el in J]

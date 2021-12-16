@@ -26,7 +26,7 @@ Let's find the steady states of a driven Duffing oscillator with nonlinear dampi
 ```julia
 using HarmonicBalance
 @variables α, ω, ω0, F, t, T, η, x(t) # declare constant variables and a function x(t)
-diff_eq = DifferentialEquation(d(x,t,2) + ω0*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t), x)
+diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t), x)
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
 
 # implement ansatz to get harmonic equations

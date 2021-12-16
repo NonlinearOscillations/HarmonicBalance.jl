@@ -22,7 +22,7 @@ function save(filename, x::Result)
 end
 
 
-_jld2_name(filename) = filename[end-3:end] == ".jld2" ? filename : filename * ".jld2"
+_jld2_name(filename) = filename[end-4:end] == ".jld2" ? filename : filename * ".jld2"
 
 
 """

@@ -108,7 +108,7 @@ function transform_solutions(res::Result, f::String; rules=Dict())
 end
 
 
-"Construct a matrix plot from a linear subplot array, even if input length and # of rows or columns is not commensurable"
+"Construct a matrix of subplots from a linear subplot array, even if input length and # of rows or columns is not commensurable"
 function resize_axes!(f,axs,nrows,ncols)
     gspec = pyimport("matplotlib.gridspec")
     gs = gspec.GridSpec(nrows,ncols,hspace=0.6,wspace=0.6)
@@ -149,13 +149,13 @@ plot_1D_solutions(res::Result;
 
 
 Keyword arguments
-- `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl)
-- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with
-- `marker`: The point marker to use
-- `xscale`, `yscale` = x_scale
+- `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
+- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
+- `marker`: The point marker to use.
+- `xscale`, `yscale` = x_scale.
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
-- `filename`: where to save the result, the extension ".jld2" is used
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
@@ -240,10 +240,10 @@ Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a `Resul
 
 Keyword arguments
 
-- `x`: The function on the x axis (a string parsed into Symbolics.jl)
-- `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown
-- `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues
-- `filename`: where to save the result, the extension ".jld2" is used
+- `x`: The function on the x axis (a string parsed into Symbolics.jl).
+- `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown.
+- `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 """
 function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
@@ -362,7 +362,7 @@ Keyword arguments
 
 - `stable`: whether only stable solutions are depicted
 - `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
-   If instead `observable="binary", the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
+   If instead `observable="binary"`, the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 """
@@ -576,13 +576,13 @@ This includes a clickable version of a `plot_2D_phase_diagram` for a given `obse
 Keyword arguments 
 
 - `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
-   If instead `observable="binary", the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
-- `ncols`, `nrows`: number of rows and columns of the plot window
-- `cut_dim`: dimension along which 1D quantities will be calculated. `cut_dim="1"` (`cut_dim="2"`) takes a cut along the horizontal (vertical) parameter dimension of the 2D plot
+   If instead `observable="binary"``, the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
+- `ncols`, `nrows`: number of rows and columns of the plot window.
+- `cut_dim`: dimension along which 1D quantities will be calculated. `cut_dim="1"` (`cut_dim="2"`) takes a cut along the horizontal (vertical) parameter dimension of the 2D plot.
 - `cut_type`: quantity to be represented along the 1D cut. If `cut_type=solutions`, steady state variables are shown with a panel per `Problem` variable.
     Else if `cut_type=jacobian eigenvalues`, Re and Im parts of complex Jacobian eigenvalues for each solution are shown  with a panel per solution. 
     If instead `cut_type=transform`, functions of the solution variables passed to `string_f` (see below) are displayed.
-- `string_f`: list of strings for transformed observables to be plotted in 1D when `cut_type=transform`, e.g. `string_f=["sqrt(u1^2 + v1^2)","sqrt(u2^2 + v2^2)"]` for `Problem` variables `u1,u2,v1,v2`
+- `string_f`: list of strings for transformed observables to be plotted in 1D when `cut_type=transform`, e.g. `string_f=["sqrt(u1^2 + v1^2)","sqrt(u2^2 + v2^2)"]` for `Problem` variables `u1,u2,v1,v2`.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 
 

@@ -202,7 +202,9 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
 
     ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
     ax.set_ylabel(Latexify.latexify(y),fontsize=24) 
-    leg1 = legend(string.(relevant_indices))
+
+    ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))))
     ax.add_artist(leg1)
     
     ax.legend(handles=leg2,loc="center right") 

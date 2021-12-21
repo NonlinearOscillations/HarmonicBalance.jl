@@ -412,7 +412,7 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
         JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
                                                  string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
     end
-    im
+    im,Nmax
 end
 
 
@@ -608,7 +608,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    
-    im = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
+    im,Nmax = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
 
     "Update annotations when cursor moves"
     function update_annot(ind) 
@@ -707,9 +707,9 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
 
     ax = resize_axes!(f,ax,nrows,ncols)
     if nrows>1
-        f.colorbar(im, ax=ax) #common colorbar if a list of axes is passed to colorbar instead of a single one
+        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5) #common colorbar if a list of axes is passed to colorbar instead of a single one
     else
-        f.colorbar(im, ax=ax[end])
+        f.colorbar(im, ax=ax[end],ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
     end
 end
 

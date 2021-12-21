@@ -405,6 +405,7 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
         JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
                                                  string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
     end
+    im
 end
 
 

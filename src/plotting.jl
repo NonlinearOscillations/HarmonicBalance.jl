@@ -399,7 +399,7 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     Nmax = maximum(obs_2D)
     im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=Nmax)
     if isnothing(input_ax) 
-        colorbar(im,ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+        _prepare_colorbar(f,ax,im,Nmax)
     end
 
     px,py =string.([x,y])#swept parameter strings
@@ -415,6 +415,13 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     im,Nmax
 end
 
+function _prepare_colorbar(f,ax,im,Nmax;Nmax_discrete=9)  #creates and inserts in a phase diagram figure f a discrete or continuous colorbar
+    if Nmax <= Nmax_discrete
+        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+    else
+        f.colorbar(im, ax=ax)
+    end
+end
 
 #################################################
 ###interactive plotting 
@@ -707,11 +714,12 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
 
     ax = resize_axes!(f,ax,nrows,ncols)
     if nrows>1
-        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5) #common colorbar if a list of axes is passed to colorbar instead of a single one
+        _prepare_colorbar(f,ax,im,Nmax)
     else
-        f.colorbar(im, ax=ax[end],ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+        _prepare_colorbar(f,ax[end],im,Nmax)
     end
 end
+
 
 ############################################################
 #DEPRECATED

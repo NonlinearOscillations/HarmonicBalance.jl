@@ -23,3 +23,7 @@ makedocs(
 			]
 		]
 )
+
+deploydocs(
+    repo = "https://github.com/NonlinearOscillations/HarmonicBalance-docs.git"
+)

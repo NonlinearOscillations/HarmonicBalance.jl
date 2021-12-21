@@ -5,7 +5,7 @@ using JLD2
 """
     $(SIGNATURES)
 
-Saves `object` into .jld2 file `filename` (the suffix is added automatically if not entered).
+Saves `object` into `.jld2` file `filename` (the suffix is added automatically if not entered).
 The resulting file contains a dictionary with a single entry.
 
 """

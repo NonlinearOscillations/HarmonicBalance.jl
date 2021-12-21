@@ -35,7 +35,6 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
                         swept_parameters::ParameterRange,
                         fixed_parameters::ParameterList;
                         random_warmup=false,
-                        im_tol=im_tol,
                             threading=false,
                             sorting="hilbert",
                             show_progress=true)
@@ -44,13 +43,12 @@ Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_pa
 `swept_parameters` accepts a Dictionary mapping symbolic variables to arrays or `LinRange`.
 `fixed_parameters` accepts a Dictionary mapping symbolic variables to numbers. 
 
-If `random_warmup=true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths.
-The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving.
-If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths.
+Keyword arguments
+- `random_warmup`: If `true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving. If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
 This takes far longer but can be more reliable.
-
-`sorting` determines the method used by `sort_solutions` to get continuous solutions branches. The current options are
-`"hilbert"`, `"naive"` and `"none"`.
+- `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`. 
+- `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"naive"` (nearest-neighbor sorting) and `"none"`.
+- `show_progress`: If `true`  Indicate whether a progress bar should be displayed (see [HomotopyContinuation.jl docs](https://www.juliahomotopycontinuation.org/HomotopyContinuation.jl/stable/solve/) 
 
 Example: solving a simple harmonic oscillator ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)``
 to obtain the response as a function of ``ω``
@@ -88,7 +86,7 @@ A steady state result for 1000 parameter points
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, im_tol=im_tol, threading=false, sorting="hilbert",show_progress=true)   
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=false, threading=false, sorting="hilbert",show_progress=true)   
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
@@ -225,8 +223,7 @@ end
 
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=true, threading=false,show_progress= true)
-
+function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=false, threading=false,show_progress= true)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
@@ -250,7 +247,6 @@ end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."
 function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN) 
-    
     Ls    = length.(solutions)
     nvars = length(solutions[1][1]) # number of variables
     max_N = maximum(Ls) # length to be fixed

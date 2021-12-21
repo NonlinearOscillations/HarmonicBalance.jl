@@ -18,3 +18,4 @@ If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this p
 @article{}
 }
 ```
+

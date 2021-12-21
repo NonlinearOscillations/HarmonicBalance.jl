@@ -67,7 +67,7 @@ but is also valid far from resonance.
 
 """
 function plot_response(res::Result, Ω_range; branch::Int, logscale=false)
-    set_plotting_settings()
+    _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
     stability = classify_branch(res, branch, "stable") # boolean array
     !any(stability) && error("Cannot generate a spectrum - no stable solutions!")

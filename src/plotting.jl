@@ -6,11 +6,11 @@ export plot_1D_solutions
 export plot_2D_phase_diagram
 export plot_2D_phase_diagram_interactive
 export transform_solutions
-export set_plotting_settings
+export _set_plotting_settings
 
 
 "Set global plotting settings"
-function set_plotting_settings()
+function _set_plotting_settings()
     plt.style.use("default") #reset settings
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
     rcParams["text.usetex"] = true
@@ -55,8 +55,8 @@ remove_singleton!(arr) = dropdims(arr, dims = tuple(findall(size(arr) .== 1)...)
 """
 $(TYPEDSIGNATURES)
 
-Goes over a solution and an equally-sized array of booleans. 
-true -> solution unchanged
+Goes over a solution and an equally-sized array (a "mask") of booleans. 
+true  -> solution unchanged
 false -> changed to NaN (omitted from plotting)
 """
 function filter_solutions(solution::Vector,  booleans)
@@ -68,11 +68,11 @@ end
 
 
 """
-    transform_solutions(res::Result, f::String; rules=Dict())
+$(TYPEDSIGNATURES)
 
 Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
 Returns an array with the values of `f` evaluated for the respective solutions.
-Additional substitution rules can be specified in `rules` in the format ("a" => val) or (a => val)
+Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
 """
 function transform_solutions(res::Result, f::String; rules=Dict())
     # a string is used as input - a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
@@ -108,7 +108,7 @@ function transform_solutions(res::Result, f::String; rules=Dict())
 end
 
 
-"Construct a matrix plot from a linear subplot array, even if input length and #rows or columns is not commensurable"
+"Construct a matrix plot from a linear subplot array, even if input length and # of rows or columns is not commensurable"
 function resize_axes!(f,axs,nrows,ncols)
     gspec = pyimport("matplotlib.gridspec")
     gs = gspec.GridSpec(nrows,ncols,hspace=0.6,wspace=0.6)
@@ -140,20 +140,16 @@ end
 
 Make a 1D plot of a `Result` object.
 
-    plot_1D_solutions(res::Result; 
-        x::String, 
-        y::String, 
-        x_scale=1.0, 
-        y_scale=1.0, 
-        marker="o",
-        xscale="linear",
-        yscale="linear",
-        plot_only=["physical"],
-        marker_classification="stable",
-        filename=nothing)
+plot_1D_solutions(res::Result; 
+                    x::String, y::String, 
+                    x_scale=1.0, y_scale=1.0, 
+                    marker="o",xscale="linear",yscale="linear"
+                    ,plot_only=["physical"],
+                    marker_classification="stable",filename=nothing)
+
 
 Keyword arguments
-- `x`, `y`: Expressions to plot on the x and y axes (parsed into Symbolics.jl)
+- `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl)
 - `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with
 - `marker`: The point marker to use
 - `xscale`, `yscale` = x_scale
@@ -165,7 +161,7 @@ The strings in `marker_classification` allows the user to stablish custom criter
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
 function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing)
-    set_plotting_settings()
+    _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
     X = transform_solutions(res, x)
@@ -251,7 +247,7 @@ Keyword arguments
 
 """
 function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
-    set_plotting_settings()
+    _set_plotting_settings()
 
     xplot = transform_solutions(res, x) #indepedenent variable to plot
     
@@ -308,13 +304,17 @@ end
 
 """
 
-Make a 2D plot of each of solutions vs swept parameters for a `Result` object (@JAVI `ax ?`). The data is saved into `filename`.
+Make a 2D plot of each of solutions vs swept parameters for a `Result` object, obtained from a `get_steady_states` applied to a 2D parameter grid.`.
 
     plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
 
+Keyword arguments
+
+- `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 """
-function plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
-    set_plotting_settings()
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing)
+    _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
     x,y = collect(values(res.swept_parameters))
@@ -324,7 +324,7 @@ function plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
     physical_solutions = real.(filter_solutions.(res.solutions,res.classes["physical"]))
     physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
     
-    var_names = get_var_name_labels(res) #variable names for plot labels
+    var_names = _get_var_name_labels(res) #variable names for plot labels
 
     input_ax = ax
     if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
@@ -354,18 +354,20 @@ end
 
 
 """
-
-Make a 2D plot of the number of solutions of the solution label, vs swept parameters for a `Result` object. 
+Make a 2D phase diagram plot of each of solutions vs swept parameters for a `Result` object, obtained from a `get_steady_states` applied to a 2D parameter grid.
 
     plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
 
-Keyword arguments @JAVI
+Keyword arguments 
 
-- `filename`: where to save the result, the extension ".jld2" is used
+- `stable`: whether only stable solutions are depicted
+- `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
+   If instead `observable="binary", the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 """
 function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
-    set_plotting_settings()
+    _set_plotting_settings()
     observable_choice = ["nsols", "binary"]
     observable ∈ observable_choice || error("Only the following 2D observables are allowed:  ", observable_choice)
 
@@ -422,20 +424,20 @@ function meshgrid(x, y)
 end
 
 "Argument corresponding to the closest value of an array to a given point"
-find_nearest(array,value) = argmin(abs.(array.-value)) 
+_find_nearest(array,value) = argmin(abs.(array.-value)) 
 
-reshape_for_plot(arr,L,M,N) = reshape(reduce(hcat,reduce(hcat,arr)),L,M,N) #some useful transformation from matrices of vectors to higher dimensional tensors, for plotting
+_reshape_for_plot(arr,L,M,N) = reshape(reduce(hcat,reduce(hcat,arr)),L,M,N) #some useful transformation from matrices of vectors to higher dimensional tensors, for plotting
 
-get_var_name_labels(res::Result) = string.(res.problem.variables) 
+_get_var_name_labels(res::Result) = string.(res.problem.variables) 
 
 "Preprocess solution arrays to be plotted. Extract parameter information for labelling and setting axes of interactive plots"
-function get_interactive_plot_variables(res::Result,cut_type; string_f, marker_classification)
+function _get_interactive_plot_variables(res::Result,cut_type; string_f, marker_classification)
     x,y = collect(keys(res.swept_parameters))
 
     X,Y = collect(values(res.swept_parameters))
 
     gx,gy = collect(meshgrid(X, Y)) #artificial grid points
-    var_names = get_var_name_labels(res) #variable names for plot labels
+    var_names = _get_var_name_labels(res) #variable names for plot labels
 
     nvars     = length(res.solutions[1][1])
     nsolsmax  = length(res.solutions[1])
@@ -460,7 +462,7 @@ end
 
 
 "Set up axes and plot an invisible grid of points to be used as reference for subsequent hovering labels"
-function get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type; string_f)
+function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type; string_f)
     if  cut_type=="solutions"    
         N_panels = nvars + 1
         lab = [sol_type,not_sol_type]
@@ -530,16 +532,16 @@ end
 
 
 "Take cut of filtered solutions once the user clicks on a 2D plot"
-function prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y)
+function _prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y)
     p1,p2 = collect(keys(res.swept_parameters))
     if cut_dim=="1"  #select direction along which solution cut_dim will be drawn
         ax.axhline(Y[idy],ls="--",c="w")   
         if cut_type=="transform"
             solution_cut_s   = reduce(hcat,Ys[:,idy])
-            solution_cut_u = reduce(hcat,Yu[:,idy])
+            solution_cut_u   = reduce(hcat,Yu[:,idy])
         else
-            solution_cut_s   = reshape_for_plot(Ys[:,idy],nvars,nsolsmax,length(X)) 
-            solution_cut_u = reshape_for_plot(Yu[:,idy],nvars,nsolsmax,length(X)) 
+            solution_cut_s   = _reshape_for_plot(Ys[:,idy],nvars,nsolsmax,length(X)) 
+            solution_cut_u   = _reshape_for_plot(Yu[:,idy],nvars,nsolsmax,length(X)) 
         end
         parameter_val  = [(p1=>res.swept_parameters[p1]), (p2=>res.swept_parameters[idy][2])]
         Z = X #cut parameter
@@ -547,10 +549,10 @@ function prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cut
         ax.axvline(X[idx],ls="--",c="w")
         if cut_type=="transform"
             solution_cut_s   = reduce(hcat,Ys[idx,:])
-            solution_cut_u = reduce(hcat,Yu[idx,:])
+            solution_cut_u   = reduce(hcat,Yu[idx,:])
         else
-            solution_cut_s  =  reshape_for_plot(Ys[idx,:],nvars,nsolsmax,length(Y)) 
-            solution_cut_u =  reshape_for_plot(Yu[idx,:],nvars,nsolsmax,length(Y))   
+            solution_cut_s  =  _reshape_for_plot(Ys[idx,:],nvars,nsolsmax,length(Y)) 
+            solution_cut_u  =  _reshape_for_plot(Yu[idx,:],nvars,nsolsmax,length(Y))   
         end
         parameter_val  = [(p2=>res.swept_parameters[p2]), (p1=>res.swept_parameters[idx][1])]
         Z = Y #cut parameter  
@@ -561,7 +563,7 @@ end
 """
 
 Interactive phase diagram of 2D solutions stored in `Result`. 
-This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing solutions, functions of solutions, or Jacobian eigenvalues.
+This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing 1D cuts of solutions, functions of solutions, or Jacobian eigenvalues.
 
     plot_2D_phase_diagram_interactive(res::Result;
      observable="nsols",
@@ -571,19 +573,23 @@ This includes a clickable version of a `plot_2D_phase_diagram` for a given `obse
       string_f=nothing,
       marker_classification="stable")
 
-Keyword arguments (@JAVI)
+Keyword arguments 
 
-- `observable`: The data to be plotted ("nsols" - number of solutions)
+- `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
+   If instead `observable="binary", the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
 - `ncols`, `nrows`: number of rows and columns of the plot window
-- `cut_type`: 
-- `string_f`: 
+- `cut_dim`: dimension along which 1D quantities will be calculated. `cut_dim="1"` (`cut_dim="2"`) takes a cut along the horizontal (vertical) parameter dimension of the 2D plot
+- `cut_type`: quantity to be represented along the 1D cut. If `cut_type=solutions`, steady state variables are shown with a panel per `Problem` variable.
+    Else if `cut_type=jacobian eigenvalues`, Re and Im parts of complex Jacobian eigenvalues for each solution are shown  with a panel per solution. 
+    If instead `cut_type=transform`, functions of the solution variables passed to `string_f` (see below) are displayed.
+- `string_f`: list of strings for transformed observables to be plotted in 1D when `cut_type=transform`, e.g. `string_f=["sqrt(u1^2 + v1^2)","sqrt(u2^2 + v2^2)"]` for `Problem` variables `u1,u2,v1,v2`
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 
 
 """
 function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stable=false,nrows=2,ncols=2,cut_dim="1",cut_type="solutions",string_f=nothing,marker_classification="stable")
     pygui(true) #opens a separate window
-    set_plotting_settings()
+    _set_plotting_settings()
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
     rcParams["text.usetex"] = false #cannot be set globally as it seems to conflict with pygui(true)
 
@@ -593,8 +599,8 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     cut_types = ["solutions", "jacobian_eigenvalues","transform"]
     cut_type ∈ cut_types || error("Only the following types of 1D cuts are allowed:  ", cut_types)
     
-    nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
-    sc,ax,f,annot,lab,im = get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
+    nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
+    sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    
@@ -635,8 +641,8 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     "Simple mouse click function to store coordinates and plot the corresponding cuts"
     function onclick(event)           
         ix, iy = event[:xdata], event[:ydata]
-        idx = find_nearest(X, ix)  #find closest point to the mouse click.  
-        idy = find_nearest(Y, iy)     
+        idx = _find_nearest(X, ix)  #find closest point to the mouse click.  
+        idy = _find_nearest(Y, iy)     
        
         if length(ax[1][:lines])>0 #clear plot in current axis in case there is any
             ax[1][:lines] = []
@@ -644,12 +650,12 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
 
         #Z is the parameter along which cut is taken
         if cut_type!="transform"  
-            Z,solution_cut_s, solution_cut_u,parameter_val  = prepare_solution_cuts(ax[1],res,Ys,Yu,cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y) #ax[1] is the axis where obs_2D is displayed
+            Z,solution_cut_s, solution_cut_u,parameter_val  = _prepare_solution_cuts(ax[1],res,Ys,Yu,cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y) #ax[1] is the axis where obs_2D is displayed
         else
             solution_cut_s   = []
             solution_cut_u = []
             for l=1:length(string_f)
-                Z,sol_cut, sol_cut_u,parameter_val  = prepare_solution_cuts(ax[1],res,Ys[l],Yu[l],cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y)
+                Z,sol_cut, sol_cut_u,parameter_val  = _prepare_solution_cuts(ax[1],res,Ys[l],Yu[l],cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y)
                 append!(solution_cut_s,[sol_cut])
                 append!(solution_cut_u,[sol_cut_u])
             end

@@ -17,9 +17,9 @@ HarmonicBalance.plot_1D_jacobian_eigenvalues
 HarmonicBalance.plot_2D_solutions
 ```
 
-## Plotting phase diagrams
+## Plotting phase diagrams (2D)
 
-In many problems, rather than in any property of the solutions themselves, we are interested in the phase diagrams, encoding the number of (stable) solutions in different regions of the parameter space.
+In many problems, rather than in any property of the solutions themselves, we are interested in the phase diagrams, encoding the number of (stable) solutions in different regions of the parameter space. We provide functions to tackle solutions calculated over 2D parameter grids.
 
 ```@docs
 HarmonicBalance.plot_2D_phase_diagram

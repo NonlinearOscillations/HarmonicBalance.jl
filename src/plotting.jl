@@ -137,16 +137,14 @@ end
 
 
 """
+    plot_1D_solutions(res::Result; 
+                        x::String, y::String, 
+                        x_scale=1.0, y_scale=1.0, 
+                        marker="o",xscale="linear",yscale="linear"
+                        ,plot_only=["physical"],
+                        marker_classification="stable",filename=nothing)
 
-Make a 1D plot of a `Result` object.
-
-plot_1D_solutions(res::Result; 
-                    x::String, y::String, 
-                    x_scale=1.0, y_scale=1.0, 
-                    marker="o",xscale="linear",yscale="linear"
-                    ,plot_only=["physical"],
-                    marker_classification="stable",filename=nothing)
-
+Make a 1D plot of a `Result` object.    
 
 Keyword arguments
 - `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
@@ -233,10 +231,9 @@ end
 
 
 """
+    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
 
 Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a `Result` object.
-
-    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
 
 Keyword arguments
 
@@ -303,10 +300,9 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
 end
 
 """
+    plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
 
 Make a 2D plot of each of solutions vs swept parameters for a `Result` object, obtained from a `get_steady_states` applied to a 2D parameter grid.`.
-
-    plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
 
 Keyword arguments
 
@@ -354,9 +350,9 @@ end
 
 
 """
-Make a 2D phase diagram plot of each of solutions vs swept parameters for a `Result` object, obtained from a `get_steady_states` applied to a 2D parameter grid.
-
     plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
+
+Make a 2D phase diagram plot of each of solutions vs swept parameters for a `Result` object, obtained from a `get_steady_states` applied to a 2D parameter grid.
 
 Keyword arguments 
 
@@ -561,10 +557,6 @@ function _prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cu
 end
 
 """
-
-Interactive phase diagram of 2D solutions stored in `Result`. 
-This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing 1D cuts of solutions, functions of solutions, or Jacobian eigenvalues.
-
     plot_2D_phase_diagram_interactive(res::Result;
      observable="nsols",
       stable=false,nrows=2,
@@ -572,6 +564,10 @@ This includes a clickable version of a `plot_2D_phase_diagram` for a given `obse
       cut_type="solutions",
       string_f=nothing,
       marker_classification="stable")
+
+Interactive phase diagram of 2D solutions stored in `Result`. 
+This includes a clickable version of a `plot_2D_phase_diagram` for a given `observable` and extra panels containing 1D cuts of solutions, functions of solutions, or Jacobian eigenvalues.
+      
 
 Keyword arguments 
 
@@ -584,7 +580,6 @@ Keyword arguments
     If instead `cut_type=transform`, functions of the solution variables passed to `string_f` (see below) are displayed.
 - `string_f`: list of strings for transformed observables to be plotted in 1D when `cut_type=transform`, e.g. `string_f=["sqrt(u1^2 + v1^2)","sqrt(u2^2 + v2^2)"]` for `Problem` variables `u1,u2,v1,v2`.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
-
 
 """
 function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stable=false,nrows=2,ncols=2,cut_dim="1",cut_type="solutions",string_f=nothing,marker_classification="stable")

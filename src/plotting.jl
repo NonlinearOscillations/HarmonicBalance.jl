@@ -204,7 +204,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_ylabel(Latexify.latexify(y),fontsize=24) 
 
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
-    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))))
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2)
     ax.add_artist(leg1)
     
     ax.legend(handles=leg2,loc="center right") 
@@ -249,7 +249,7 @@ Keyword arguments
 function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
     _set_plotting_settings()
 
-    xplot = transform_solutions(res, x) #indepedenent variable to plot
+    xplot = transform_solutions(res, x) #independent variable to plot
     
     #filtering of the solutions according to keyword arguments
     !physical && stable && error("Stability is not defined for unphysical solutions!")
@@ -517,7 +517,7 @@ function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,
     fixed_params = Dict(k=>parse(ComplexF64,string(v))  for (k,v) in pairs(merge(res.fixed_parameters,Dict(fixed_pair))))
     fixed_params = Num_to_Variable(fixed_params)
     
-    Jac = HomotopyContinuation.evaluate(res.problem.jacobian,collect(keys(fixed_params))=>collect(values(fixed_params))) #maybe make this work with HarmonicBalance.Jacobian?
+    Jac = HomotopyContinuation.evaluate(HomotopyContinuation.jacobian(res.problem.system),collect(keys(fixed_params))=>collect(values(fixed_params))) #TODO make this work with HarmonicBalance.Jacobian
     
     swept_p      = Num_to_Variable(parameter_cut[1][1]) #swept parameter symbolic variable
     swept_values = parameter_cut[1][2] #swept parameter values
@@ -526,6 +526,7 @@ function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,
     Js = [HomotopyContinuation.evaluate(Jac, 
             res.problem.system.variables => filtered_sol[idz,:],
             swept_p=> swept_values[idz]) for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]
+
    
     evals = [eigvals(J) for J in Js]
     Z_plot = [Z[idz] for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]

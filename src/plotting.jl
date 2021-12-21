@@ -240,10 +240,11 @@ Keyword arguments
 - `x`: The function on the x axis (a string parsed into Symbolics.jl).
 - `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown.
 - `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues.
+- `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 """
-function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
+function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
     _set_plotting_settings()
 
     xplot = transform_solutions(res, x) #indepedenent variable to plot
@@ -256,7 +257,11 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
     to_evaluate = [to_evaluate[i] .* numbers[i] for (i,_) in enumerate(numbers)] 
 
     nsolsmax  = length(res.solutions[1])
-    f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
+    input_ax = ax
+    if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
+        f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
+    end
+
     if nsolsmax==1
         ax = add_dim([ax])
     end

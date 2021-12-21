@@ -396,9 +396,9 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
         f,ax = subplots(1,1,figsize=(6,5))
     end
     # rearrange num_of_sols to match imshow output
-    im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=maximum(obs_2D))
+    Nmax = maximum(obs_2D)
+    im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=Nmax)
     if isnothing(input_ax) 
-        Nmax = maximum(obs_2D)
         colorbar(im,ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
     end
 
@@ -505,7 +505,7 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
         end    
     end
     
-    return sc,ax,f,annot,lab,im
+    return sc,ax,f,annot,lab
 end
 
 
@@ -604,7 +604,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     cut_type ∈ cut_types || error("Only the following types of 1D cuts are allowed:  ", cut_types)
     
     nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
-    sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
+    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    

@@ -21,7 +21,7 @@ function get_single_solution(res::Result; branch::Int64, index)
 
     # collect the swept parameters required for this call
     swept_params = Dict( key => res.swept_parameters[key][index[i]] for (i,key) in enumerate(keys(res.swept_parameters)))
-    full_solution = merge(vars, swept_params, res.fixed_parameters)
+    full_solution = merge(vars, res.fixed_parameters, swept_params)
 
     return Dict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
 end
@@ -88,13 +88,14 @@ A steady state result for 1000 parameter points
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=false, im_tol=im_tol, threading=false, sorting="hilbert",show_progress=true)   
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, im_tol=im_tol, threading=false, sorting="hilbert",show_progress=true)   
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
     # prepare an array of vectors, each representing one set of input parameters
     # an n-dimensional sweep uses an n-dimensional array
-    input_array = _prepare_input_params(prob, swept_parameters, fixed_parameters)
+    unique_fixed = filter_duplicate_parameters(swept_parameters, fixed_parameters)
+    input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
     raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading,show_progress=show_progress)
     
@@ -103,9 +104,9 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     rounded_solutions = HomotopyContinuation.solutions.(getindex.(raw, 1));
     solutions = pad_solutions(rounded_solutions)
 
-    compiled_J = _compile_Jacobian(prob, swept_parameters, fixed_parameters)
+    compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
 
-    result = Result(solutions, swept_parameters, fixed_parameters, prob, Dict(), compiled_J) # a "raw" solution struct
+    result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J) # a "raw" solution struct
 
     sort_solutions!(result, sorting=sorting) # sort into branches
     classify_solutions!(result, is_physical, "physical")
@@ -224,7 +225,7 @@ end
 
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=false, threading=false,show_progress= true)
+function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=true, threading=false,show_progress= true)
 
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
@@ -232,7 +233,7 @@ function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVe
     if random_warmup
         complex_pert = [1E-2 * issubset(p, keys(sweep))*randn(ComplexF64) for p in problem.parameters] # complex perturbation of the warmup parameters
         warmup_parameters = params_1D[Int(round(length(params_1D)/2))] .* (ones(length(params_1D[1])) + complex_pert)
-        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading)
+        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading, show_progress=show_progress)
         result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading,show_progress= show_progress)
     else
         result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))

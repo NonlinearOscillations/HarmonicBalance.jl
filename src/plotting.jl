@@ -255,7 +255,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
     to_evaluate = physical ? (stable ? res.classes["stable"] : res.classes["physical"]) : numbers
     to_evaluate = [to_evaluate[i] .* numbers[i] for (i,_) in enumerate(numbers)] 
 
-    nsolsmax  = length(res.solutions[1])
+    nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
     f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
     if nsolsmax==1
         ax = add_dim([ax])
@@ -458,12 +458,12 @@ end
 
 
 "Set up axes and plot an invisible grid of points to be used as reference for subsequent hovering labels"
-function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type; string_f)
+function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type; string_f)
     if  cut_type=="solutions"    
         N_panels = nvars + 1
         lab = [sol_type,not_sol_type]
     elseif cut_type=="jacobian_eigenvalues"
-        N_panels = nsolsmax + 1
+        N_panels = nsolsmax_physical + 1
         lab = ["real","imag"]
     elseif cut_type == "transform"
         N_panels = length(string_f) + 1
@@ -595,7 +595,8 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     cut_type ∈ cut_types || error("Only the following types of 1D cuts are allowed:  ", cut_types)
     
     nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
-    sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
+    nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
+    sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    

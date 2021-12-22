@@ -613,8 +613,8 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     
     nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
 
-    #nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
-    sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax,sol_type,not_sol_type,string_f=string_f)
+    nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
+    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    

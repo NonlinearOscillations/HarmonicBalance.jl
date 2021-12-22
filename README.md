@@ -25,17 +25,15 @@ Let's find the steady states of a driven Duffing oscillator with nonlinear dampi
 
 ```julia
 using HarmonicBalance
-@variables α, ω, ω0, F, t, T, η, x(t) # declare constant variables and a function x(t)
+@variables α, ω, ω0, F, t, η, x(t) # declare constant variables and a function x(t)
 diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t), x)
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
 
 # implement ansatz to get harmonic equations
-harmonic_eq = get_harmonic_equations(diff_eq, slow_time=T, fast_time=t)
+harmonic_eq = get_harmonic_equations(diff_eq)
 
-problem = Problem(harmonic_eq) # a steady-state problem
-
-fixed = ParameterList(α => 1., ω0 => 1.0, F => 0.01, η=>0.1)   # fixed parameters
-swept = ParameterRange(ω => LinRange(0.9, 1.2, 100))         # range of parameter values
+fixed = (α => 1., ω0 => 1.0, F => 0.01, η=>0.1)   # fixed parameters
+swept = ω => LinRange(0.9, 1.2, 100)           # range of parameter values
 solutions = get_steady_states(problem, swept, fixed)
 ```
 ```

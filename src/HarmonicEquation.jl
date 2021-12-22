@@ -198,19 +198,22 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
+    get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+
 Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping 
 higher-order derivatives to obtain
 a set of ODEs (the harmonic equations) governing the harmonics of `diff_eom`.
 
 The harmonics evolve in `slow_time`, the oscillating terms themselves in `fast_time`.
+If no input is used, a variable T is defined for `slow_time` and `fast_time` is taken as the independent variable
+of `diff_eom`.
 
 By default, all products of order > 1 of `slow_time`-derivatives are dropped,
 which means the equations are linear in the time-derivatives.
 
 # Example
 ```julia-repl
-julia> @variables t, T, x(t), ω0, ω, F;
+julia> @variables t, x(t), ω0, ω, F;
 
 # enter the simple harmonic oscillator
 julia> diff_eom = DifferentialEquation( d(x,t,2) + ω0^2 * x ~ F *cos(ω*t), x);
@@ -219,7 +222,7 @@ julia> diff_eom = DifferentialEquation( d(x,t,2) + ω0^2 * x ~ F *cos(ω*t), x);
 julia> add_harmonic!(diff_eom, x, ω);
 
 # get equations for the harmonics evolving in the slow time T
-julia> harmonic_eom = get_harmonic_equations(diff_eom, fast_time=t, slow_time=T)
+julia> harmonic_eom = get_harmonic_equations(diff_eom)
 
 A set of 2 harmonic equations
 Variables: u1(T), v1(T)
@@ -236,7 +239,11 @@ Harmonic equations:
 ```
 
 """
-function get_harmonic_equations(diff_eom::DifferentialEquation; fast_time::Num, slow_time::Num)
+function get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+
+    slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
+    fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
+
     all(isempty.(values(diff_eom.harmonics))) && error("No harmonics specified!")
     eom = harmonic_ansatz(diff_eom, fast_time); # substitute trig functions into the differential equation
     eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time); # drop 2nd order time derivatives

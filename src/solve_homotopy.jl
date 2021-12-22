@@ -40,8 +40,8 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
                             show_progress=true)
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
-`swept_parameters` accepts a Dictionary mapping symbolic variables to arrays or `LinRange`.
-`fixed_parameters` accepts a Dictionary mapping symbolic variables to numbers. 
+`swept_parameters` accepts pairs mapping symbolic variables to arrays or `LinRange`.
+`fixed_parameters` accepts pairs mapping symbolic variables to numbers. 
 
 Keyword arguments
 - `random_warmup`: If `true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving. If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
@@ -116,6 +116,11 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     return result
 
 end
+
+
+get_steady_states(p::Problem, swept, fixed; kwargs...) = get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
+get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...) = get_steady_states(Problem(eom), swept, fixed; kwargs...)
+
 
 """ Compile the Jacobian from `prob`, inserting `fixed_parameters`.
     Returns a function that takes a dictionary of variables and `swept_parameters` to give the Jacobian."""

@@ -5,7 +5,7 @@ using LinearAlgebra
 
     ODEProblem(
             eom::HarmonicEquation;
-            fixed_parameters::ParameterList,
+            fixed_parameters,
             x0::Vector,
             steady_solution::Dict
             sweep::ParameterSweep,
@@ -23,10 +23,11 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
         eom = HarmonicBalance.rearrange_standard(eom)
     end
 
+    fixed = Dict(fixed_parameters)
     # substitute fixed parameters
-    fixed_parameters = HarmonicBalance.filter_duplicate_parameters(sweep, fixed_parameters)
-    p_values = [fixed_parameters[p] for p in keys(fixed_parameters)]
-    subeqs = substitute_all(Num.(getfield.(eom.equations, :lhs)), Dict(zip(keys(fixed_parameters), p_values)))
+    fixed = HarmonicBalance.filter_duplicate_parameters(sweep, fixed)
+    p_values = [fixed[p] for p in keys(fixed)]
+    subeqs = substitute_all(Num.(getfield.(eom.equations, :lhs)), Dict(zip(keys(fixed), p_values)))
     vars = get_variables(eom)
 
     # substitute the harmonic variables
@@ -43,6 +44,10 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
 
     return DifferentialEquations.ODEProblem(f!,x0,timespan)
 end
+
+
+#ODEProblem(eom::HarmonicEquation, fixed; kwargs...) = ODEProblem(eom, ParameterList(fixed); kwargs...)
+
 
 # evolving from a steady-state solution found with homotopy continuation
 function ODEProblem(eom::HarmonicEquation; steady_solution::StateDict, sweep=ParameterSweep(), timespan, perturb_initial=0)

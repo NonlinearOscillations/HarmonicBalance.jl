@@ -296,7 +296,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
                         markerfacecolor="r", markersize=7),
                         plt.Line2D([0], [0], marker=marker_im, color="w", label=L"\Im({\mathrm{eig}(J)})",
                         markerfacecolor="g", markersize=7)]    
-   ax[end].legend(handles=legend_elements,loc="best",fontsize=15) 
+   ax[1].legend(handles=legend_elements,loc="best",fontsize=15) 
 end
 
 """

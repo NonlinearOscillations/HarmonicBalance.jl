@@ -202,7 +202,9 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
 
     ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
     ax.set_ylabel(Latexify.latexify(y),fontsize=24) 
-    leg1 = legend(string.(relevant_indices))
+
+    ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2)
     ax.add_artist(leg1)
     
     ax.legend(handles=leg2,loc="center right") 
@@ -240,13 +242,14 @@ Keyword arguments
 - `x`: The function on the x axis (a string parsed into Symbolics.jl).
 - `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown.
 - `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues.
+- `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 
 """
-function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
+function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
     _set_plotting_settings()
 
-    xplot = transform_solutions(res, x) #indepedenent variable to plot
+    xplot = transform_solutions(res, x) #independent variable to plot
     
     #filtering of the solutions according to keyword arguments
     !physical && stable && error("Stability is not defined for unphysical solutions!")
@@ -255,8 +258,13 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
     to_evaluate = physical ? (stable ? res.classes["stable"] : res.classes["physical"]) : numbers
     to_evaluate = [to_evaluate[i] .* numbers[i] for (i,_) in enumerate(numbers)] 
 
+
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
-    f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
+    input_ax = ax
+    if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
+        f,ax = subplots(1,nsolsmax,figsize=(4*nsolsmax,4))
+    end
+
     if nsolsmax==1
         ax = add_dim([ax])
     end
@@ -389,10 +397,10 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
         f,ax = subplots(1,1,figsize=(6,5))
     end
     # rearrange num_of_sols to match imshow output
-    im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=maximum(obs_2D))
+    Nmax = maximum(obs_2D)
+    im = ax.imshow(obs_2D[:,end:-1:1]', extent=extent, aspect="auto",vmin=minimum(obs_2D),vmax=Nmax)
     if isnothing(input_ax) 
-        Nmax = maximum(obs_2D)
-        colorbar(im,ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+        _prepare_colorbar(f,ax,im,Nmax)
     end
 
     px,py =string.([x,y])#swept parameter strings
@@ -405,8 +413,16 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
         JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
                                                  string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
     end
+    im,Nmax
 end
 
+function _prepare_colorbar(f,ax,im,Nmax;Nmax_discrete=9)  #creates and inserts in a phase diagram figure f a discrete or continuous colorbar
+    if Nmax <= Nmax_discrete
+        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+    else
+        f.colorbar(im, ax=ax)
+    end
+end
 
 #################################################
 ###interactive plotting 
@@ -497,7 +513,7 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
         end    
     end
     
-    return sc,ax,f,annot,lab,im
+    return sc,ax,f,annot,lab
 end
 
 
@@ -509,7 +525,7 @@ function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,
     fixed_params = Dict(k=>parse(ComplexF64,string(v))  for (k,v) in pairs(merge(res.fixed_parameters,Dict(fixed_pair))))
     fixed_params = Num_to_Variable(fixed_params)
     
-    Jac = HomotopyContinuation.evaluate(res.problem.jacobian,collect(keys(fixed_params))=>collect(values(fixed_params))) #maybe make this work with HarmonicBalance.Jacobian?
+    Jac = HomotopyContinuation.evaluate(HomotopyContinuation.jacobian(res.problem.system),collect(keys(fixed_params))=>collect(values(fixed_params))) #TODO make this work with HarmonicBalance.Jacobian
     
     swept_p      = Num_to_Variable(parameter_cut[1][1]) #swept parameter symbolic variable
     swept_values = parameter_cut[1][2] #swept parameter values
@@ -518,6 +534,7 @@ function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,
     Js = [HomotopyContinuation.evaluate(Jac, 
             res.problem.system.variables => filtered_sol[idz,:],
             swept_p=> swept_values[idz]) for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]
+
    
     evals = [eigvals(J) for J in Js]
     Z_plot = [Z[idz] for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]
@@ -595,12 +612,13 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     cut_type ∈ cut_types || error("Only the following types of 1D cuts are allowed:  ", cut_types)
     
     nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
+
     nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
     sc,ax,f,annot,lab,im = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    
-    im = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
+    im,Nmax = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
 
     "Update annotations when cursor moves"
     function update_annot(ind) 
@@ -699,11 +717,12 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
 
     ax = resize_axes!(f,ax,nrows,ncols)
     if nrows>1
-        f.colorbar(im, ax=ax) #common colorbar if a list of axes is passed to colorbar instead of a single one
+        _prepare_colorbar(f,ax,im,Nmax)
     else
-        f.colorbar(im, ax=ax[end])
+        _prepare_colorbar(f,ax[end],im,Nmax)
     end
 end
+
 
 ############################################################
 #DEPRECATED

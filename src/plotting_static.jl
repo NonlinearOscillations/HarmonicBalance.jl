@@ -42,11 +42,11 @@ end
 
 
 # the total number of solutions
-total_elements(array) = prod(size(array))
+_total_elements(array) = prod(size(array))
 
-add_dim(x::Array) = reshape(x, (1,size(x)...)) #quickfix for the case where axx is not a matrix. It would require an extra singleton dimension
+_add_dim!(x::Array) = reshape(x, (1,size(x)...)) #quickfix for the case where axx is not a matrix. It would require an extra singleton dimension
 
-remove_singleton!(arr) = dropdims(arr, dims = tuple(findall(size(arr) .== 1)...)) #remove singleton dimensions of an array
+_squeeze!(arr) = dropdims(arr, dims = tuple(findall(size(arr) .== 1)...)) #remove singleton dimensions of an array
 
 """
 $(TYPEDSIGNATURES)
@@ -56,7 +56,7 @@ true  -> solution unchanged
 false -> changed to NaN (omitted from plotting)
 """
 function filter_solutions(solution::Vector,  booleans)
-    total_elements(solution) == total_elements(booleans) || error("attempt to filter a solution using a wrongly-sized boolean array")
+    _total_elements(solution) == _total_elements(booleans) || error("attempt to filter a solution using a wrongly-sized boolean array")
     rules = Dict(1 => 1., 0 => NaN)
     factors = [rules[pt] for pt in booleans]
     return solution .* factors
@@ -207,7 +207,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_ylabel(Latexify.latexify(_prettify_label(res,y)),fontsize=24) 
 
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
-    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.25, 0.95))
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.45, 0.95))
     ax.add_artist(leg1)
     
     ax.legend(handles=leg2,bbox_to_anchor=(-0.15, 0.9)) 
@@ -269,7 +269,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
     end
 
     if nsolsmax==1
-        ax = add_dim([ax])
+        ax = _add_dim!([ax])
     end
 
     lines_re,lines_im =[],[]

@@ -37,7 +37,7 @@ function _get_interactive_plot_variables(res::Result,cut_type; string_f, marker_
     
     #prepare solution arrays for plotting
     if cut_type =="transform"
-        solutions = [transform_solutions(res, string) for string in string_f]
+        solutions     = [transform_solutions(res, string) for string in string_f]
         physical_sols = [filter_solutions.(solution, res.classes["physical"]) for solution in solutions]
 
         Ys = [real.(filter_solutions.(physical_sol, res.classes[sol_type]))  for physical_sol in physical_sols]
@@ -268,27 +268,27 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
         
         if cut_type=="solutions" 
             for l in 1:nvars      
-                ax[l+1].plot(Z, remove_singleton!(solution_cut_s[l,:,:]'),lw=3)
-                ax[l+1].plot(Z, remove_singleton!(solution_cut_u[l,:,:]'),ls="--",lw=3)
+                ax[l+1].plot(Z, _squeeze!(solution_cut_s[l,:,:]'),lw=3)
+                ax[l+1].plot(Z, _squeeze!(solution_cut_u[l,:,:]'),ls="--",lw=3)
             end    
         elseif cut_type=="jacobian_eigenvalues"
             for l in 1:nsolsmax
                 ax[l+1].axhline(0,ls=":",lw=4) #reference value for unstability test 
-                for sols in remove_singleton!.([solution_cut_s[:,l,:]',solution_cut_u[:,l,:]'])
+                for sols in _squeeze!.([solution_cut_s[:,l,:]',solution_cut_u[:,l,:]'])
                     _plot_2D_solutions_jacobian_cut(res,sols,parameter_val,Z,ax[l+1])         
                 end
             end
         elseif cut_type=="transform"  
             for l in 1:length(string_f)
-                ax[l+1].plot(Z,remove_singleton!(solution_cut_s[l]'),ls="-",lw=3)
-                ax[l+1].plot(Z, remove_singleton!(solution_cut_u[l]'),ls="--",lw=3)
+                ax[l+1].plot(Z,_squeeze!(solution_cut_s[l]'),ls="-",lw=3)
+                ax[l+1].plot(Z, _squeeze!(solution_cut_u[l]'),ls="--",lw=3)
             end
         end    
         
         legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label=lab[1],
-                        markerfacecolor="k", markersize=5),
-                        plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],
-                        markerfacecolor="k", markersize=5)]    
+                            markerfacecolor="k", markersize=5),
+                            plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],
+                            markerfacecolor="k", markersize=5)]    
         ax[end].legend(handles=legend_elements,loc="best") 
         
     end    

@@ -190,8 +190,8 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_prop_cycle(nothing) #reset color cycler state (NaN solutions aren't shown but the color cycler runs)
     append!(lines,ax.plot(X, Yu, "X"))
 
-    leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type, markerfacecolor="k", markersize=10),
-            plt.Line2D([0], [0], marker="X", color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
+    leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type,    markerfacecolor="k", markersize=10),
+            plt.Line2D([0], [0], marker="X"   , color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
 
     if !isnothing(filename)
         xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
@@ -204,10 +204,10 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_ylabel(Latexify.latexify(y),fontsize=24) 
 
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
-    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2)
-    ax.add_artist(leg1)
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.05, 0.95))
+    ax.add_artist(leg1,bbox_to_anchor=(1.05, 0.6))
     
-    ax.legend(handles=leg2,loc="center right") 
+    ax.legend(handles=leg2,bbox_to_anchor=(-0.15, 0.9)) 
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
 end
@@ -705,6 +705,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
                         plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],
                         markerfacecolor="k", markersize=5)]    
         ax[end].legend(handles=legend_elements,loc="best") 
+        
     end    
 
     f[:canvas][:mpl_connect]("button_press_event", onclick)    
@@ -722,51 +723,3 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
         _prepare_colorbar(f,ax[end],im,Nmax)
     end
 end
-
-
-############################################################
-#DEPRECATED
-#"Create latex labels for subsequent plots"
-#function get_latex_label(x::String)
-#    if REPL.symbol_latex(x) == "" #the character is not a symbol
-#        latex_label = string("\$",x,"\$")
-#    else
-#        latex_label = string("\$",REPL.symbol_latex(x),"\$")
-#    end
-#    latex_label
-#end
-
-
-#= function mod_phase_plots(phase_diagram::phase_diagram)
-    """Plot abs,angle for all physical_solutions, including unstable ones"""
-    nvar  = size(phase_diagram.physical_solutions)[1] #number of variables
-    nsols = size(phase_diagram.physical_solutions)[2]
-    sweep1 = reduce(hcat,collect(values(phase_diagram.p_sweep)))[:,1] #values for the swept parameter
-    sweep2 = reduce(hcat,collect(values(phase_diagram.p_sweep)))[:,2] #values for the swept parameter
-    f,axx = subplots(nsols,nvar,figsize=(4*nvar,4*nsols))
-    
-    Us   = [view(phase_diagram.physical_solutions, m, :,:,:)   for m in 1:2:nvar] #view prevents the copy of the array
-    Vs   = [view(phase_diagram.physical_solutions, m, :,:,:)   for m in 2:2:nvar]
-    Xs   = [sqrt.(us.^2 + vs.^2) for (us,vs) in zip(Us,Vs)]
-    Args = [atan.(vs./us) for (us,vs) in zip(Us,Vs)]
-    
-    if nsols==1
-        axx = add_dim(axx)
-    end
-    print(length(axx))
-
-    extent = [sweep1[1],sweep1[end],sweep2[1],sweep2[end]]
-    for k in 1:Int(floor(nvar/2))
-        for l in 1:nsols
-            axx[l,k].imshow(Xs[k][l,:,:],extent=extent,aspect="auto",vmin=0,vmax=2)
-            axx[l,k+Int(floor(nvar/2))].imshow(Args[k][l,:,:],extent=extent,aspect="auto",cmap="hsv",vmin=0,vmax=1)
-            axx[l,k].set_xlabel(string("\$",collect(keys(phase_diagram.p_sweep))[1],"\$"),fontsize=24)
-            axx[l,k].set_ylabel(string("\$",collect(keys(phase_diagram.p_sweep))[2],"\$"),fontsize=24)
-            axx[l,k+Int(floor(nvar/2))].set_xlabel(string("\$",collect(keys(phase_diagram.p_sweep))[1],"\$"),fontsize=24)
-            axx[l,k+Int(floor(nvar/2))].set_ylabel(string("\$",collect(keys(phase_diagram.p_sweep))[2],"\$"),fontsize=24)
-        end
-        axx[1,k].set_title(string("\$X_",string(k),"\$"))
-        axx[1,k+Int(floor(nvar/2))].set_title(string(L"$\Phi_",string(k),"\$"))
-    end
-    f.tight_layout()  
-end =#

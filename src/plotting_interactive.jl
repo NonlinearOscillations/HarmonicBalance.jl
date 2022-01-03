@@ -88,7 +88,7 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
         elseif cut_type=="jacobian_eigenvalues" 
             ax[l+1].set_title(string("solution ", l),fontsize=12,loc="left"); 
         elseif cut_type=="transform"
-            ax[l+1].set_title(string_f[l])
+            ax[l+1].set_title(Latexify.latexify(string_f[l]))
         end    
     end
     
@@ -194,8 +194,12 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
 
     nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
     pretty_ylabels    = [_prettify_label(res,v)  for v in var_names]
-    pretty_string_f   = [_prettify_label(res,st) for st in string_f]
-    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,pretty_ylabels,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=pretty_string_f)
+
+    if !isnothing(string_f) #prettify ylabels, just for plotting, if transformed solutions are required
+        string_f   = [_prettify_label(res,st) for st in string_f]
+    end
+
+    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,pretty_ylabels,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    

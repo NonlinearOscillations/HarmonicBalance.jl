@@ -10,7 +10,7 @@ export _set_plotting_settings,_prepare_colorbar
 function _set_plotting_settings()
     plt.style.use("default") #reset settings
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
-    rcParams["text.usetex"] = true
+    rcParams["text.usetex"]       = true
     rcParams["font.family"]       = "sans-serif"
     rcParams["font.sans-serif"]   = ["Helvetica"]
     rcParams["legend.frameon"]    = false
@@ -131,6 +131,13 @@ function resize_axes!(f,axs,nrows,ncols)
     return axs
 end
 
+"inserts underscores in variable names for prettier transformed laTeX strings"
+function prettify_label(res::Result,label::String)
+    replace_rules = [string("u",k)=>string("u_",k) for k in 1:length(res.problem.variables)÷2]
+    append!(replace_rules,[string("v",k)=>string("v_",k) for k in 1:length(res.problem.variables)÷2])
+    return reduce(replace, replace_rules, init=label)
+end
+
 
 """
     plot_1D_solutions(res::Result; 
@@ -197,10 +204,10 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     end
 
     ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
-    ax.set_ylabel(Latexify.latexify(y),fontsize=24) 
+    ax.set_ylabel(Latexify.latexify(prettify_label(res,y)),fontsize=24) 
 
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
-    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.05, 0.95))
+    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.25, 0.95))
     ax.add_artist(leg1)
     
     ax.legend(handles=leg2,bbox_to_anchor=(-0.15, 0.9)) 

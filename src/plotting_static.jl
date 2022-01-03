@@ -201,7 +201,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
 
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
     leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.05, 0.95))
-    ax.add_artist(leg1,bbox_to_anchor=(1.05, 0.6))
+    ax.add_artist(leg1)
     
     ax.legend(handles=leg2,bbox_to_anchor=(-0.15, 0.9)) 
     ax.set_xscale(xscale)

@@ -83,7 +83,7 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
             ax[l+1].set_xlabel(Latexify.latexify(string(y)),fontsize=24); 
         end
 
-        if cut_type=="solutions"
+        if cut_type=="solutions" 
             ax[l+1].set_ylabel(Latexify.latexify(var_names[l]),fontsize=24);
         elseif cut_type=="jacobian_eigenvalues" 
             ax[l+1].set_title(string("solution ", l),fontsize=12,loc="left"); 
@@ -193,7 +193,9 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     nvars,nsolsmax,Ys,Yu,x,y,X,Y,gx,gy,var_names,sol_type,not_sol_type = _get_interactive_plot_variables(res,cut_type,string_f=string_f,marker_classification=marker_classification)
 
     nsolsmax_physical = sum(any.(classify_branch(res, "physical"))) #number of physical solutions
-    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
+    pretty_ylabels    = [_prettify_label(res,v)  for v in var_names]
+    pretty_string_f   = [_prettify_label(res,st) for st in string_f]
+    sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,pretty_ylabels,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=pretty_string_f)
     
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    

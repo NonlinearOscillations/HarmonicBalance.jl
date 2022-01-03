@@ -2,6 +2,7 @@ module TimeEvolution
 
 
     using ..HarmonicBalance
+    using Symbolics
     using DifferentialEquations
     using DSP
     using FFTW

@@ -325,7 +325,7 @@ Keyword arguments
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 """
-function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing)
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,plot_only="stable")
     _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
@@ -339,6 +339,10 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing)
     end
     #transform the solution structs into tensors that are easier to handle by imshow
     physical_solutions = real.(filter_solutions.(Z,res.classes["physical"]))
+    if plot_only=="stable"
+        physical_solutions = real.(filter_solutions.(Z,res.classes["stable"]))
+    end
+
     if isnothing(z)
         physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
     else
@@ -361,6 +365,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing)
         for m in 1:nvar
             for l in 1:nsols 
                 a = ax[l,m].imshow(physical_sols[m,l,:,end:-1:1]',extent=extent,aspect="auto")
+                colorbar(a,ax=ax[l,m])
                 ax[l,m].set_xlabel(Latexify.latexify(px),fontsize=24); 
                 ax[l,m].set_ylabel(Latexify.latexify(py),fontsize=24); 
                 if !isnothing(filename)
@@ -374,6 +379,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing)
         save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:nsols])
         for l in 1:nsols 
             a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
+            colorbar(a,ax=ax[l])
             ax[l].set_xlabel(Latexify.latexify(px),fontsize=24); 
             ax[l].set_ylabel(Latexify.latexify(py),fontsize=24); 
             if !isnothing(filename)

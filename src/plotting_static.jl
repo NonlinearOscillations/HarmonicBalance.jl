@@ -325,7 +325,7 @@ Keyword arguments
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 """
-function plot_2D_solutions_alt(res::Result; ax=nothing, filename=nothing, z=nothing)
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing)
     _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
@@ -355,9 +355,9 @@ function plot_2D_solutions_alt(res::Result; ax=nothing, filename=nothing, z=noth
         end    
     end
 
-    save_dict = Dict([string("panel (",m,",",l,")")=> Dict() for m in 1:nvar for l in 1:nsols])
     px,py = string.(collect(keys(res.swept_parameters)))  #swept parameter strings
     if isnothing(z)
+        save_dict = Dict([string("panel (",m,",",l,")")=> Dict() for m in 1:nvar for l in 1:nsols])
         for m in 1:nvar
             for l in 1:nsols 
                 a = ax[l,m].imshow(physical_sols[m,l,:,end:-1:1]',extent=extent,aspect="auto")
@@ -371,6 +371,7 @@ function plot_2D_solutions_alt(res::Result; ax=nothing, filename=nothing, z=noth
             ax[1,m].set_title(Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20)
         end
     else
+        save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:nsols])
         for l in 1:nsols 
             a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
             ax[l].set_xlabel(Latexify.latexify(px),fontsize=24); 

@@ -350,7 +350,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing)
                 string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
             end
         end
-        ax[1,m].set_title(Latexify.latexify(var_names[m]),fontsize=20)
+        ax[1,m].set_title(Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20)
     end
     f.tight_layout()
 

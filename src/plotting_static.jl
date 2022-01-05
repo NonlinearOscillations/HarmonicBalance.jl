@@ -325,15 +325,20 @@ Keyword arguments
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 """
-function plot_2D_solutions(res::Result; ax=nothing, filename=nothing)
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing; z=nothing)
     _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
     x,y = collect(values(res.swept_parameters))
     extent=[x[1],x[end],y[1],y[end]]
 
+    if isnothing(z)
+        Z = res.solutions
+    else
+        Z =  transform_solutions(res, z) # first transform, then filter
+    end
     #transform the solution structs into tensors that are easier to handle by imshow
-    physical_solutions = real.(filter_solutions.(res.solutions,res.classes["physical"]))
+    physical_solutions = real.(filter_solutions.(Z,res.classes["physical"]))
     physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
     
     var_names = _get_var_name_labels(res) #variable names for plot labels
@@ -356,6 +361,9 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing)
             end
         end
         ax[1,m].set_title(Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20)
+        if !isnothing(z)
+            ax[1,m].text(0.8,0.8,Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20,transform=ax[1,m].transAxes)
+        end
     end
     f.tight_layout()
 

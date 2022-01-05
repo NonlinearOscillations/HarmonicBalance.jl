@@ -8,11 +8,12 @@ export plot_2D_phase_diagram_interactive
 #################################################
 
 "Make 2-D coordinate arrays for vectorized evaluations of 2-D scalar/vector fields over 2-D grids"
-function meshgrid(x, y)
-    X = [i for i in x, j in 1:length(y)]
-    Y = [j for i in 1:length(x), j in y]
-    return X, Y
-end
+meshgrid(x, y) = [i for i in x, j in 1:length(y)], [j for i in 1:length(x), j in y]
+
+"label each location in parameter space by string stating which solutions are stable/unstable. Consider only physical solutions"
+param_label(res::Result) = vec(join.(replace!.([[join.(string(el)) for el in bit_string[phys_string]] 
+                            for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])], ("true"=>"S"),("false"=>"U"))));
+    
 
 "Argument corresponding to the closest value of an array to a given point"
 _find_nearest(array,value) = argmin(abs.(array.-value)) 
@@ -20,6 +21,7 @@ _find_nearest(array,value) = argmin(abs.(array.-value))
 _reshape_for_plot(arr,L,M,N) = reshape(reduce(hcat,reduce(hcat,arr)),L,M,N) #some useful transformation from matrices of vectors to higher dimensional tensors, for plotting
 
 _get_var_name_labels(res::Result) = string.(res.problem.variables) 
+
 
 "Preprocess solution arrays to be plotted. Extract parameter information for labelling and setting axes of interactive plots"
 function _get_interactive_plot_variables(res::Result,cut_type; string_f, marker_classification)
@@ -68,13 +70,16 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
     f,ax = plt.subplots(1,N_panels,figsize=(5*N_panels,5))
 
     sc = ax[1].scatter(gx',gy', s=1,alpha=0.) #create an invisible grid to attribute hovering labels, the transposes are introduce to match imshow ordering
-    ax[1].set_xlabel(Latexify.latexify(x),fontsize=24); ax[1].set_ylabel(Latexify.latexify(y),fontsize=24)
+    ax[1].set_xlabel(Latexify.latexify(x),fontsize=24)
+    ax[1].set_ylabel(Latexify.latexify(y),fontsize=24)
 
     #hovering label preparation
     annot = ax[1].annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
                     bbox=Dict(("boxstyle"=>"round"), ("fc"=>"w")),
                     arrowprops=Dict("arrowstyle"=>"->"))
     annot.set_visible(false)
+    annot.get_bbox_patch().set_facecolor("w") #settings for hovering label box
+    annot.get_bbox_patch().set_alpha(0.8)
 
     for l in 1:N_panels-1 #preparation of plot labels, no need to update these onclick
         if cut_dim=="1" #select direction along which solution cut_dim will be drawn
@@ -91,7 +96,6 @@ function _get_interactive_plot_axes(x,y,gx,gy,var_names,cut_dim,cut_type,nvars,n
             ax[l+1].set_title(Latexify.latexify(string_f[l]))
         end    
     end
-    
     return sc,ax,f,annot,lab
 end
 
@@ -114,7 +118,6 @@ function _plot_2D_solutions_jacobian_cut(res::Result,filtered_sol,parameter_cut,
             res.problem.system.variables => filtered_sol[idz,:],
             swept_p=> swept_values[idz]) for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]
 
-   
     evals = [eigvals(J) for J in Js]
     Z_plot = [Z[idz] for idz in 1:length(Z) if any(isnan.(filtered_sol[idz,:]).==false)]
     ax.plot(Z_plot,real.(evals),"-")
@@ -129,8 +132,7 @@ function _prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cu
     if cut_dim=="1"  #select direction along which solution cut_dim will be drawn
         ax.axhline(Y[idy],ls="--",c="w")   
         if cut_type=="transform"
-            solution_cut_s   = reduce(hcat,Ys[:,idy])
-            solution_cut_u   = reduce(hcat,Yu[:,idy])
+            solution_cut_s, solution_cut_u = reduce(hcat,Ys[:,idy]), reduce(hcat,Yu[:,idy])
         else
             solution_cut_s   = _reshape_for_plot(Ys[:,idy],nvars,nsolsmax,length(X)) 
             solution_cut_u   = _reshape_for_plot(Yu[:,idy],nvars,nsolsmax,length(X)) 
@@ -140,8 +142,7 @@ function _prepare_solution_cuts(ax::PyCall.PyObject,res::Result,Ys,Yu,cut_dim,cu
     elseif cut_dim=="2"  
         ax.axvline(X[idx],ls="--",c="w")
         if cut_type=="transform"
-            solution_cut_s   = reduce(hcat,Ys[idx,:])
-            solution_cut_u   = reduce(hcat,Yu[idx,:])
+            solution_cut_s, solution_cut_u   = reduce(hcat,Ys[idx,:]), reduce(hcat,Yu[idx,:])
         else
             solution_cut_s  =  _reshape_for_plot(Ys[idx,:],nvars,nsolsmax,length(Y)) 
             solution_cut_u  =  _reshape_for_plot(Yu[idx,:],nvars,nsolsmax,length(Y))   
@@ -184,9 +185,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
     rcParams["text.usetex"] = false #cannot be set globally as it seems to conflict with pygui(true)
 
-    #label each location in parameter space by string stating which solutions are stable/unstable. Consider only physical solutions
-    names=vec(join.(replace!.([[join.(string(el)) for el in bit_string[phys_string]] for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])], ("true"=>"S"),("false"=>"U"))));
-    
+    names= param_label(res) #bitstring stable/unstable (S/U) labelling each physical solution. 
     cut_types = ["solutions", "jacobian_eigenvalues","transform"]
     cut_type ∈ cut_types || error("Only the following types of 1D cuts are allowed:  ", cut_types)
     
@@ -200,20 +199,16 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     end
 
     sc,ax,f,annot,lab = _get_interactive_plot_axes(x,y,gx,gy,pretty_ylabels,cut_dim,cut_type,nvars,nsolsmax_physical,sol_type,not_sol_type,string_f=string_f)
-    
+
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    
     im,Nmax = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
 
     "Update annotations when cursor moves"
     function update_annot(ind) 
-        pos = sc.get_offsets()[ind["ind"][1],:]
-        annot.xy = pos
+        annot.xy = sc.get_offsets()[ind["ind"][1],:]
         text = names[ind["ind"][1]]
-
         annot.set_text(text)
-        annot.get_bbox_patch().set_facecolor("w")
-        annot.get_bbox_patch().set_alpha(0.8)
     end
 
     "Action when mouse hovers over the figure: show string indicating stability/instability of solution"
@@ -240,8 +235,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
     "Simple mouse click function to store coordinates and plot the corresponding cuts"
     function onclick(event)           
         ix, iy = event[:xdata], event[:ydata]
-        idx = _find_nearest(X, ix)  #find closest point to the mouse click.  
-        idy = _find_nearest(Y, iy)     
+        idx, idy = _find_nearest(X, ix), _find_nearest(Y, iy)  #find closest point to the mouse click.     
        
         if length(ax[1][:lines])>0 #clear plot in current axis in case there is any
             ax[1][:lines] = []
@@ -251,8 +245,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
         if cut_type!="transform"  
             Z,solution_cut_s, solution_cut_u,parameter_val  = _prepare_solution_cuts(ax[1],res,Ys,Yu,cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y) #ax[1] is the axis where obs_2D is displayed
         else
-            solution_cut_s   = []
-            solution_cut_u = []
+            solution_cut_s, solution_cut_u   = [], []
             for l=1:length(string_f)
                 Z,sol_cut, sol_cut_u,parameter_val  = _prepare_solution_cuts(ax[1],res,Ys[l],Yu[l],cut_dim,cut_type,idx,idy,nvars,nsolsmax,X,Y)
                 append!(solution_cut_s,[sol_cut])
@@ -281,24 +274,19 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
         elseif cut_type=="transform"  
             for l in 1:length(string_f)
                 ax[l+1].plot(Z,_squeeze!(solution_cut_s[l]'),ls="-",lw=3)
-                ax[l+1].plot(Z, _squeeze!(solution_cut_u[l]'),ls="--",lw=3)
+                ax[l+1].plot(Z,_squeeze!(solution_cut_u[l]'),ls="--",lw=3)
             end
         end    
         
-        legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label=lab[1],
-                            markerfacecolor="k", markersize=5),
-                            plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],
-                            markerfacecolor="k", markersize=5)]    
+        legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label=lab[1], markerfacecolor="k", markersize=5),
+                           plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],markerfacecolor="k", markersize=5)]    
         ax[end].legend(handles=legend_elements,loc="best") 
-        
     end    
 
     f[:canvas][:mpl_connect]("button_press_event", onclick)    
     
-    #When the interactive plotting window is closed, subsequent plots are not interactive if not requested so
-    function on_close(event)
-        pygui(false) 
-    end
+    on_close(event) = pygui(false) #When closing the interactive plotting window, subsequent figures are static by default 
+    
     f[:canvas][:mpl_connect]("close_event",on_close)
 
     ax = resize_axes!(f,ax,nrows,ncols)

@@ -325,7 +325,7 @@ Keyword arguments
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 """
-function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,plot_only="stable")
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,plot_only="nothing")
     _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions

@@ -38,6 +38,7 @@ function _set_plotting_settings()
     rcParams["xtick.major.pad"]   = 7
     rcParams["ytick.major.pad"]   = 7
     rcParams["figure.autolayout"] = true
+    rcParams["figure.dpi"] = 220
 end
 
 
@@ -173,7 +174,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     X = x_scale .* [p[relevant_indices] for p in X]
     Y = y_scale .* [p[relevant_indices] for p in Y]
 
-    f,ax = subplots(1,1,figsize=(6,5))
+    f,ax = subplots(1,1,figsize=(7,4))
 
     #filtering of the solutions according to keyword arguments
     "stable" in plot_only && "physical" ∉ plot_only && error("Stability is not defined for unphysical solutions!")
@@ -193,9 +194,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_prop_cycle(nothing) #reset color cycler state (NaN solutions aren't shown but the color cycler runs)
     append!(lines,ax.plot(X, Yu, "X"))
 
-    leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type,    markerfacecolor="k", markersize=10),
-            plt.Line2D([0], [0], marker="X"   , color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
-
+    
     if !isnothing(filename)
         xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
         markers = [line.get_marker() for line in lines]
@@ -206,13 +205,20 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
     ax.set_ylabel(Latexify.latexify(_prettify_label(res,y)),fontsize=24) 
 
+    #legend preparation
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
-    leg1 = ax.legend(string.(collect(1:sum(.~ignored_idx))),ncol=2,bbox_to_anchor=(1.45, 0.95))
+    Nb   = sum(.~ignored_idx) #number of branches
+    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<10) + Nb÷10*(Nb>10),
+            bbox_to_anchor=(Nb÷10 + 1, 0.95))
     ax.add_artist(leg1)
     
-    ax.legend(handles=leg2,bbox_to_anchor=(-0.15, 0.9)) 
+    h_leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type,    markerfacecolor="k", markersize=10),
+            plt.Line2D([0], [0], marker="X"   , color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
+
+    ax.legend(handles=h_leg2,bbox_to_anchor=(-0.25, 0.95)) 
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
+    f.tight_layout()
 end
 
 
@@ -231,8 +237,6 @@ function _classify_plot_data(res, marker_classification)
     end
     sol_type, not_sol_type
 end
-
-
 
 
 """
@@ -274,6 +278,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
 
     lines_re,lines_im =[],[]
     for branch in 1:nsolsmax
+        ax[branch].axhline(0,ls="dashdot",lw=2,alpha=0.8) #reference value for unstability test 
         λs = [NaN*ones(ComplexF64, length(res.problem.variables)) for i in 1:length(res.solutions)]
         for index in 1:length(res.solutions)
             # calculate if in to_evaluate, otherwise leave the NaN
@@ -288,7 +293,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
         append!(lines_im,ax[branch].plot(X_plot,imag.(λs),string(marker_im,"g")))  #
         ax[branch].set_title(string("solution ", branch),fontsize=12,loc="left"); 
         ax[branch].set_xlabel(Latexify.latexify(string(x)),fontsize=24)
-        ax[branch].axhline(0,ls=":",lw=4) #reference value for unstability test 
+
     end 
 
     if !isnothing(filename)

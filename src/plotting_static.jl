@@ -104,6 +104,22 @@ function transform_solutions(res::Result, f::String; rules=Dict())
     return transformed
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+For a transformed, physical solution, evaluates multi-solution condition (e.g. Base.maximum or Base.argmax).
+If real_function=true (default) the function is assume to be real and small imaginary parts are discarded.
+"""
+function map_multi_solutions(solution,mapping=nothing; real_function=true)
+    length(vcat(solution...)[1])>1  && error("input solutions have wrong dimensions. Please transform first.")#sanity check for solutions still containing the solution tuple u1,v1,... (not transformed) 
+    isempty(methods(mapping)) && error("mapping is not a Julia function") #sanity check for mapping being a function
+    if real_function
+        @warn "imaginary parts discarded in multi-solution map"
+        return mapping.(real.(solution))
+    else
+        return mapping.(solution)
+    end
+end
 
 "Construct a matrix of subplots from a linear subplot array, even if input length and # of rows or columns is not commensurable"
 function resize_axes!(f,axs,nrows,ncols)

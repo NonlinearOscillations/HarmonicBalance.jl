@@ -219,8 +219,8 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
         JLD2.save(_jld2_name(filename), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
     end
 
-    ax.set_xlabel(Latexify.latexify(x),fontsize=24) 
-    ax.set_ylabel(Latexify.latexify(_prettify_label(res,y)),fontsize=24) 
+    ax.set_xlabel(latexify(x),fontsize=24) 
+    ax.set_ylabel(latexify(_prettify_label(res,y)),fontsize=24) 
 
     #legend preparation
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
@@ -309,7 +309,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
         append!(lines_re,ax[branch].plot(X_plot,real.(λs),string(marker_re,"r")))
         append!(lines_im,ax[branch].plot(X_plot,imag.(λs),string(marker_im,"g")))  #
         ax[branch].set_title(string("solution ", branch),fontsize=12,loc="left"); 
-        ax[branch].set_xlabel(Latexify.latexify(string(x)),fontsize=24)
+        ax[branch].set_xlabel(latexify(string(x)),fontsize=24)
 
     end 
 
@@ -332,6 +332,38 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
    ax[1].legend(handles=legend_elements,loc="best",fontsize=15) 
 end
 
+"""Take a set of conditions and multi-solution maps on solutions transformed by `z`
+    Returns `physical` solutions, filtered by conditions and apply multi-solution maps"""
+function _preprocess_2D_solutions(res::Result,z=nothing,plot_only=nothing)
+    nvar  = length(res.solutions[1,1][1]) #number of variables
+    nsols = length(res.solutions[1,1]) #maximum number of solutions
+
+    if isnothing(z)  Z = res.solutions   else  Z =  transform_solutions(res, z)  end # first transform, then filter
+    Z = real.(filter_solutions.(Z,res.classes["physical"]))
+    
+    local map_s #isolate mapping from plot_only array
+    if !isnothing(plot_only)
+        for class in plot_only 
+            if  isempty(methods(class)) #class is not a multi-solution mapping
+                Z = filter_solutions.(Z, res.classes[class])
+            else !isempty(methods(class))
+                map_s = class #unpack multisolution mapping to be applied
+            end
+        end
+    end
+
+    if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
+            Z  = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nvar,nsols,length(x),length(y))
+    else #transformation of solution is requested
+        if Base.@isdefined map_s#class is a multi-solution mapping. Apply only after filtering
+            Z = map_multi_solutions(Z,map_s; real_function=true)
+        else
+            Z = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nsols,length(x),length(y))
+        end
+    end
+    Z,map_s
+end
+
 """
     plot_2D_solutions(res::Result,ax=nothing; filename=nothing)
 
@@ -352,84 +384,65 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     extent=[x[1],x[end],y[1],y[end]]
     var_names = _get_var_name_labels(res) #variable names for plot labels
 
-    if isnothing(z) Z = res.solutions else Z =  transform_solutions(res, z) end # first transform, then filter
-    Z = real.(filter_solutions.(Z,res.classes["physical"]))
-    
-    local map_s #isolate mapping from plot_only array
-    if !isnothing(plot_only)
-        for class in plot_only 
-            if  isempty(methods(class)) #class is not a multi-solution mapping
-                Z = filter_solutions.(Z, res.classes[class])
-            else !isempty(methods(class))
-                map_s = class #unpack multisolution mapping to be applied
-            end
-        end
-    end
-    
-    if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
-        physical_sols     = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nvar,nsols,length(x),length(y))
-    else #transformation of solution is requested
-        if Base.@isdefined map_s#class is a multi-solution mapping. Apply only after filtering
-            physical_sols = map_multi_solutions(Z,map_s; real_function=true)
-        else
-            physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nsols,length(x),length(y))
-        end
-    end
-    
+    Z,map_s = _preprocess_2D_solutions(res,z,plot_only)
+
     input_ax = ax #set up axes depending on input
     if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
-        if isnothing(z)
-            f,ax = subplots(nsols,nvar,figsize=(4*nvar,4*nsols))
+        if isnothing(z)  
+            nrow,ncol = nsols,nvar
         else
-            if Base.@isdefined map_s 
-                 Npanels = 1 
+            nrow =1
+            if Base.@isdefined map_s  
+                ncol = 1 
             else 
-                Npanels = nsols
-             end
-            f,ax = subplots(1,Npanels,figsize=(4*Npanels,4))
-            if Npanels==1 
-                ax = _add_dim!([ax])
+                ncol = nsols
             end
-        end    
+        end   
+        f,ax = subplots(nrow,ncol,figsize=(4*nx,4*ny)) 
+
+        if ncol==1 
+            ax = _add_dim!([ax])
+        end
+    else
+        length(vec(input_ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
     end
     
     px,py = string.(collect(keys(res.swept_parameters)))  #swept parameter strings
-    if isnothing(z)
+    if isnothing(z) #plot solution variables
         save_dict = Dict([string("panel (",m,",",l,")")=> Dict() for m in 1:nvar for l in 1:nsols])
-        for m in 1:nvar
-            for l in 1:nsols 
-                a = ax[l,m].imshow(physical_sols[m,l,:,end:-1:1]',extent=extent,aspect="auto")
+        for m in 1:ncol
+            for l in 1:nrow
+                a = ax[l,m].imshow(Z[m,l,:,end:-1:1]',extent=extent,aspect="auto")
                 colorbar(a,ax=ax[l,m])
                 if !isnothing(filename)
                     save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
-                    string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+                              string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
                 end
             end
-            ax[1,m].set_title(Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20)
+            ax[1,m].set_title(latexify(_prettify_label(res,var_names[m])),fontsize=20)
         end
-    else
-        _add_dim!([ax])
-        save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:Npanels])
-        for l in 1:Npanels
+    else #plot transformed solutions or functions thereof
+        save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:ncol])
+        for l in 1:ncol
             if Base.@isdefined map_s
-                a = ax[l].imshow(physical_sols[:,end:-1:1]',extent=extent,aspect="auto")
+                a = ax[l].imshow(Z[:,end:-1:1]',extent=extent,aspect="auto")
                 ax[1].text(0.05, 0.9, string(Symbol(map_s)),c="w", transform=ax[1].transAxes,fontsize=14)
             else
-                a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
+                a = ax[l].imshow(Z[l,:,end:-1:1]',extent=extent,aspect="auto")
                 ax[l].set_title(string("solution ",l),fontsize=18)
             end    
             colorbar(a,ax=ax[l])
             if !isnothing(filename)
                 save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
-                                                        string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+                          string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
             end
         end
-        f.suptitle(Latexify.latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
+        f.suptitle(latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
         
     end
     for ax_ in ax
-        ax_.set_xlabel(Latexify.latexify(px),fontsize=24); 
-        ax_.set_ylabel(Latexify.latexify(py),fontsize=24); 
+        ax_.set_xlabel(latexify(px),fontsize=24); 
+        ax_.set_ylabel(latexify(py),fontsize=24); 
     end
 
     f.tight_layout()
@@ -437,9 +450,16 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     if !isnothing(filename) 
          JLD2.save(_jld2_name(filename), save_dict) 
     end
-
 end
 
+"""Discrete colorbar preparation for phase diagram"""
+function _prepare_colorbar(f,ax,im,Nmax;Nmax_discrete=9)  #creates and inserts in a phase diagram figure f a discrete or continuous colorbar
+    if Nmax <= Nmax_discrete
+        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
+    else
+        f.colorbar(im, ax=ax)
+    end
+end
 
 """
     plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
@@ -489,8 +509,8 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
 
     px,py =string.([x,y])#swept parameter strings
 
-    ax.set_xlabel(Latexify.latexify(px),fontsize=24)
-    ax.set_ylabel(Latexify.latexify(py),fontsize=24)
+    ax.set_xlabel(latexify(px),fontsize=24)
+    ax.set_ylabel(latexify(py),fontsize=24)
     ax.set_title(pd_title)
 
     if !isnothing(filename)
@@ -499,13 +519,3 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     end
     im,Nmax
 end
-
-function _prepare_colorbar(f,ax,im,Nmax;Nmax_discrete=9)  #creates and inserts in a phase diagram figure f a discrete or continuous colorbar
-    if Nmax <= Nmax_discrete
-        f.colorbar(im, ax=ax,ticks=collect(1:Nmax), boundaries=collect(1:Nmax+1).-0.5)
-    else
-        f.colorbar(im, ax=ax)
-    end
-end
-
-

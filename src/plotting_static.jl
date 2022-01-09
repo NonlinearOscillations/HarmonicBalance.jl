@@ -399,7 +399,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
                 ncol = nsols
             end
         end   
-        f,ax = subplots(nrow,ncol,figsize=(4*nx,4*ny)) 
+        f,ax = subplots(nrow,ncol,figsize=(4*nrow,4*ncol)) 
 
         if ncol==1 
             ax = _add_dim!([ax])

@@ -353,7 +353,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     var_names = _get_var_name_labels(res) #variable names for plot labels
 
     if isnothing(z) Z = res.solutions else Z =  transform_solutions(res, z) end # first transform, then filter
-    physical_solutions = real.(filter_solutions.(Z,res.classes["physical"]))
+    Z = real.(filter_solutions.(Z,res.classes["physical"]))
     
     local map_s #isolate mapping from plot_only array
     if !isnothing(plot_only)

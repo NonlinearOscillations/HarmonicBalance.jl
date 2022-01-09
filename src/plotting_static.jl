@@ -2,6 +2,7 @@ using PyPlot
 using PyCall
 using Latexify
 using JLD2
+using Base
 export plot_1D_solutions, plot_2D_phase_diagram, transform_solutions
 export _set_plotting_settings, _prepare_colorbar, _prettify_label
 
@@ -380,9 +381,15 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
         if isnothing(z)
             f,ax = subplots(nsols,nvar,figsize=(4*nvar,4*nsols))
         else
-            if Base.@isdefined map_s  Npanels = 1 else  Npanels = nsols end
+            if Base.@isdefined map_s 
+                 Npanels = 1 
+            else 
+                Npanels = nsols
+             end
             f,ax = subplots(1,Npanels,figsize=(4*Npanels,4))
-            if Npanels==1 ax = _add_dim!([ax]) end
+            if Npanels==1 
+                ax = _add_dim!([ax])
+            end
         end    
     end
     
@@ -427,7 +434,9 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
 
     f.tight_layout()
 
-    if !isnothing(filename)  JLD2.save(_jld2_name(filename), save_dict)  end
+    if !isnothing(filename) 
+         JLD2.save(_jld2_name(filename), save_dict) 
+    end
 
 end
 

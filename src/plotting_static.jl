@@ -367,12 +367,12 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     end
     
     if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
-        physical_sols     = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
+        physical_sols     = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nvar,nsols,length(x),length(y))
     else #transformation of solution is requested
         if Base.@isdefined map_s#class is a multi-solution mapping. Apply only after filtering
             physical_sols = map_multi_solutions(Z,map_s; real_function=true)
         else
-            physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nsols,length(x),length(y))
+            physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nsols,length(x),length(y))
         end
     end
     

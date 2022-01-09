@@ -416,13 +416,13 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
                 ax[1].text(0.05, 0.9, string(Symbol(map_s)),c="w", transform=ax[1].transAxes,fontsize=14)
             else
                 a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
+                ax[l].set_title(string("solution ",l),fontsize=18)
             end    
             colorbar(a,ax=ax[l])
             if !isnothing(filename)
                 save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
                                                         string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
             end
-            ax[l].set_title(string("solution ",l),fontsize=18)
         end
         f.suptitle(Latexify.latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
         

@@ -115,9 +115,9 @@ function map_multi_solutions(solution,mapping=nothing; real_function=true)
     isempty(methods(mapping)) && error("mapping is not a Julia function") #sanity check for mapping being a function
     if real_function
         @warn "imaginary parts discarded in multi-solution map"
-        return mapping.(real.(solution))
+        return mapping.(real.(filter.(!isnan,solution))) #input is a filtered solution. Remove NaN values for mapping_evaluation
     else
-        return mapping.(solution)
+        return mapping.(filter.(!isnan,solution))
     end
 end
 
@@ -340,41 +340,52 @@ Keyword arguments
 
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `z`: The function on the z axis (a string parsed into Symbolics.jl). If `z=nothing`, raw solutions are displayed
+- `plot_only`: Array of labels to filter physical solutions (e.g. "stable") and multi-solution methods if `z!=nothing` (e.g. maximum)
 """
-function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,plot_only="nothing")
+function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,plot_only=nothing)
     _set_plotting_settings()
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
     x,y = collect(values(res.swept_parameters))
     extent=[x[1],x[end],y[1],y[end]]
-
-    if isnothing(z)
-        Z = res.solutions
-    else
-        Z =   transform_solutions(res, z) # first transform, then filter
-    end
-    #transform the solution structs into tensors that are easier to handle by imshow
-    physical_solutions = real.(filter_solutions.(Z,res.classes["physical"]))
-    if plot_only=="stable"
-        physical_solutions = real.(filter_solutions.(Z,res.classes["stable"]))
-    end
-
-    if isnothing(z)
-        physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
-    else
-        physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nsols,length(x),length(y))
-    end
     var_names = _get_var_name_labels(res) #variable names for plot labels
 
-    input_ax = ax
+    if isnothing(z) Z = res.solutions else Z =  transform_solutions(res, z) end # first transform, then filter
+    physical_solutions = real.(filter_solutions.(Z,res.classes["physical"]))
+    
+    local map_s #isolate mapping from plot_only array
+    if !isnothing(plot_only)
+        for class in plot_only 
+            if  isempty(methods(class)) #class is not a multi-solution mapping
+                Z = filter_solutions.(Z, res.classes[class])
+            else !isempty(methods(class))
+                map_s = class #unpack multisolution mapping to be applied
+            end
+        end
+    end
+    
+    if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
+        physical_sols     = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
+    else #transformation of solution is requested
+        if @isdefined map_s#class is a multi-solution mapping. Apply only after filtering
+            physical_sols = map_multi_solutions(Z,map_s; real_function=true)
+        else
+            physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nsols,length(x),length(y))
+        end
+    end
+    
+    input_ax = ax #set up axes depending on input
     if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
         if isnothing(z)
             f,ax = subplots(nsols,nvar,figsize=(4*nvar,4*nsols))
         else
-            f,ax = subplots(1,nsols,figsize=(4*nsols,4))
+            if @isdefined map_s  Npanels = 1 else  Npanels = nsols end
+            f,ax = subplots(1,Npanels,figsize=(4*Npanels,4))
+            if Npanels==1 ax = _add_dim!([ax]) end
         end    
     end
-
+    
     px,py = string.(collect(keys(res.swept_parameters)))  #swept parameter strings
     if isnothing(z)
         save_dict = Dict([string("panel (",m,",",l,")")=> Dict() for m in 1:nvar for l in 1:nsols])
@@ -382,8 +393,6 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
             for l in 1:nsols 
                 a = ax[l,m].imshow(physical_sols[m,l,:,end:-1:1]',extent=extent,aspect="auto")
                 colorbar(a,ax=ax[l,m])
-                ax[l,m].set_xlabel(Latexify.latexify(px),fontsize=24); 
-                ax[l,m].set_ylabel(Latexify.latexify(py),fontsize=24); 
                 if !isnothing(filename)
                     save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
                     string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
@@ -392,25 +401,34 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
             ax[1,m].set_title(Latexify.latexify(_prettify_label(res,var_names[m])),fontsize=20)
         end
     else
-        save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:nsols])
-        for l in 1:nsols 
-            a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
+        _add_dim!([ax])
+        save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:Npanels])
+        for l in 1:Npanels
+            if @isdefined map_s
+                a = ax[l].imshow(physical_sols[:,end:-1:1]',extent=extent,aspect="auto")
+                ax[1].text(0.05, 0.9, string(Symbol(map_s)),c="w", transform=ax[1].transAxes,fontsize=14)
+            else
+                a = ax[l].imshow(physical_sols[l,:,end:-1:1]',extent=extent,aspect="auto")
+            end    
             colorbar(a,ax=ax[l])
-            ax[l].set_xlabel(Latexify.latexify(px),fontsize=24); 
-            ax[l].set_ylabel(Latexify.latexify(py),fontsize=24); 
             if !isnothing(filename)
                 save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
-                string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+                                                        string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
             end
             ax[l].set_title(string("solution ",l),fontsize=18)
         end
-        f.suptitle(Latexify.latexify(_prettify_label(res,z)),fontsize=20,y=1.01)
+        f.suptitle(Latexify.latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
+        
     end
+    for ax_ in ax
+        ax_.set_xlabel(Latexify.latexify(px),fontsize=24); 
+        ax_.set_ylabel(Latexify.latexify(py),fontsize=24); 
+    end
+
     f.tight_layout()
 
-    if !isnothing(filename)
-        JLD2.save(_jld2_name(filename), save_dict)
-    end
+    if !isnothing(filename)  JLD2.save(_jld2_name(filename), save_dict)  end
+
 end
 
 
@@ -430,7 +448,7 @@ Keyword arguments
 function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
     _set_plotting_settings()
     observable_choice = ["nsols", "binary"]
-    observable ∈ observable_choice || error("Only the following 2D observables are allowed:  ", observable_choice)
+    observable ∈ observable_choice  ||error("Only the following 2D observables are allowed:  ", observable_choice)
 
     X,Y = collect(values(res.swept_parameters))
     x,y = collect(keys(res.swept_parameters))

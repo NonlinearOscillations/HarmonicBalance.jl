@@ -368,7 +368,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
         physical_sols     = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nvar,nsols,length(x),length(y))
     else #transformation of solution is requested
-        if @isdefined map_s#class is a multi-solution mapping. Apply only after filtering
+        if Base.@isdefined map_s#class is a multi-solution mapping. Apply only after filtering
             physical_sols = map_multi_solutions(Z,map_s; real_function=true)
         else
             physical_sols = reshape(reduce(hcat,[reduce(hcat,sol) for sol in physical_solutions]),nsols,length(x),length(y))
@@ -380,7 +380,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
         if isnothing(z)
             f,ax = subplots(nsols,nvar,figsize=(4*nvar,4*nsols))
         else
-            if @isdefined map_s  Npanels = 1 else  Npanels = nsols end
+            if Base.@isdefined map_s  Npanels = 1 else  Npanels = nsols end
             f,ax = subplots(1,Npanels,figsize=(4*Npanels,4))
             if Npanels==1 ax = _add_dim!([ax]) end
         end    
@@ -404,7 +404,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
         _add_dim!([ax])
         save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:Npanels])
         for l in 1:Npanels
-            if @isdefined map_s
+            if Base.@isdefined map_s
                 a = ax[l].imshow(physical_sols[:,end:-1:1]',extent=extent,aspect="auto")
                 ax[1].text(0.05, 0.9, string(Symbol(map_s)),c="w", transform=ax[1].transAxes,fontsize=14)
             else

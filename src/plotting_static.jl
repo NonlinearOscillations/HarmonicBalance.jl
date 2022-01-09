@@ -337,6 +337,7 @@ end
 function _preprocess_2D_solutions(res::Result,z=nothing,plot_only=nothing)
     nvar  = length(res.solutions[1,1][1]) #number of variables
     nsols = length(res.solutions[1,1]) #maximum number of solutions
+    x,y = collect(values(res.swept_parameters))
 
     if isnothing(z)  Z = res.solutions   else  Z =  transform_solutions(res, z)  end # first transform, then filter
     Z = real.(filter_solutions.(Z,res.classes["physical"]))

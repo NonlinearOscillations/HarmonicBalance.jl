@@ -225,8 +225,8 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     #legend preparation
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
     Nb   = sum(.~ignored_idx) #number of branches
-    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<10) + Nb÷10*(Nb>10),
-            bbox_to_anchor=(Nb÷10 + 1, 0.95))
+    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<10) + (Nb÷10 + 1)*(Nb>10),
+            bbox_to_anchor=(Nb÷10 + 0.6, 0.95))
     ax.add_artist(leg1)
     
     h_leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type,    markerfacecolor="k", markersize=10),

@@ -390,24 +390,26 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     Z,map_s = _preprocess_2D_solutions(res,z,plot_only)
 
     input_ax = ax #set up axes depending on input
-    if isnothing(input_ax) #create figure if axes are not provided, otherwise accept input
-        if isnothing(z)  
-            nrow,ncol = nsols,nvar
-        else
-            nrow =1
-            if !isnothing(map_s)  
-                ncol = 1 
-            else 
-                ncol = nsols
-            end
-        end   
-        f,ax = subplots(nrow,ncol,figsize=(4*nrow,4*ncol)) 
-
-        if ncol==1 
-            ax = _add_dim!([ax])
-        end
+    
+    if isnothing(z)  
+        nrow,ncol = nsols,nvar
     else
-        length(vec(input_ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
+        nrow =1
+        if !isnothing(map_s)  
+            ncol = 1 
+        else 
+            ncol = nsols
+        end
+    end  
+
+    if isnothing(input_ax) 
+        f,ax = subplots(nrow,ncol,figsize=(4*ncol,4*nrow)) #create figure if axes are not provided, otherwise accept input
+    else
+        length(vec(input_ax)) <= nrow*ncol || error("insufficient # of panels requested, please increase #rows or #cols") #sanity check before any plot is made
+    end    
+
+    if ncol==1 
+        ax = _add_dim!([ax])
     end
     
     px,py = string.(collect(keys(res.swept_parameters)))  #swept parameter strings

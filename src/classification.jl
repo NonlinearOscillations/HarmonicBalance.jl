@@ -110,7 +110,7 @@ on its permutation of stable branches (allows to distinguish between different p
 of stable solutions). It works by converting each bistring `[is_stable(solution_1),is_stable(solution_2),...,]` into unique labels.
 """
 function classify_binaries!(res::Result)
-    bin_label  = bitarr_to_int.(res.classes["stable"]) #mapping of binary string (stable or not) for each solution set to integer. Sensitive to ordering!
+    bin_label  = bitarr_to_int.(clean_bitstrings(res)) #mapping of binary string (stable or not) for each solution set to integer. Sensitive to ordering!
     #renormalize labels with numbers from 1 to length(unique(label))
     for (idx,el) in enumerate(unique(bin_label))
         bin_label[findall(x->x==el, bin_label)] .= idx
@@ -118,6 +118,10 @@ function classify_binaries!(res::Result)
     res.classes["binary_labels"] = bin_label
 end
 
+clean_bitstrings(res::Result) = vec([[el for el in bit_string[phys_string]] 
+for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])]); #remove unphysical solutions from strings
+
 function bitarr_to_int(arr)
     return sum(arr .* (2 .^ collect(length(arr)-1:-1:0)))
 end
+

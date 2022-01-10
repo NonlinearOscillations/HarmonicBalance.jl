@@ -354,12 +354,14 @@ function _preprocess_2D_solutions(res::Result,z=nothing,plot_only=nothing)
     end
 
     if isnothing(z) #quantity to plot depending on the input. Transform the solution structs into tensors that are easier to handle by imshow
-            Z  = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nvar,nsols,length(x),length(y))
+        Z  = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nvar,nsols,length(x),length(y))
+        map_s = nothing
     else #transformation of solution is requested
         if Base.@isdefined map_s#class is a multi-solution mapping. Apply only after filtering
             Z = map_multi_solutions(Z,map_s; real_function=true)
         else
             Z = reshape(reduce(hcat,[reduce(hcat,sol) for sol in Z]),nsols,length(x),length(y))
+            map_s = nothing
         end
     end
     Z,map_s
@@ -393,7 +395,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
             nrow,ncol = nsols,nvar
         else
             nrow =1
-            if Base.@isdefined map_s  
+            if !isnothing(map_s)  
                 ncol = 1 
             else 
                 ncol = nsols
@@ -425,7 +427,7 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
     else #plot transformed solutions or functions thereof
         save_dict = Dict([string("panel (",l,")")=> Dict() for l in 1:ncol])
         for l in 1:ncol
-            if Base.@isdefined map_s
+            if !isnothing(map_s)
                 a = ax[l].imshow(Z[:,end:-1:1]',extent=extent,aspect="auto")
                 ax[1].text(0.05, 0.9, string(Symbol(map_s)),c="w", transform=ax[1].transAxes,fontsize=14)
             else

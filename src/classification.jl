@@ -118,8 +118,8 @@ function classify_binaries!(res::Result)
     res.classes["binary_labels"] = bin_label
 end
 
-clean_bitstrings(res::Result) = vec([[el for el in bit_string[phys_string]] 
-for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])]); #remove unphysical solutions from strings
+clean_bitstrings(res::Result) = [[el for el in bit_string[phys_string]] 
+for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])]; #remove unphysical solutions from strings
 
 function bitarr_to_int(arr)
     return sum(arr .* (2 .^ collect(length(arr)-1:-1:0)))

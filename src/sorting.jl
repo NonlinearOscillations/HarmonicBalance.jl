@@ -14,7 +14,7 @@ The output is a similar array, with each solution set rearranged such that neigh
 
 """
 function sort_solutions(solutions::Array; sorting="hilbert")
-    sorting_schemes = ["none", "hilbert", "naive"]
+    sorting_schemes = ["none", "hilbert", "nearest"]
     sorting ∈ sorting_schemes || error("Only the following sorting options are allowed:  ", sorting_schemes)
     sorting == "none" && return solutions
      l = length(size(solutions))
@@ -162,12 +162,12 @@ function get_nn_2D(idx::Vector{Int64},Nx::Int64,Ny::Int64)
 end
 
 
-function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="naive") 
+function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest") 
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
      #determine a trajectory in 2D space where nodes will be visited
     if sorting=="hilbert" #propagating matching of solutions along a hilbert_curve in 2D
         idx_pairs = hilbert_indices(solns)
-    elseif sorting=="naive" #propagate matching of solutions along rows
+    elseif sorting=="nearest" #propagate matching of solutions along rows
         idx_pairs = naive_indices(solns)
     end
 

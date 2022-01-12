@@ -177,10 +177,11 @@ Keyword arguments
     If instead `cut_type=transform`, functions of the solution variables passed to `string_f` (see below) are displayed.
 - `string_f`: list of strings for transformed observables to be plotted in 1D when `cut_type=transform`, e.g. `string_f=["sqrt(u1^2 + v1^2)","sqrt(u2^2 + v2^2)"]` for `Problem` variables `u1,u2,v1,v2`.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
-
+- `ylim`: vertical limits for 1D cuts
 """
-function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stable=false,nrows=2,ncols=2,cut_dim="1",cut_type="solutions",string_f=nothing,marker_classification="stable")
+function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsols", stable::Bool=false,nrows::Int64=2,ncols::Int64=2,cut_dim::String="1",cut_type::String="solutions",string_f=nothing,marker_classification="stable",ylim::Vector{Float64}=nothing)
     pygui(true) #opens a separate window
+
     _set_plotting_settings()
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
     rcParams["text.usetex"] = false #cannot be set globally as it seems to conflict with pygui(true)
@@ -277,6 +278,14 @@ function plot_2D_phase_diagram_interactive(res::Result; observable="nsols", stab
                 ax[l+1].plot(Z,_squeeze!(solution_cut_u[l]'),ls="--",lw=3)
             end
         end    
+
+        if !isnothing(ylim)
+            for (l,ax_) in enumerate(ax)
+                if l>1 
+                    ax_.set_ylim(ylim)
+                end
+            end
+        end
         
         legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label=lab[1], markerfacecolor="k", markersize=5),
                            plt.Line2D([1], [1], linestyle="--", color="k", label=lab[2],markerfacecolor="k", markersize=5)]    

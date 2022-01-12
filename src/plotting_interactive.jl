@@ -179,7 +179,7 @@ Keyword arguments
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 - `ylim`: vertical limits for 1D cuts
 """
-function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsols", stable::Bool=false,nrows::Int64=2,ncols::Int64=2,cut_dim::String="1",cut_type::String="solutions",string_f=nothing,marker_classification="stable",ylim::Vector{Any}=nothing)
+function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsols", stable::Bool=false,nrows::Int64=2,ncols::Int64=2,cut_dim::String="1",cut_type::String="solutions",string_f=nothing,marker_classification="stable",ylim=nothing)
     pygui(true) #opens a separate window
 
     _set_plotting_settings()

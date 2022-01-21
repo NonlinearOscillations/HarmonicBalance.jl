@@ -256,7 +256,7 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
     n_dof     = length(var_names)÷2
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(5*(2*n_dof),5),tight_layout=true)
     for i = 0:n_dof-1
         us = transform_solutions(res, var_names[2*i+1])
         vs = transform_solutions(res, var_names[2*i+2])
@@ -281,8 +281,9 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
             ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:],lw=3)
             ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--",lw=3)
         end
-        ax.set_xlabel(latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24)
-        ax.set_ylabel(latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24)
+        ax.set_xlabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24,labelpad=15)
+        ax.set_ylabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24,labelpad=15)
+        ax.set_zlabel( HarmonicBalance.latexify(z),fontsize=24,labelpad=15) 
 
         ax.set_zscale(zscale)
 

@@ -292,7 +292,7 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
         if n_dof==1
             ax = _add_dim!([ax])
         end
-        ax[1].legend(handles=legend_elements,loc="best") 
+        ax.legend(handles=legend_elements,loc="best") 
     end
 end
 

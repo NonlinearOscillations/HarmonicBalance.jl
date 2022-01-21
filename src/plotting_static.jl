@@ -171,7 +171,7 @@ Keyword arguments
 - `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
 - `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
 - `marker`: The point marker to use.
-- `xscale`, `yscale` = x_scale.
+- `xscale`, `yscale`: scale for x/y dimensions (e.g. "linear" or "log")
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
@@ -236,6 +236,62 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()
+end
+
+"""
+plot_1D_solutions_spaghetti(res::Result; 
+                        z::String,
+                        filename=nothing)
+
+Produces a "spaghetti plot" of 1D `Result`object`, with harmonic variables in a given plane and the parameter `z` in the perpendicular dimension
+
+Keyword arguments
+- `z`: Parameter expression to plot on as dependent variables z (parsed into Symbolics.jl).
+- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
+- `zscale`: scale for z dimension (e.g. "linear" or "log")
+"""
+
+function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
+    var_names = [string(v) for v in res.problem.variables]
+    n_dof     = length(var_names)÷2
+
+    fig = plt.figure()
+    for i = 0:n_dof-1
+        us = transform_solutions(res, var_names[2*i+1])
+        vs = transform_solutions(res, var_names[2*i+2])
+        zs  = reduce(hcat,transform_solutions(res, z))
+
+        #stable solutions
+        uS = filter_solutions.(filter_solutions.(us, res.classes["physical"]), data[1.0].classes["stable"])
+        vS = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), data[1.0].classes["stable"])
+        #unstable solutions
+        uU = filter_solutions.(filter_solutions.(us, res.classes["physical"]), [.!el for el in data[1.0].classes["stable"]])
+        vU = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), [.!el for el in data[1.0].classes["stable"]])
+
+        #transform into array for easier handling
+        uS = reduce(hcat,uS)
+        vS = reduce(hcat,vS);
+
+        uU = reduce(hcat,uU)
+        vU = reduce(hcat,vU);
+
+        ax = fig[:add_subplot](1,n_dof,i+1, projection="3d")    
+        for i in 1:3
+            ax.plot(real.(u1sS[i,:]),real.(v1sS[i,:]),ωs[i,:],lw=3)
+            ax.plot(real.(u1sU[i,:]),real.(v1sU[i,:]),ωs[i,:],ls="--",lw=3)
+        end
+        ax.set_xlabel(latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24)
+        ax.set_ylabel(latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24)
+
+        ax.set_zscale(zscale)
+
+        legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
+                           plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]    
+
+        if n_dof==1
+            ax = _add_dim!([ax])
+        end
+        ax[1].legend(handles=legend_elements,loc="best") 
 end
 
 

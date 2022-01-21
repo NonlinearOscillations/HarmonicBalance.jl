@@ -294,6 +294,7 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
         end
         ax.legend(handles=legend_elements,loc="best") 
     end
+    fig.tight_layout()
 end
 
 

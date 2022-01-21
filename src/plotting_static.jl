@@ -254,6 +254,7 @@ Keyword arguments
 function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
     var_names = [string(v) for v in res.problem.variables]
     n_dof     = length(var_names)÷2
+    nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
 
     fig = plt.figure()
     for i = 0:n_dof-1
@@ -262,11 +263,11 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
         zs  = reduce(hcat,transform_solutions(res, z))
 
         #stable solutions
-        uS = filter_solutions.(filter_solutions.(us, res.classes["physical"]), data[1.0].classes["stable"])
-        vS = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), data[1.0].classes["stable"])
+        uS = filter_solutions.(filter_solutions.(us, res.classes["physical"]), res.classes["stable"])
+        vS = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), res.classes["stable"])
         #unstable solutions
-        uU = filter_solutions.(filter_solutions.(us, res.classes["physical"]), [.!el for el in data[1.0].classes["stable"]])
-        vU = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), [.!el for el in data[1.0].classes["stable"]])
+        uU = filter_solutions.(filter_solutions.(us, res.classes["physical"]), [.!el for el in res.classes["stable"]])
+        vU = filter_solutions.(filter_solutions.(vs, res.classes["physical"]), [.!el for el in res.classes["stable"]])
 
         #transform into array for easier handling
         uS = reduce(hcat,uS)
@@ -276,9 +277,9 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
         vU = reduce(hcat,vU);
 
         ax = fig[:add_subplot](1,n_dof,i+1, projection="3d")    
-        for i in 1:3
-            ax.plot(real.(u1sS[i,:]),real.(v1sS[i,:]),ωs[i,:],lw=3)
-            ax.plot(real.(u1sU[i,:]),real.(v1sU[i,:]),ωs[i,:],ls="--",lw=3)
+        for i in 1:nsolsmax
+            ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:],lw=3)
+            ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--",lw=3)
         end
         ax.set_xlabel(latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24)
         ax.set_ylabel(latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24)
@@ -292,6 +293,7 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
             ax = _add_dim!([ax])
         end
         ax[1].legend(handles=legend_elements,loc="best") 
+    end
 end
 
 

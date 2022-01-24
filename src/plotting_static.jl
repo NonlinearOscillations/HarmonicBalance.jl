@@ -249,9 +249,10 @@ Keyword arguments
 - `z`: Parameter expression to plot on as dependent variables z (parsed into Symbolics.jl).
 - `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
 - `zscale`: scale for z dimension (e.g. "linear" or "log")
+- `zaspect`: aspect ratio for the parameter dimension
 """
 
-function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
+function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
     var_names = [string(v) for v in res.problem.variables]
     n_dof     = length(var_names)÷2
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
@@ -288,12 +289,16 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear")
         ax.set_zscale(zscale)
 
         legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
-                           plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]    
+                           plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]  
 
+        ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         if n_dof==1
             ax = _add_dim!([ax])
         end
-        ax.legend(handles=legend_elements,loc="best") 
+        ax[1].legend(handles=legend_elements,loc="best") 
+        ax.set_box_aspect((1, 1, zaspect))
     end
     fig.tight_layout()
 end

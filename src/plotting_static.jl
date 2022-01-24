@@ -288,8 +288,6 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
 
         ax.set_zscale(zscale)
 
-        legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
-                           plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]  
 
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -297,7 +295,11 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
         if n_dof==1
             ax = _add_dim!([ax])
         end
-        ax[1].legend(handles=legend_elements,loc="best") 
+
+
+        #legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
+        #                   plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]  
+        #ax[1].legend(handles=legend_elements,loc="best") 
         ax.set_box_aspect((1, 1, zaspect))
     end
     fig.tight_layout()

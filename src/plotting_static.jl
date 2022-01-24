@@ -258,6 +258,10 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
 
     fig = plt.figure(figsize=(5*(2*n_dof),5),tight_layout=true)
+
+    legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
+                           plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]  
+
     for i = 0:n_dof-1
         us = transform_solutions(res, var_names[2*i+1])
         vs = transform_solutions(res, var_names[2*i+2])
@@ -287,19 +291,11 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
         ax.set_zlabel( HarmonicBalance.latexify(z),fontsize=24,labelpad=15) 
 
         ax.set_zscale(zscale)
-
-
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-        if n_dof==1
-            ax = _add_dim!([ax])
-        end
-
-
-        #legend_elements = [plt.Line2D([1], [1], linestyle="-", color="k", label="stable", markerfacecolor="k", markersize=5),
-        #                   plt.Line2D([1], [1], linestyle="--", color="k", label="unstable",markerfacecolor="k", markersize=5)]  
-        #ax[1].legend(handles=legend_elements,loc="best") 
+  
+        ax.legend(handles=legend_elements,loc="best") 
         ax.set_box_aspect((1, 1, zaspect))
     end
     fig.tight_layout()

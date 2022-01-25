@@ -62,7 +62,7 @@ function Problem(equations::Vector{Num},variables::Vector{Num},parameters::Vecto
     conv_para = Num_to_Variable.(parameters)
     
     eqs_HC=[Expression(eval(symbol)) for symbol in [Meta.parse(s) for s in [string(eq) for eq in equations]]] #note in polar coordinates there could be imaginary factors, requiring the extra replacement "I"=>"1im"
-    system = System(eqs_HC, variables = conv_vars, parameters = conv_para)
+    system = HomotopyContinuation.System(eqs_HC, variables = conv_vars, parameters = conv_para)
     J = jacobian(system) #all derivative are in the left hand side;
     return Problem(variables,parameters,system,J)
 end

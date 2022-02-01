@@ -14,7 +14,7 @@ Pkg.add("HarmonicBalance")
 
 ## Documentation
 
-For a detailed description of the package and examples, see the [stable documentation](https://arxiv.org/).
+For a detailed description of the package and examples, see the [documentation](https://nonlinearoscillations.github.io/HarmonicBalance.jl/).
 
 [This repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks) contains a collection of example notebooks.
 

@@ -1,8 +1,7 @@
-using Pkg
-current_path = @__DIR__
-Pkg.activate(current_path * "/../.");
+push!(LOAD_PATH, "../src/")
 
-using Documenter, HarmonicBalance
+using Documenter
+using HarmonicBalance
 
 makedocs(
 	sitename="HarmonicBalance.jl",
@@ -25,5 +24,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "https://github.com/NonlinearOscillations/HarmonicBalance-docs.git"
+    repo = "https://github.com/NonlinearOscillations/HarmonicBalance.jl"
 )

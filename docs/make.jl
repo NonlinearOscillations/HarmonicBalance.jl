@@ -24,5 +24,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "https://github.com/NonlinearOscillations/HarmonicBalance.jl"
+    repo = "github.com/NonlinearOscillations/HarmonicBalance.jl.git",
+    push_preview = false
 )

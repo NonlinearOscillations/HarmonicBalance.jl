@@ -175,11 +175,12 @@ Keyword arguments
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `col_length`: number of elements per legend column. By default 10.
 
 The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
-function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing)
+function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,col_length=10)
     _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
@@ -225,7 +226,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     #legend preparation
     ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
     Nb   = sum(.~ignored_idx) #number of branches
-    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<=10) + (Nb÷10 + 1)*(Nb>10),
+    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<=col_length) + (Nb÷col_length + 1)*(Nb>col_length),
             bbox_to_anchor=(Nb÷10 + 0.6, 0.95))
     ax.add_artist(leg1)
     

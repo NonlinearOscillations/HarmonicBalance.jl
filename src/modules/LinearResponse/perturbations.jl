@@ -56,9 +56,14 @@ end
 get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num}) = get_Jacobian(Num.(getfield.(eqs, :lhs) .- getfield.(eqs, :rhs)), vars)
 
 function get_Jacobian_steady(eom::HarmonicEquation; differential_order=0)
+    Hopf_vars = first.(getfield.(filter(x -> x.types[1] == "Hopf", eom.variables), :symbols))
+    Hopf_idx = findall(x -> any(isequal.(x, Hopf_vars)) , get_variables(eom))
+    nonsingular = filter( x -> x ∉ Hopf_idx, 1:length(get_variables(eom)))
+
     vars_simp = Dict([var => HarmonicBalance.declare_variable(var_name(var)) for var in get_variables(eom)])
     T = get_independent_variables(eom)[1]
-    J = get_Jacobian(eom.equations, d(get_variables(eom), T, differential_order))
+    J = get_Jacobian(eom.equations, d(get_variables(eom), T, differential_order))[nonsingular, nonsingular]
+    
     expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp))
 end
 

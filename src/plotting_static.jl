@@ -233,7 +233,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     
     leg = cat(leg_classes, leg_branches..., dims=1)
 
-    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95)) 
+    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95),ncol=(Nb<=col_length) + (Nb÷col_length + 1)*(Nb>col_length)) 
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()

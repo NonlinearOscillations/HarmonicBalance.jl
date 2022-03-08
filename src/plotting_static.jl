@@ -229,7 +229,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     
     leg = cat(leg_classes, leg_branches..., dims=1)
 
-    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95), kwargs...)
+    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95); kwargs...)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()
@@ -250,14 +250,14 @@ Produces a "spaghetti plot" of 1D `Result`object`, with harmonic variables in a 
 
 Keyword arguments
 - `z`: Parameter expression to plot on as dependent variables z (parsed into Symbolics.jl).
-- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
 - `zscale`: scale for z dimension (e.g. "linear" or "log")
-- `zaspect`: aspect ratio for the parameter dimension
+- `z_aspect`: aspect ratio for the parameter dimension
+- `kwargs`: any additional keywords arguments for the matplotlib plotting
 """
 
-function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
+function plot_1D_solutions_spaghetti(res,z::String,z_scale="linear",zaspect=2,kwargs...)
     var_names = [string(v) for v in res.problem.variables]
-    n_dof     = length(var_names)÷2
+    n_dof     = length(var_names)÷2 #number of harmonic variable pairs
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
 
     fig = plt.figure(figsize=(5*(2*n_dof),5),tight_layout=true)
@@ -286,14 +286,14 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
 
         ax = fig[:add_subplot](1,n_dof,i+1, projection="3d")    
         for i in 1:nsolsmax
-            ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:],lw=3)
-            ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--",lw=3)
+            ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:]; kwargs...)
+            ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--";kwargs...)
         end
         ax.set_xlabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24,labelpad=15)
         ax.set_ylabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24,labelpad=15)
         ax.set_zlabel( HarmonicBalance.latexify(z),fontsize=24,labelpad=15) 
 
-        ax.set_zscale(zscale)
+        ax.set_zscale(z_scale)
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -323,7 +323,7 @@ end
 
 
 """
-    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
+    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing,kwargs...)
 
 Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a `Result` object.
 
@@ -336,7 +336,7 @@ Keyword arguments
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
 
 """
-function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
+function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing, kwargs...)
     _set_plotting_settings()
 
     xplot = transform_solutions(res, x) #independent variable to plot
@@ -372,8 +372,8 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
         end
 
         X_plot = real.([xplot[idx][branch] for idx in 1:length(res.solutions)])
-        append!(lines_re,ax[branch].plot(X_plot,real.(λs),string(marker_re,"r")))
-        append!(lines_im,ax[branch].plot(X_plot,imag.(λs),string(marker_im,"g")))  #
+        append!(lines_re,ax[branch].plot(X_plot, real.(λs), string(marker_re,"r"); kwargs...))
+        append!(lines_im,ax[branch].plot(X_plot, imag.(λs), string(marker_im,"g"); kwargs...))  #
         ax[branch].set_title(string("solution ", branch),fontsize=12,loc="left"); 
         ax[branch].set_xlabel(latexify(string(x)),fontsize=24)
 
@@ -397,7 +397,7 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
                         markerfacecolor="r", markersize=7),
                         plt.Line2D([0], [0], marker=marker_im, color="w", label=L"\Im({\mathrm{eig}(J)})",
                         markerfacecolor="g", markersize=7)]    
-   ax[1].legend(handles=legend_elements,loc="best",fontsize=15) 
+   ax[1].legend(handles=legend_elements; kwargs...) 
 end
 
 """Take a set of conditions and multi-solution maps on solutions transformed by `z`

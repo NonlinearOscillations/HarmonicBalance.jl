@@ -160,27 +160,26 @@ end
 """
     plot_1D_solutions(res::Result; 
                         x::String, y::String, 
-                        x_scale=1.0, y_scale=1.0, 
                         marker="o",xscale="linear",yscale="linear"
                         ,plot_only=["physical"],
-                        marker_classification="stable",filename=nothing)
+                        marker_classification="stable",filename=nothing, kwargs...)
 
 Make a 1D plot of a `Result` object.    
 
 Keyword arguments
 - `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
-- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
 - `marker`: The point marker to use.
 - `xscale`, `yscale`: scale for x/y dimensions (e.g. "linear" or "log")
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
 - `col_length`: number of elements per legend column. By default 10.
+- `kwargs`: any additional keywords arguments for the matplotlib plotting
 
 The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
-function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_scale=1.0, marker="o",xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,col_length=10)
+function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,col_length=10, kwargs...)
     _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
@@ -189,8 +188,6 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     
     #retrieve data from specific branch
     relevant_indices = findall(x->x==true, [!all(isnan.(getindex.(Y, branch))) for branch in 1:length(Y[1])])
-    X = x_scale .* [p[relevant_indices] for p in X]
-    Y = y_scale .* [p[relevant_indices] for p in Y]
 
     f,ax = subplots(1,1,figsize=(7,4))
 
@@ -208,15 +205,15 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     sol_type, not_sol_type = _classify_plot_data(res, marker_classification)
 
     Ys, Yu = filter_solutions.(Y, res.classes[sol_type]), filter_solutions.(Y, [.!el for el in res.classes[sol_type]])
-    lines = ax.plot(X, Ys, marker) #Nan solutions are ignored 
+    lines = ax.plot(X, Ys, "o"; kwargs...) #Nan solutions are ignored 
     ax.set_prop_cycle(nothing) #reset color cycler state (NaN solutions aren't shown but the color cycler runs)
-    append!(lines,ax.plot(X, Yu, "X"))
+    append!(lines,ax.plot(X, Yu, "x"; kwargs...))
 
     
     if !isnothing(filename)
         xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
         markers = [line.get_marker() for line in lines]
-        marker_dict = Dict(marker=>sol_type,"X"=>not_sol_type)
+        marker_dict = Dict(marker=>sol_type,"x"=>not_sol_type)
         JLD2.save(_jld2_name(filename), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
     end
 
@@ -224,19 +221,24 @@ function plot_1D_solutions(res::Result; x::String, y::String, x_scale=1.0, y_sca
     ax.set_ylabel(latexify(_prettify_label(res,y)),fontsize=24) 
 
     #legend preparation
-    ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] #make up a legend with only non ignored entries in the plotter
+    ignored_idx = [all(isnan.(line.get_ydata())) for line in lines] # make up a legend with only non ignored entries in the plotter
     Nb   = sum(.~ignored_idx) #number of branches
-    leg1 = ax.legend(string.(collect(1:Nb)),ncol=(Nb<=col_length) + (Nb÷col_length + 1)*(Nb>col_length),
-            bbox_to_anchor=(Nb÷10 + 0.6, 0.95))
-    ax.add_artist(leg1)
-    
-    h_leg2 = [plt.Line2D([0], [0], marker=marker, color="w", label=sol_type,    markerfacecolor="k", markersize=10),
-            plt.Line2D([0], [0], marker="X"   , color="w", label=not_sol_type,markerfacecolor="k", markersize=10)] 
 
-    ax.legend(handles=h_leg2,bbox_to_anchor=(-0.25, 0.95)) 
+    palette = plt.rcParams["axes.prop_cycle"].by_key()["color"] # the currently used palette (to match legend and plot colours)
+
+    leg_classes = [plt.Line2D([0], [0]; marker="o", color="w", label=sol_type, markerfacecolor="k", kwargs...),
+            plt.Line2D([0], [0]; marker="X", color="w", label=not_sol_type,markerfacecolor="k", kwargs...)] 
+    
+    leg_branches = [plt.Line2D([0], [0]; marker="o", color="w", label=k, markerfacecolor=palette[k], kwargs...) for k in 1:Nb]
+    
+    leg = cat(leg_classes, leg_branches..., dims=1)
+
+    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95)) 
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()
+
+    return X, Ys
 end
 
 """

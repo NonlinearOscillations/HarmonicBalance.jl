@@ -34,7 +34,7 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 
 fixed = (α => 1., ω0 => 1.0, F => 0.01, η=>0.1)   # fixed parameters
 swept = ω => LinRange(0.9, 1.2, 100)           # range of parameter values
-solutions = get_steady_states(problem, swept, fixed)
+solutions = get_steady_states(harmonic_eq, swept, fixed)
 ```
 ```
 A steady state result for 100 parameter points
@@ -47,7 +47,7 @@ Classes: stable, physical, Hopf, binary_labels
 ```
 
 ```julia
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)"]);
+plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
 ```
 
 <img src="/docs/images/DuffingPlot.png" width="500">

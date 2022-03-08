@@ -203,7 +203,7 @@ function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsol
 
     length(vec(ax)) <= nrows*ncols || error("insufficient # of panels requested, please increase nrows or ncols") #sanity check before any plot is made
    
-    im,Nmax = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1])
+    _,im,Nmax = plot_2D_phase_diagram(res; stable=stable,observable=observable,ax=ax[1]) #skip saved data dictionary
 
     "Update annotations when cursor moves"
     function update_annot(ind) 

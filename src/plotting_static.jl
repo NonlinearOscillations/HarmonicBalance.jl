@@ -172,7 +172,7 @@ Keyword arguments
 - `xscale`, `yscale`: scale for x/y dimensions (e.g. "linear" or "log")
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
 - `col_length`: number of elements per legend column. By default 10.
 - `kwargs`: any additional keywords arguments for the matplotlib plotting
 
@@ -209,13 +209,10 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     ax.set_prop_cycle(nothing) #reset color cycler state (NaN solutions aren't shown but the color cycler runs)
     append!(lines,ax.plot(X, Yu, "x"; kwargs...))
 
-    
-    if !isnothing(filename)
-        xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
-        markers = [line.get_marker() for line in lines]
-        marker_dict = Dict(marker=>sol_type,"x"=>not_sol_type)
-        JLD2.save(_jld2_name(filename), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
-    end
+    xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
+    markers = [line.get_marker() for line in lines]
+    marker_dict = Dict(marker=>sol_type,"x"=>not_sol_type)
+    save_dict= Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers)
 
     ax.set_xlabel(latexify(x),fontsize=24) 
     ax.set_ylabel(latexify(_prettify_label(res,y)),fontsize=24) 
@@ -238,7 +235,11 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     ax.set_yscale(yscale)
     f.tight_layout()
 
-    return X, Ys
+    if !isnothing(filename)
+        JLD2.save(_jld2_name(filename), save_dict)
+    else
+        return save_dict
+    end
 end
 
 """
@@ -333,7 +334,7 @@ Keyword arguments
 - `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown.
 - `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues.
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
 
 """
 function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
@@ -379,16 +380,18 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
 
     end 
 
+    save_dict =  Dict(zip(["re","im"],[Dict("data"=>Dict(),"marker"=>[]) for d in ["re","im"]]))
+    for (axis,lines,marker) in zip(["re","im"],[lines_re,lines_im],[marker_re,marker_im])
+        xdata = [line.get_xdata() for line in lines]
+        ydata = [line.get_ydata() for line in lines]
+        save_dict[axis]["data"] = Dict(string(x) => xdata,string(axis," part(eig)")=>ydata)
+        save_dict[axis]["marker"] = marker
+    end
+
     if !isnothing(filename)
-        save_dict =  Dict(zip(["re","im"],[Dict("data"=>Dict(),"marker"=>[]) for d in ["re","im"]]))
-        for (axis,lines,marker) in zip(["re","im"],[lines_re,lines_im],[marker_re,marker_im])
-            xdata = [line.get_xdata() for line in lines]
-            ydata = [line.get_ydata() for line in lines]
-            save_dict[axis]["data"] = Dict(string(x) => xdata,string(axis," part(eig)")=>ydata)
-            save_dict[axis]["marker"] = marker
-        end
-        
         JLD2.save(_jld2_name(filename), save_dict)
+    else
+        return save_dict
     end
 
     legend_elements = [plt.Line2D([0], [0], marker=marker_re, color="w", label=L"\Re({\mathrm{eig}(J)})",
@@ -441,7 +444,7 @@ Make a 2D plot of each of solutions vs swept parameters for a `Result` object, o
 Keyword arguments
 
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.  Otherwise, data is returned as a dictionary.
 - `z`: The function on the z axis (a string parsed into Symbolics.jl). If `z=nothing`, raw solutions are displayed
 - `plot_only`: Array of labels to filter physical solutions (e.g. "stable") and multi-solution methods if `z!=nothing` (e.g. maximum)
 """
@@ -485,10 +488,10 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
             for l in 1:nrow
                 a = ax[l,m].imshow(Z[m,l,:,end:-1:1]',extent=extent,aspect="auto")
                 colorbar(a,ax=ax[l,m])
-                if !isnothing(filename)
-                    save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
-                              string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
-                end
+                
+                save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
+                            string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+                
             end
             ax[1,m].set_title(latexify(_prettify_label(res,var_names[m])),fontsize=20)
         end
@@ -503,10 +506,10 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
                 ax[l].set_title(string("solution ",l),fontsize=18)
             end    
             colorbar(a,ax=ax[l])
-            if !isnothing(filename)
-                save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
-                          string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
-            end
+            
+            save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
+                        string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+            
         end
         f.suptitle(latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
         
@@ -520,6 +523,8 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
 
     if !isnothing(filename) 
          JLD2.save(_jld2_name(filename), save_dict) 
+    else
+        return save_dict
     end
 end
 
@@ -542,7 +547,7 @@ Keyword arguments
 - `stable`: whether only stable solutions are depicted
 - `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
    If instead `observable="binary"`, the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.Otherwise, data is returned as a dictionary.
 
 """
 function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
@@ -584,9 +589,11 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     ax.set_ylabel(latexify(py),fontsize=24)
     ax.set_title(pd_title)
 
+    save_dict =  Dict("observable"=>observable,"data"=>im.get_array(), 
+                      string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
     if !isnothing(filename)
-        JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
-                                                 string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
+        JLD2.save(_jld2_name(filename),save_dict)
+    else
+        return save_dict,im,Nmax
     end
-    im,Nmax
 end

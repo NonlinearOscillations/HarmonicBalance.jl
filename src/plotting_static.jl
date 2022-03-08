@@ -160,7 +160,7 @@ end
 """
     plot_1D_solutions(res::Result; 
                         x::String, y::String, 
-                        marker="o",xscale="linear",yscale="linear"
+                        xscale="linear",yscale="linear"
                         ,plot_only=["physical"],
                         marker_classification="stable",filename=nothing, kwargs...)
 
@@ -168,7 +168,6 @@ Make a 1D plot of a `Result` object.
 
 Keyword arguments
 - `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
-- `marker`: The point marker to use.
 - `xscale`, `yscale`: scale for x/y dimensions (e.g. "linear" or "log")
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
@@ -210,7 +209,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
 
     xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
     markers = [line.get_marker() for line in lines]
-    marker_dict = Dict(marker=>sol_type,"x"=>not_sol_type)
+    marker_dict = Dict("o"=>sol_type,"x"=>not_sol_type)
     save_dict= Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers)
 
     ax.set_xlabel(latexify(x),fontsize=24) 
@@ -223,7 +222,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"] # the currently used palette (to match legend and plot colours)
 
     leg_classes = [plt.Line2D([0], [0]; marker="o", color="w", label=sol_type, markerfacecolor="k", kwargs...),
-            plt.Line2D([0], [0]; marker="X", color="w", label=not_sol_type,markerfacecolor="k", kwargs...)] 
+            plt.Line2D([0], [0]; marker="x", color="w", label=not_sol_type,markerfacecolor="k", kwargs...)] 
     
     leg_branches = [plt.Line2D([0], [0]; marker="o", color="w", label=k, markerfacecolor=palette[k], kwargs...) for k in 1:Nb]
     

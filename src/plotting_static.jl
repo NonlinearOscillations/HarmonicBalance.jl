@@ -173,13 +173,12 @@ Keyword arguments
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
 - `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
-- `col_length`: number of elements per legend column. By default 10.
 - `kwargs`: any additional keywords arguments for the matplotlib plotting
 
 The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
-function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,col_length=10, kwargs...)
+function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,kwargs...)
     _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
@@ -230,7 +229,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     
     leg = cat(leg_classes, leg_branches..., dims=1)
 
-    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95),ncol=(Nb<=col_length) + (Nb÷col_length + 1)*(Nb>col_length)) 
+    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95), kwargs...)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()

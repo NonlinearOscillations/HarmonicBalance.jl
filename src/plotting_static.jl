@@ -160,7 +160,7 @@ end
 """
     plot_1D_solutions(res::Result; 
                         x::String, y::String, 
-                        marker="o",xscale="linear",yscale="linear"
+                        xscale="linear",yscale="linear"
                         ,plot_only=["physical"],
                         marker_classification="stable",filename=nothing, kwargs...)
 
@@ -168,18 +168,16 @@ Make a 1D plot of a `Result` object.
 
 Keyword arguments
 - `x`, `y`: Expressions to plot on as independent/dependent variables (parsed into Symbolics.jl).
-- `marker`: The point marker to use.
 - `xscale`, `yscale`: scale for x/y dimensions (e.g. "linear" or "log")
 - `plot_only`: a list of strings corresponding to the solution classes of `Result`. Only solutions which belong to the listed classes are plotted.
 - `marker_classification`: A class of the solutions (created by `classify_solutions!`) which is distinguished with different markers. Entering an inequality creates a new class "custom_class".
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
-- `col_length`: number of elements per legend column. By default 10.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
 - `kwargs`: any additional keywords arguments for the matplotlib plotting
 
 The strings in `marker_classification` allows the user to stablish custom criteria for binary classification of solutions. For instance, if `marker_classification = "ω^15* sqrt(u1^2 + v1^2) < 0.1"`, 
 for a system with harmonic variables u1,v1, then solutions are classified as `true` according to that criterion and `false` according to its complement. 
 """
-function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,col_length=10, kwargs...)
+function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",yscale="linear",plot_only=["physical"],marker_classification="stable",filename=nothing,kwargs...)
     _set_plotting_settings()
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
@@ -209,13 +207,10 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     ax.set_prop_cycle(nothing) #reset color cycler state (NaN solutions aren't shown but the color cycler runs)
     append!(lines,ax.plot(X, Yu, "x"; kwargs...))
 
-    
-    if !isnothing(filename)
-        xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
-        markers = [line.get_marker() for line in lines]
-        marker_dict = Dict(marker=>sol_type,"x"=>not_sol_type)
-        JLD2.save(_jld2_name(filename), Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers))
-    end
+    xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]
+    markers = [line.get_marker() for line in lines]
+    marker_dict = Dict("o"=>sol_type,"x"=>not_sol_type)
+    save_dict= Dict(string(x) => xdata,string(y)=>ydata,"marker_dict"=>marker_dict,"markers"=>markers)
 
     ax.set_xlabel(latexify(x),fontsize=24) 
     ax.set_ylabel(latexify(_prettify_label(res,y)),fontsize=24) 
@@ -233,12 +228,14 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     
     leg = cat(leg_classes, leg_branches..., dims=1)
 
-    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95)) 
+    ax.legend(handles=leg, bbox_to_anchor=(-0.25, 0.95))
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     f.tight_layout()
 
-    return X, Ys
+    !isnothing(filename) ? JLD2.save(_jld2_name(filename), save_dict) : nothing
+    return save_dict
+
 end
 
 """
@@ -250,14 +247,14 @@ Produces a "spaghetti plot" of 1D `Result`object`, with harmonic variables in a 
 
 Keyword arguments
 - `z`: Parameter expression to plot on as dependent variables z (parsed into Symbolics.jl).
-- `x_scale`, `y_scale`: Factors to multiply the shown axis ticks with.
 - `zscale`: scale for z dimension (e.g. "linear" or "log")
-- `zaspect`: aspect ratio for the parameter dimension
+- `z_aspect`: aspect ratio for the parameter dimension
+- `kwargs`: any additional keywords arguments for the matplotlib plotting
 """
 
-function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
+function plot_1D_solutions_spaghetti(res,z::String,z_scale="linear",zaspect=2,kwargs...)
     var_names = [string(v) for v in res.problem.variables]
-    n_dof     = length(var_names)÷2
+    n_dof     = length(var_names)÷2 #number of harmonic variable pairs
     nsolsmax  = sum(any.(classify_branch(res, "physical"))) #maximum number of physical solutions
 
     fig = plt.figure(figsize=(5*(2*n_dof),5),tight_layout=true)
@@ -286,14 +283,14 @@ function plot_1D_solutions_spaghetti(res,z::String,zscale="linear",zaspect=2)
 
         ax = fig[:add_subplot](1,n_dof,i+1, projection="3d")    
         for i in 1:nsolsmax
-            ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:],lw=3)
-            ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--",lw=3)
+            ax.plot(real.(uS[i,:]),real.(vS[i,:]),zs[i,:]; kwargs...)
+            ax.plot(real.(uU[i,:]),real.(vU[i,:]),zs[i,:],ls="--";kwargs...)
         end
         ax.set_xlabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+1])),fontsize=24,labelpad=15)
         ax.set_ylabel( HarmonicBalance.latexify(_prettify_label(res,var_names[2*i+2])),fontsize=24,labelpad=15)
         ax.set_zlabel( HarmonicBalance.latexify(z),fontsize=24,labelpad=15) 
 
-        ax.set_zscale(zscale)
+        ax.set_zscale(z_scale)
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -323,7 +320,7 @@ end
 
 
 """
-    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing)
+    plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X", filename=nothing,kwargs...)
 
 Make a 1D plot of the Jacobian eigenvalues for each of the solutions in a `Result` object.
 
@@ -333,10 +330,10 @@ Keyword arguments
 - `physical`, `stable`: Booleans specifying whether unphysical and/or unstable solutions are shown.
 - `marker_re`, `marker_im`: The markers to use for the Re and Im parts of the eigenvalues.
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`. Otherwise, data is returned as a dictionary.
 
 """
-function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing)
+function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, stable=false,marker_re="o",marker_im="X",ax=nothing, filename=nothing, kwargs...)
     _set_plotting_settings()
 
     xplot = transform_solutions(res, x) #independent variable to plot
@@ -372,30 +369,32 @@ function plot_1D_jacobian_eigenvalues(res::Result; x::String, physical=true, sta
         end
 
         X_plot = real.([xplot[idx][branch] for idx in 1:length(res.solutions)])
-        append!(lines_re,ax[branch].plot(X_plot,real.(λs),string(marker_re,"r")))
-        append!(lines_im,ax[branch].plot(X_plot,imag.(λs),string(marker_im,"g")))  #
+        append!(lines_re,ax[branch].plot(X_plot, real.(λs), string(marker_re,"r"); kwargs...))
+        append!(lines_im,ax[branch].plot(X_plot, imag.(λs), string(marker_im,"g"); kwargs...))  #
         ax[branch].set_title(string("solution ", branch),fontsize=12,loc="left"); 
         ax[branch].set_xlabel(latexify(string(x)),fontsize=24)
 
     end 
 
+    save_dict =  Dict(zip(["re","im"],[Dict("data"=>Dict(),"marker"=>[]) for d in ["re","im"]]))
+    for (axis,lines,marker) in zip(["re","im"],[lines_re,lines_im],[marker_re,marker_im])
+        xdata = [line.get_xdata() for line in lines]
+        ydata = [line.get_ydata() for line in lines]
+        save_dict[axis]["data"] = Dict(string(x) => xdata,string(axis," part(eig)")=>ydata)
+        save_dict[axis]["marker"] = marker
+    end
+
     if !isnothing(filename)
-        save_dict =  Dict(zip(["re","im"],[Dict("data"=>Dict(),"marker"=>[]) for d in ["re","im"]]))
-        for (axis,lines,marker) in zip(["re","im"],[lines_re,lines_im],[marker_re,marker_im])
-            xdata = [line.get_xdata() for line in lines]
-            ydata = [line.get_ydata() for line in lines]
-            save_dict[axis]["data"] = Dict(string(x) => xdata,string(axis," part(eig)")=>ydata)
-            save_dict[axis]["marker"] = marker
-        end
-        
         JLD2.save(_jld2_name(filename), save_dict)
+    else
+        return save_dict
     end
 
     legend_elements = [plt.Line2D([0], [0], marker=marker_re, color="w", label=L"\Re({\mathrm{eig}(J)})",
                         markerfacecolor="r", markersize=7),
                         plt.Line2D([0], [0], marker=marker_im, color="w", label=L"\Im({\mathrm{eig}(J)})",
                         markerfacecolor="g", markersize=7)]    
-   ax[1].legend(handles=legend_elements,loc="best",fontsize=15) 
+   ax[1].legend(handles=legend_elements;) 
 end
 
 """Take a set of conditions and multi-solution maps on solutions transformed by `z`
@@ -441,7 +440,7 @@ Make a 2D plot of each of solutions vs swept parameters for a `Result` object, o
 Keyword arguments
 
 - `ax`: axis object from `PyCall.PyObject` setting the coordinate system where data will be plotted. If not given, it is created automatically.
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.  Otherwise, data is returned as a dictionary.
 - `z`: The function on the z axis (a string parsed into Symbolics.jl). If `z=nothing`, raw solutions are displayed
 - `plot_only`: Array of labels to filter physical solutions (e.g. "stable") and multi-solution methods if `z!=nothing` (e.g. maximum)
 """
@@ -485,10 +484,10 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
             for l in 1:nrow
                 a = ax[l,m].imshow(Z[m,l,:,end:-1:1]',extent=extent,aspect="auto")
                 colorbar(a,ax=ax[l,m])
-                if !isnothing(filename)
-                    save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
-                              string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
-                end
+                
+                save_dict[string("panel (",m,",",l,")")]= Dict("variable"=>var_names[m],"solution #"=>l,"data"=>a.get_array(),
+                            string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+                
             end
             ax[1,m].set_title(latexify(_prettify_label(res,var_names[m])),fontsize=20)
         end
@@ -503,10 +502,10 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
                 ax[l].set_title(string("solution ",l),fontsize=18)
             end    
             colorbar(a,ax=ax[l])
-            if !isnothing(filename)
-                save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
-                          string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
-            end
+            
+            save_dict[string("panel (",l,")")]= Dict("variable"=>z,"solution #"=>l,"data"=>a.get_array(),
+                        string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+            
         end
         f.suptitle(latexify(_prettify_label(res,z)),fontsize=18,y=1.01)
         
@@ -518,9 +517,8 @@ function plot_2D_solutions(res::Result; ax=nothing, filename=nothing, z=nothing,
 
     f.tight_layout()
 
-    if !isnothing(filename) 
-         JLD2.save(_jld2_name(filename), save_dict) 
-    end
+    !isnothing(filename) ? JLD2.save(_jld2_name(filename), save_dict) : nothing
+    return save_dict
 end
 
 """Discrete colorbar preparation for phase diagram"""
@@ -542,7 +540,7 @@ Keyword arguments
 - `stable`: whether only stable solutions are depicted
 - `observable`: reference observable to represent dynamical phases in the problem. If `observable="nsols"`, number of solutions for each point is shown. 
    If instead `observable="binary"`, the result of classification of bistrings `[is_stable(solution_1),is_stable(solution_2),...]` is presented (see `classify_binaries!(Result)` function).
-- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.
+- `filename`: if different from `nothing`, plotted data and parameter values are exported to `./filename.jld2`.Otherwise, data is returned as a dictionary.
 
 """
 function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=nothing, filename=nothing)
@@ -584,9 +582,10 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     ax.set_ylabel(latexify(py),fontsize=24)
     ax.set_title(pd_title)
 
-    if !isnothing(filename)
-        JLD2.save(_jld2_name(filename), Dict("observable"=>observable,"data"=>im.get_array(),
-                                                 string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent))
-    end
-    im,Nmax
+    save_dict =  Dict("observable"=>observable,"data"=>im.get_array(), 
+                      string("(",px,"_min ",px,"_max ",py,"_min ",py,"_max)")=>extent)
+
+    !isnothing(filename) ? JLD2.save(_jld2_name(filename),save_dict) : nothing
+    return save_dict,im,Nmax
+
 end

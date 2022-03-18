@@ -8,8 +8,11 @@ makedocs(
 	#format = Documenter.HTML(assets = [])
 	pages = [
 		"Examples" => Any[
-			"examples/ex1.md"
-			"examples/ex2.md"
+			"examples/single_Duffing.md"
+			"examples/single_parametron_1D.md"
+			"examples/single_parametron_2D.md"
+			"examples/single_parametron_time_dep.md"
+			"examples/Jacobian_spectra.md"
 			],
 		"Manual" => Any[
 			"manual/entering_eom.md"

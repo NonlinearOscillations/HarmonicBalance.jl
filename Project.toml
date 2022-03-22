@@ -40,7 +40,7 @@ Peaks = "0.4.0"
 PyCall = "1.93.0"
 PyPlot = "2.10.0"
 SymbolicUtils = "0.19.7"
-Symbolics = "4.3.0"
+Symbolics = "4.3.1"
 julia = "1.7.0"
 
 [extras]

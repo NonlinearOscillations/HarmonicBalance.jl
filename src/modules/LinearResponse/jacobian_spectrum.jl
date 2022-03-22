@@ -120,7 +120,6 @@ end
       Ω_range,
        branch::Int,
         y_offset::String="0.0",
-         y_center::Float64=0.0,
           x_scale=1.0,
            y_scale=1.0,
             logscale=false)
@@ -130,7 +129,7 @@ Performs one matrix diagonalization for each element of `Ω_range`.
 This method is faster than `plot_response` but results in errors where the noise frequency
 is far from the frequency of the harmonic variables.
 """
-function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int, y_offset::String="0.0", y_center::Float64=0.0, x_scale=1.0, y_scale=1.0, logscale=false)
+function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int, y_offset::String="0.0", x_scale=1.0, y_scale=1.0, logscale=false)
     
 
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
@@ -140,19 +139,20 @@ function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int
     X = Vector{Float64}(collect(values(res.swept_parameters))[1][stability])
 
     offset = Vector{Float64}(getindex.(transform_solutions(res, y_offset), branch))[stability] 
-    
+
     # only get spectra of the stable points!
     spectra = [JacobianSpectrum(res, branch=branch, index = i) for i in (1:length(res.solutions))[stability]]
-    Y = Array{Float64, 2}(undef,  length(Ω_range), length(X))
+    C = Array{Float64, 2}(undef,  length(Ω_range)-1, length(X)-1)
 
-    for ij in CartesianIndices(Y)
-        Y[ij] = abs(evaluate(spectra[ij[2]][nat_var], reverse(Ω_range)[ij[1]] - (y_center-offset[ij[2]])))
+    for ij in CartesianIndices(C)
+        C[ij] = abs(evaluate(spectra[ij[2]][nat_var], Ω_range[ij[1]] - offset[ij[2]]))
     end
-    X = x_scale .* X
-    Y = logscale ? log.(Y) : Y
-    Ω_range, y_center = y_scale .* Ω_range, y_scale * y_center
-    plt = PyPlot.imshow(Y, aspect="auto", extent=[X[1], X[end], Ω_range[1]-y_center, Ω_range[end]-y_center])
+    x_mat = x_scale * hcat([x*ones(length(Ω_range)) for x in X]...)
+    y_mat = y_scale * hcat([Ω_range for j=1:length(X)]...)
+    C = logscale ? log.(C) : C
+
+    PyPlot.pcolormesh(x_mat, y_mat, C)
     xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))));
-    ylabel("noise angular frequency - " * y_offset);
-    return plt
+    ylabel("noise angular frequency - " * latexify(y_offset));
+    return C
 end

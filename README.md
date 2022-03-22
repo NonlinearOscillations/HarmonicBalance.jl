@@ -18,7 +18,7 @@ For a detailed description of the package and examples, see the [documentation](
 
 [This repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks) contains a collection of example notebooks.
 
-## Simple example
+## [Simple example](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/examples/single_Duffing/)
 Let's find the steady states of a driven Duffing oscillator with nonlinear damping, its equation of motion is:
 
 <img src="/docs/images/DuffingEq.png" width="450">

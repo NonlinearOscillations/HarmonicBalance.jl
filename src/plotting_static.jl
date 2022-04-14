@@ -220,6 +220,7 @@ function plot_1D_solutions(res::Result; x::String, y::String, xscale="linear",ys
     Nb   = sum(.~ignored_idx) #number of branches
 
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"] # the currently used palette (to match legend and plot colours)
+    palette = repeat(plt.rcParams["axes.prop_cycle"].by_key()["color"],Nb ÷ length(palette) + 1)[1:Nb]
 
     leg_classes = [plt.Line2D([0], [0]; marker="o", color="w", label=sol_type, markerfacecolor="k", kwargs...),
             plt.Line2D([0], [0]; marker="X", color="w", label=not_sol_type,markerfacecolor="k", kwargs...)] 

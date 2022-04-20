@@ -5,14 +5,19 @@ using HarmonicBalance
 
 makedocs(
 	sitename="HarmonicBalance.jl",
-	#format = Documenter.HTML(assets = [])
+	format = Documenter.HTML(mathengine=MathJax()),
 	pages = [
+		"Background" => Any[
+			"background/harmonic_balance.md"
+			"background/stability_response.md"
+		],
 		"Examples" => Any[
 			"examples/single_Duffing.md"
+			"examples/linear_response.md"
+			"examples/time_dependent.md"
 			"examples/single_parametron_1D.md"
 			"examples/single_parametron_2D.md"
 			"examples/single_parametron_time_dep.md"
-			"examples/Jacobian_spectra.md"
 			],
 		"Manual" => Any[
 			"manual/entering_eom.md"

@@ -1,4 +1,4 @@
-# Linear response
+# [Linear response](@id linresp_man)
 
 This module currently has two goals. One is calculating the Jacobian, used to obtain stability and approximate (but inexpensive) the linear response of steady states. The other is calculating the full response matrix as a function of frequency; this is more accurate but more expensive. 
 

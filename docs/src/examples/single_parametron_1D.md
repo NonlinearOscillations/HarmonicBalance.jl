@@ -1,4 +1,4 @@
-# Parametrically driven Duffing resonator
+# [Parametrically driven Duffing resonator](@id parametron)
 
 One of the most famous effects displaced by nonlinear oscillators is parametric resonance, where the frequency of the linear resonator is modulated in time 
 [Phys. Rev. E 94, 022201 (2016)](https://doi.org/10.1103/PhysRevE.94.022201). In the following we analyse this system, governed by the equations

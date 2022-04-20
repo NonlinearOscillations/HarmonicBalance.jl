@@ -152,7 +152,9 @@ function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int
     C = logscale ? log.(C) : C
 
     PyPlot.pcolormesh(x_mat, y_mat, C)
-    xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))));
-    ylabel("noise angular frequency - " * latexify(y_offset));
+    xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))), fontsize=24);
+
+    y_label = y_offset=="0.0" ? "noise " * latexify("ω") : "noise " * latexify("ω") * " - " * latexify(y_offset)
+    ylabel(y_label, fontsize=24, fontname="Times");
     return C
 end

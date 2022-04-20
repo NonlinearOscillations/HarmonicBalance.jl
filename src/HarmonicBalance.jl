@@ -6,6 +6,7 @@ module HarmonicBalance
     export *
     export @variables
     export d
+    export plot
     using Symbolics
     import SymbolicUtils: Term, Add, Div, Mul, Pow, Sym
     using DocStringExtensions

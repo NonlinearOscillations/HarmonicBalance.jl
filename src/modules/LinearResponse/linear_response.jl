@@ -79,7 +79,10 @@ function plot_response(res::Result, Ω_range; branch::Int, logscale=false)
     Y = Array{Float64, 2}(undef,  length(Ω_range), length(X))
 
     # this could be optimized by not grabbing the entire huge dictionary every time
+
+    bar = Progress(length(Y), 1, "Solving the linear response ODE for each solution and input frequency ... ", 50)
     for j in 1:(size(Y)[2])
+        next!(bar)
         s = get_single_solution(res, branch=branch, index=j)
         for i in 1:(size(Y)[1])
             Y[i,j] = get_response(response, s, reverse(Ω_range)[i])

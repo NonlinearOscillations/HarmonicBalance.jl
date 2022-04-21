@@ -8,6 +8,7 @@ module HarmonicBalance
     export d
     export plot
     using Symbolics
+    using ProgressMeter
     import SymbolicUtils: Term, Add, Div, Mul, Pow, Sym
     using DocStringExtensions
 

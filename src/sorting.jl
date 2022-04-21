@@ -113,7 +113,10 @@ Go through a vector of solution and sort each according to Euclidean norm.
 function sort_1D(solns::Vector{Vector{SteadyState}})
     sorted_solns = similar(solns) # preallocate
     sorted_solns[1] = sort(solns[1], by= x->abs.(imag(x))) # prefer real solution at first position
+
+    bar = Progress(length(solns), 1, "Ordering solutions into branches ...")
     for (i, soln) in enumerate(solns[1:end-1])
+        next!(bar)
         matched_indices = align_pair(sorted_solns[i], solns[i+1]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution
         sorted_solns[i+1] = (solns[i+1])[next_indices]
@@ -124,16 +127,16 @@ end
 function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     """Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
     Lx,Ly = size(solns) 
-    mapping = [] #compute mapping between Hilbert indices and 2Ds
-    for j in 1:Ly #length of parameter sweep 1
-        for i in 1:Lx #length of parameter sweep 2
+    mapping = [] # compute mapping between Hilbert indices and 2Ds
+    for j in 1:Ly # length of parameter sweep 1
+        for i in 1:Lx # length of parameter sweep 2
             X = [i, j]
             h = encode_hilbert(Simple2D(Int), X)
             X .= 0
             push!(mapping,(h=>decode_hilbert!(Simple2D(Int), X, h)))
         end 
     end
-    idx_pairs = [el[2] for el in sort(mapping)] #sort along the Hilbert curve. Now we can iterate over these indexes
+    idx_pairs = [el[2] for el in sort(mapping)] # sort along the Hilbert curve. Now we can iterate over these indexes
 end
 
 function naive_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
@@ -164,16 +167,19 @@ end
 
 function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest") 
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
-     #determine a trajectory in 2D space where nodes will be visited
-    if sorting=="hilbert" #propagating matching of solutions along a hilbert_curve in 2D
+     # determine a trajectory in 2D space where nodes will be visited
+    if sorting=="hilbert" # propagating matching of solutions along a hilbert_curve in 2D
         idx_pairs = hilbert_indices(solns)
-    elseif sorting=="nearest" #propagate matching of solutions along rows
+    elseif sorting=="nearest" # propagate matching of solutions along rows
         idx_pairs = naive_indices(solns)
     end
 
-    sorted_solns = Inf.*copy(solns)  #infinite solutions are ignored by the align_pair function. This trick allows a consistent ordering "propagation"
+    sorted_solns = Inf.*copy(solns)  # infinite solutions are ignored by the align_pair function. This trick allows a consistent ordering "propagation"
     sorted_solns[1,1] = sort(solns[1,1], by= x->abs.(imag(x))) # prefer real solution at first position
+
+    bar = Progress(length(idx_pairs), 1, "Ordering solutions into branches ...")
     for i in 1:length(idx_pairs)-1 
+        next!(bar)
         neighbors =  get_nn_2D(idx_pairs[i+1],size(solns,1),size(solns,2))
         reference = [sorted_solns[ind...] for ind in neighbors]
         matched_indices = align_pair(reference, solns[idx_pairs[i+1]...]) # pairs of matching indices

@@ -7,6 +7,7 @@ module LinearResponse
     using ..HarmonicBalance
     using ..HC_wrapper
     using PyPlot
+    using ProgressMeter
     using DocStringExtensions
     using Latexify
 

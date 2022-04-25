@@ -144,15 +144,20 @@ function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int
     spectra = [JacobianSpectrum(res, branch=branch, index = i) for i in (1:length(res.solutions))[stability]]
     C = Array{Float64, 2}(undef,  length(Ω_range)-1, length(X)-1)
 
+    bar = Progress(length(CartesianIndices(C)), 1, "Diagonalizing the Jacobian for each solution ... ", 50)
     for ij in CartesianIndices(C)
         C[ij] = abs(evaluate(spectra[ij[2]][nat_var], Ω_range[ij[1]] - offset[ij[2]]))
+        next!(bar)
     end
+
     x_mat = x_scale * hcat([x*ones(length(Ω_range)) for x in X]...)
     y_mat = y_scale * hcat([Ω_range for j=1:length(X)]...)
     C = logscale ? log.(C) : C
 
     PyPlot.pcolormesh(x_mat, y_mat, C)
-    xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))));
-    ylabel("noise angular frequency - " * latexify(y_offset));
+    xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))), fontsize=24);
+
+    y_label = y_offset=="0.0" ? "noise " * latexify("ω") : "noise " * latexify("ω") * " - " * latexify(y_offset)
+    ylabel(y_label, fontsize=24, fontname="Times");
     return C
 end

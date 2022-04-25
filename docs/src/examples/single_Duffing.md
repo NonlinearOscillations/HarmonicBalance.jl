@@ -1,4 +1,4 @@
-# Introduction: the Duffing oscillator
+# [Introduction: the Duffing oscillator](@id Duffing)
 
 Here we show the workflow of HarmonicBalance.jl on a simple example - the driven Duffing oscillator.
 
@@ -7,7 +7,7 @@ Here we show the workflow of HarmonicBalance.jl on a simple example - the driven
 The equation of motion for the displacement $x(t)$ reads
 
 ```math
-\begin{equation}
+\begin{equation} \label{eq:duffing}
 \underbrace{\ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t)}_{\text{damped harmonic oscillator}} + \underbrace{\alpha x(t)^3}_{\text{Duffing coefficient}} = \underbrace{F \cos(\omega t)}_{\text{periodic drive}}
 \end{equation}
 ```
@@ -30,7 +30,7 @@ Fortunately, some harmonics are more important than others. By truncating the in
 ```math
 x(t) = U \cos(\omega t) + V \sin(\omega t) \,,
 ```
-which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quadratures ``U`` and ``V`` to be constant then reduces the differential equation (1) to two coupled cubic polynomial equations (for more details on this step, see the appendices in [https://arxiv.org/abs/2202.00571](https://arxiv.org/abs/2202.00571)). Finding the roots of coupled polynomials is in general very hard. We here apply the method of homotopy continuation, as implemented in [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/) which is guaranteed to find the complete set of roots.
+which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quadratures ``U`` and ``V`` to be constant then reduces the differential equation \eqref{eq:duffing} to two coupled cubic polynomial equations (for more details on this step, see the appendices in [https://arxiv.org/abs/2202.00571](https://arxiv.org/abs/2202.00571)). Finding the roots of coupled polynomials is in general very hard. We here apply the method of homotopy continuation, as implemented in [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/) which is guaranteed to find the complete set of roots.
 
 ## The code
 
@@ -39,7 +39,7 @@ First we need to declare the symbolic variables (the excellent [Symbolics.jl](ht
 using HarmonicBalance
 @variables α, ω, ω0, F, t, γ, x(t) # declare constant variables and a function x(t)
 ```
-Next, we have to input Eq.(1). This will be stored as a `DifferentialEquation`. The input needs to specify that only `x` is a mathematical variable, the other symbols are parameters:
+Next, we have to input Eq.\eqref{eq:duffing}. This will be stored as a `DifferentialEquation`. The input needs to specify that only `x` is a mathematical variable, the other symbols are parameters:
 ```julia
 diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + γ*d(x,t) ~ F*cos(ω*t), x)
 ```
@@ -107,8 +107,9 @@ We now want to visualize the results. Here we plot the solution amplitude, ``\sq
 plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="/../assets/duffing_single.png" width="450" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/duffing_single.png" width="450" alignment="center" \>
 ``` ⠀
+
 This is the expected [response curve](https://en.wikipedia.org/wiki/Duffing_equation#Frequency_response) for the Duffing equation.
 
 

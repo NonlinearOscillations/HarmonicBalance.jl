@@ -1,6 +1,7 @@
 <img src="https://user-images.githubusercontent.com/58295890/146517756-dc4692f7-6b79-4309-a04a-94008bab3517.png" width="750" align="top">
 
 ![tests](https://github.com/NonlinearOscillations/HarmonicBalance.jl/workflows/Run%20tests/badge.svg?branch=master)
+[![docs](https://img.shields.io/badge/docs-online-blue.svg)](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/)
 
 **HarmonicBalance.jl** is a Julia package for solving nonlinear differential equations using the method of harmonic balance.
 

@@ -263,7 +263,9 @@ function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsol
         if cut_type=="solutions" 
             for l in 1:nvars      
                 ax[l+1].plot(Z, _squeeze!(solution_cut_s[l,:,:]'),lw=3)
-                ax[l+1].plot(Z, _squeeze!(solution_cut_u[l,:,:]'),ls="--",lw=3)
+                if !stable
+                    ax[l+1].plot(Z, _squeeze!(solution_cut_u[l,:,:]'),ls="--",lw=3)
+                end
             end    
         elseif cut_type=="jacobian_eigenvalues"
             for l in 1:nsolsmax
@@ -275,7 +277,9 @@ function plot_2D_phase_diagram_interactive(res::Result; observable::String="nsol
         elseif cut_type=="transform"  
             for l in 1:length(string_f)
                 ax[l+1].plot(Z,_squeeze!(solution_cut_s[l]'),ls="-",lw=3)
-                ax[l+1].plot(Z,_squeeze!(solution_cut_u[l]'),ls="--",lw=3)
+                if !stable
+                    ax[l+1].plot(Z,_squeeze!(solution_cut_u[l]'),ls="--",lw=3)
+                end
             end
         end    
 

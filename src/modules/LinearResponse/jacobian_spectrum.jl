@@ -52,13 +52,18 @@ evaluate(s::JacobianSpectrum, ω::Float64) = sum([evaluate(p, ω) for p in s.pea
 evaluate(spectra::Dict{Num, JacobianSpectrum}, ω::Float64) = Dict([[var, evaluate(spectra[var], ω)] for var in keys(spectra)])
 
 
-"Converts an 2-component vector belonging to a VDP variable into the FT of the natural variable."
- function _VDP_to_spectrum(λ, eigvec::Vector; ω::Float64)
-    u,v = eigvec
+"Take a pair of harmonic variable u,v and an eigenvalue λ and eigenvector eigvec_2d of the Jacobian to generate corresponding Lorentzians.
+    IMPORTANT: The eigenvetor eigen_2d contains only the two components of the full eigenvector which correspond to the u,v pair in question."
+ function _pair_to_peaks(λ, eigvec_2d::Vector; ω::Float64)
+    u,v = eigvec_2d
     peak1 = (1 + 2*(imag(u)*real(v) - real(u)*imag(v)) ) * Lorentzian(ω0=ω - imag(λ) , Γ=real(λ))
     peak2 = (1 + 2*(real(u)*imag(v) - real(v)*imag(u)) ) * Lorentzian(ω0=ω + imag(λ) , Γ=real(λ))
     JacobianSpectrum([peak1, peak2])
 end
+
+
+"Return the indices of a-type variables (zero harmonics) from hvars."
+_get_as(hvars::Vector{HarmonicVariable}) = findall(x -> isequal(x.type, "a"), hvars)
 
 
 #   Returns the spectra of all variables in `res` for `index` of `branch`.
@@ -68,29 +73,41 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
 
     solution_dict = get_single_solution(res, branch=branch, index=index)
 
-    VDPs = res.problem.eom.variables # fetch the vector of HarmonicVariable
+    hvars = res.problem.eom.variables # fetch the vector of HarmonicVariable
     λs, vs = eigen(res.jacobian(solution_dict))
 
     solution_dict = get_single_solution(res, index=index, branch=branch)
 
     # blank JacobianSpectrum for each variable
-    all_spectra = Dict{Num, JacobianSpectrum}([[nat_var, JacobianSpectrum([])] for nat_var in getfield.(VDPs, Symbol("natural_variable"))])
+    all_spectra = Dict{Num, JacobianSpectrum}([[nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)])
         
     for (j, λ) in enumerate(λs)
-        v = vs[:, j]
-        # we know how to convert each VDP variable into an excitation -> break down the eigenvector into its constituent VDP pairs
-        for (i, VDP_var) in enumerate(VDPs)
-            v_pair = v[[2*i-1, 2*i]] # fetch the relevant part of the Jacobian eigenvector
-            ωrot = Float64(substitute(VDP_var.ω, solution_dict))
-            # v_pair is associated to a natural variable -> this variable gets Lorentzian peaks
-            this_spec =  norm(v_pair) * _VDP_to_spectrum(λ, v_pair, ω=ωrot)
+        eigvec = vs[:, j] # the eigenvector
 
-            all_spectra[VDP_var.natural_variable] = add_peak(all_spectra[VDP_var.natural_variable], this_spec) 
+        # 2 peaks for each pair of uv variables
+        for pair in _get_uv_pairs(hvars)
+            u,v  = hvars[pair]
+            eigvec_2d = eigvec[pair] # fetch the relevant part of the Jacobian eigenvector
+            ωnum = Float64(substitute(u.ω, solution_dict)) # the harmonic (numerical now) associated to this harmonic variable
+
+            # eigvec_2d is associated to a natural variable -> this variable gets Lorentzian peaks
+            peaks =  norm(eigvec_2d) * _pair_to_peaks(λ, eigvec_2d, ω=ωnum)
+
+            all_spectra[u.natural_variable] = add_peak(all_spectra[u.natural_variable], peaks) 
+        end
+
+        # 1 peak for a-type variable
+        for a_idx in _get_as(hvars)
+            a = hvars[a_idx]
+            eigvec_1d = eigvec[a_idx]
+            peak = 2 * norm(eigvec_1d) * Lorentzian(ω0= abs(imag(λ)) , Γ=real(λ))
+            all_spectra[a.natural_variable] = add_peak(all_spectra[a.natural_variable], peak) 
         end
     end
     #_simplify_spectra!(all_spectra) # condense similar peaks
     all_spectra
 end
+
 
 "Condense peaks with similar centers and linewidths in JacobianSpectrum s."
 function _simplify_spectrum(s::JacobianSpectrum)

@@ -78,18 +78,18 @@ end
 """
 $(TYPEDEF)
 
-Holds a pair of variables stored under `symbols` describing the harmonic `ω` of `natural_variable`. 
+Holds a variable stored under `symbol` describing the harmonic `ω` of `natural_variable`. 
 
 # Fields
 $(TYPEDFIELDS)
 """
 mutable struct HarmonicVariable
-    """Symbols of the two variables in the HarmonicBalance namespace."""
-    symbols::Vector{Num}
-    """Human-readable labels of the two variables, used for plotting."""
-    names::Dict{Num, String}
-    """Types of the two variables ((u,v) for quadratures, (a,ϕ) for polars etc.)"""
-    types::Vector{String}
+    """Symbol of the variable in the HarmonicBalance namespace."""
+    symbol::Num
+    """Human-readable labels of the variable, used for plotting."""
+    name::String
+    """Type of the variable (u or v for quadratures, a for a constant, Hopf for Hopf etc.)"""
+    type::String
     """The harmonic being described."""
     ω::Num
     """The natural variable whose harmonic is being described."""
@@ -98,7 +98,7 @@ end
 
 
 function show(io::IO, hv::HarmonicVariable)
-    println(io, "Harmonic variables ", join(string.(hv.symbols), ", "), " for harmonic ", string(hv.ω), " of ", string(hv.natural_variable))
+    println(io, "Harmonic variable ", string.(hv.symbol) * " for harmonic ", string(hv.ω), " of ", string(hv.natural_variable))
 end
 
 
@@ -136,10 +136,12 @@ end
 
 """Gives the relation between `var` and the underlying natural variable."""
 function _show_ansatz(var::HarmonicVariable)
-    terms = Dict("u" => "cos", "v" => "sin")
-    indep_var = var.natural_variable.val.arguments
-    indep_var = length(indep_var) == 1 ? string(indep_var[1]) : error("more than 1 independent variable")
-    join([string(var_name(s)) * "*" * terms[var.types[i]] * "(" * string(var.ω) * indep_var * ")" for (i,s) in enumerate(var.symbols)], " + ")
+    terms = Dict("u" => "cos", "v" => "sin", "a" => "")
+    t = var.natural_variable.val.arguments
+    t = length(t) == 1 ? string(t[1]) : error("more than 1 independent variable")
+    ω = string(var.ω)
+    terms = Dict("u" => "*cos(" * ω * t * ")", "v" => "*sin(" * ω * t * ")", "a" => "")
+    string(string(var.symbol) * terms[var.type])
 end
 
 

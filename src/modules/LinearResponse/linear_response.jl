@@ -13,9 +13,7 @@ function ResponseMatrix(res::Result; rules=Dict())
     symbols = cat(res.problem.variables, collect(keys(res.swept_parameters)), dims=1)
     compiled_M = [build_function(el, cat(symbols, [Δ], dims=1)) for el in M]
 
-    ωs = [var.ω for var in res.problem.eom.variables]
-
-    ResponseMatrix(eval.(compiled_M), symbols, ωs)
+    ResponseMatrix(eval.(compiled_M), symbols, res.problem.eom.variables)
 end
 
 
@@ -26,7 +24,7 @@ function evaluate_response_matrix(resp::ResponseMatrix, s::StateDict, Ω)
     return [Base.invokelatest(el, values) for el in f]
 end
 
-
+## THIS NEEDS REVISING
 function _evaluate_response_vector(rmat::ResponseMatrix, s::StateDict, Ω)
     m=evaluate_response_matrix(rmat, s, Ω)
     force_pert = cat([[1.0, 1.0*im] for n in 1:size(m)[1]/2]..., dims=1)
@@ -42,14 +40,26 @@ calculate the total response to a perturbative force at frequency `Ω`.
 """
 function get_response(rmat::ResponseMatrix, s::StateDict, Ω)
     resp = 0
-    for (i,ω) in enumerate(rmat.ωs)
-        this_ω = Float64(substitute_all(ω, s))
-        uv1 = _evaluate_response_vector(rmat, s, Ω-this_ω)[2*i-1:2*i]
-        uv2 = _evaluate_response_vector(rmat, s, -Ω+this_ω)[2*i-1:2*i]
+
+    # uv-type
+    for pair in _get_uv_pairs(rmat.variables)
+        u,v = rmat.variables[pair]
+        this_ω = Float64(substitute_all(u.ω, s))
+        uv1 = _evaluate_response_vector(rmat, s, Ω-this_ω)[pair]
+        uv2 = _evaluate_response_vector(rmat, s, -Ω+this_ω)[pair]
+        resp += sqrt(_plusamp(uv1)^2 + _minusamp(uv2)^2)
+    end
+
+    # a-type variables
+    for a_idx in _get_as(rmat.variables)
+        a = rmat.variables[a_idx]
+        uv1 = _evaluate_response_vector(rmat, s, Ω)[a]
+        uv2 = _evaluate_response_vector(rmat, s, -Ω)[a]
         resp += sqrt(_plusamp(uv1)^2 + _minusamp(uv2)^2)
     end
     resp
 end
+
 
 # formulas to obtain up- and down- converted frequency components when going from the
 # rotating frame into the lab frame

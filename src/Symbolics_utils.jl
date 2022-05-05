@@ -241,7 +241,8 @@ function _fourier_term(x, ω, t, f)
     term = x * f(ω * t)
     term = trig_reduce(term)
     indep = get_independent(term, t)
-    2*Num(simplify_complex(Symbolics.expand(indep)))
+    ft = Num(simplify_complex(Symbolics.expand(indep)))
+    !isequal(ω, 0) ? 2*ft : ft # extra factor in case ω = 0 !
 end
 
 

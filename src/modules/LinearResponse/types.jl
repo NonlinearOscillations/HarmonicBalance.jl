@@ -51,7 +51,7 @@ struct ResponseMatrix
     symbols::Vector{Num}
     """The frequencies of the harmonic variables underlying `matrix`. These are needed to transform
     the harmonic variables to the non-rotating frame."""
-    ωs::Vector{Num}
+    variables::Vector{HarmonicVariable}
 
-    ResponseMatrix(matrix, symbols, ωs) = new(matrix, symbols, ωs)
+    ResponseMatrix(matrix, symbols, variables) = new(matrix, symbols, variables)
 end

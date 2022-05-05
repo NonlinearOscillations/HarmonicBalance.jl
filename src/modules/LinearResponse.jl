@@ -14,6 +14,7 @@ module LinearResponse
     import Base: *, show; export *, show
 
     include("LinearResponse/types.jl")
+    include("LinearResponse/utils.jl")
     include("LinearResponse/perturbations.jl")
     include("LinearResponse/jacobian_spectrum.jl")
     include("LinearResponse/linear_response.jl")

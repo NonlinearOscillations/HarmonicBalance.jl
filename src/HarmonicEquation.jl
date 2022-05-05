@@ -11,31 +11,36 @@ show(eom::HarmonicEquation) = show_fields(eom)
     harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian")
 
 Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the time variable.
-For each harmonic of each variable, an instance of `HarmonicVariable` (describing a pair of variables (u,v)) is automatically created and named. 
+For each harmonic of each variable, instance(s) of `HarmonicVariable` are automatically created and named. 
 
-`coordinates` allows for using different coordinate systems (e.g. 'polars') - CURRENTLY INACTIVE
 """
-harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian") = harmonic_ansatz(eom, time, Dict([[var, coordinates] for var in get_variables(eom)]))
-
-
-function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num, trafo_types::Dict{Num,String})
+function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
     !is_harmonic(diff_eom, time) && error("The differential equation is not harmonic in ", time, " !")
-    old_eqs = [diff_eom.equations[var] for var in get_variables(diff_eom)]
-    eqs, vars = deepcopy(old_eqs), []
-    rules = Dict()
+    eqs = collect(values(diff_eom.equations))
+    rules, vars = Dict(), []
 
-    idx_counter = 1 # keep count to label new variables
-    for var in get_variables(diff_eom)
-        to_substitute = 0 # holds all the subtitution rules
-        for ω in diff_eom.harmonics[var] # 2 new variables are created for each ω of each variable
-            these_names = coordinate_names[trafo_types[var]] # stores two strings denoting the variables as either "a", "ϕ", "u", "v"
-            unique_symbols = [  these_names[1] * string(idx_counter) , these_names[2] * string(idx_counter) ]
-            repl_rule, new_vars = _rotate_variable(var, ω, time, trafo_types[var], new_symbols=unique_symbols) # create the new variables
-            to_substitute += repl_rule
-            append!(vars, [new_vars]) 
-            idx_counter += 1
+    # keep count to label new variables
+    uv_idx = 1 
+    a_idx = 1
+
+    for nvar in get_variables(diff_eom) # sum over natural variables
+        to_substitute = 0 # combine all the subtitution rules for var
+        for ω in diff_eom.harmonics[nvar]
+            if !isequal(ω, 0) # nonzero harmonic - create u,v
+                rule_u, hvar_u = _create_harmonic_variable(nvar, ω, time, "u", new_symbol="u"*string(uv_idx))
+                rule_v, hvar_v = _create_harmonic_variable(nvar, ω, time, "v", new_symbol="v"*string(uv_idx))
+                rule = rule_u + rule_v
+                uv_idx += 1
+                append!(vars, [hvar_u, hvar_v])
+            else # zero harmonic - create a
+                rule, hvar = _create_harmonic_variable(nvar, ω, time, "a", new_symbol="a"*string(a_idx))
+                a_idx += 1
+                append!(vars, [hvar])
+            end
+            to_substitute += rule
         end
-        rules[var] = to_substitute
+        
+        rules[nvar] = to_substitute # total sub rule for nvar
     end
     eqs = substitute_all(eqs, rules)
     HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), diff_eom)
@@ -155,7 +160,7 @@ $(TYPEDSIGNATURES)
 Return the independent variables (typically time) of `eom`.
 """
 function get_independent_variables(eom::HarmonicEquation)::Vector{Num}
-    dynamic_vars = flatten(getfield.(eom.variables, Symbol("symbols")))
+    dynamic_vars = flatten(getfield.(eom.variables, Symbol("symbol")))
     return flatten(unique([SymbolicUtils.arguments(var.val) for var in dynamic_vars]))
 end
 
@@ -163,7 +168,8 @@ end
 """
 $(TYPEDSIGNATURES)
 Extract the Fourier components of `eom` corresponding to the harmonics specified in `eom.variables`.
-For each harmonic of each variable, 2 equations are generated (cos and sin Fourier coefficients).
+For each non-zero harmonic of each variable, 2 equations are generated (cos and sin Fourier coefficients).
+For each zero (constant) harmonic, 1 equation is generated
 `time` does not appear in the resulting equations anymore.
 
 Underlying assumption: all time-dependences are harmonic.
@@ -176,20 +182,20 @@ end
 
 
 function fourier_transform!(eom::HarmonicEquation, time::Num)
-    avg_eqs = Vector{Equation}(undef, 2*length(eom.variables))
+    avg_eqs = Vector{Equation}(undef, length(eom.variables))
 
-    natural_variables = flatten([[x,x] for x in getfield.(eom.variables, :natural_variable)])
-    equation_assignments = flatten([findall(x -> isequal(x, var), collect(keys(eom.natural_equation.equations))) for var in natural_variables])
-    
-    for i in 1:length(avg_eqs)
-        j = Int(ceil(i/2))
-        ω = eom.variables[j].ω
-        eq = eom.equations[equation_assignments[i]]
-
-        if isodd(i)
-            avg_eqs[i] = fourier_cos_term(eq, ω, time)
-        else
-            avg_eqs[i] = fourier_sin_term(eq, ω, time)
+    # loop over the HarmonicVariables, each generates one equation
+    for (i, hvar) in enumerate(eom.variables)
+        # find the equation belonging to this variable
+        eq_idx = findall(x -> isequal(x, hvar.natural_variable), collect(keys(eom.natural_equation.equations)))
+        eq = eom.equations[eq_idx...]
+        # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
+        if hvar.type == "u"
+            avg_eqs[i] = fourier_cos_term(eq, hvar.ω, time)
+        elseif hvar.type == "v" 
+            avg_eqs[i] = fourier_sin_term(eq, hvar.ω, time)
+        elseif hvar.type == "a"
+            avg_eqs[i] = fourier_cos_term(eq, 0, time) # pick out the constants
         end
     end
     

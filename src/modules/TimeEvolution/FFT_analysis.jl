@@ -29,6 +29,8 @@ function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
     Del = fft_f[2]-fft_f[1] # frequency spacing
     A1= abs.(fft_u)[max_indices] 
     df = zeros(length(max_indices))
+
+    # correction to the amplitude and phase of the peak
     for i in 1:length(max_indices)
         if abs.(fft_u)[max_indices[i]-1]<abs.(fft_u)[max_indices[i]+1]
             A2= abs.(fft_u)[max_indices[i]+1]

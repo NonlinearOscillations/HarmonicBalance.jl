@@ -4,7 +4,7 @@ export get_single_solution
 
 """
 $(TYPEDSIGNATURES)
-Return a dictionary specifying all variables and parameters of the solution
+Return an ordered dictionary specifying all variables and parameters of the solution
 in `result` on `branch` at the position `index`.
 """
 function get_single_solution(res::Result; branch::Int64, index)
@@ -17,13 +17,13 @@ function get_single_solution(res::Result; branch::Int64, index)
         index = CartesianIndex(index)
     end
 
-    vars = Dict(zip(res.problem.variables, res.solutions[index][branch]))
+    vars = OrderedDict(zip(res.problem.variables, res.solutions[index][branch]))
 
     # collect the swept parameters required for this call
-    swept_params = Dict( key => res.swept_parameters[key][index[i]] for (i,key) in enumerate(keys(res.swept_parameters)))
-    full_solution = merge(vars, res.fixed_parameters, swept_params)
+    swept_params = OrderedDict( key => res.swept_parameters[key][index[i]] for (i,key) in enumerate(keys(res.swept_parameters)))
+    full_solution = merge(vars, swept_params, res.fixed_parameters)
 
-    return Dict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
+    return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
 end
 
 
@@ -142,7 +142,7 @@ function compile_matrix(matrix, variables, fixed_parameters)
     J = substitute_all(matrix, fixed_parameters)
     matrix = [build_function(el, variables) for el in J]
     matrix = eval.(matrix)
-    function m(s::Dict)
+    function m(s::OrderedDict)
         vals = [s[var] for var in variables]
         return [ComplexF64(Base.invokelatest(el, vals)) for el in matrix]
     end

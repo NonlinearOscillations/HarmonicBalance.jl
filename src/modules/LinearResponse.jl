@@ -4,6 +4,7 @@ module LinearResponse
     using LinearAlgebra
     using Printf
     using Symbolics
+    using DataStructures
     using ..HarmonicBalance
     using ..HC_wrapper
     using PyPlot

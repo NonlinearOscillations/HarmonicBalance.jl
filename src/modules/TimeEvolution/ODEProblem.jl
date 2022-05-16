@@ -7,17 +7,15 @@ using LinearAlgebra
             eom::HarmonicEquation;
             fixed_parameters,
             x0::Vector,
-            steady_solution::Dict
             sweep::ParameterSweep,
             timespan::Tuple
             )
 
 Creates an ODEProblem object used by DifferentialEquations.jl from the equations in `eom` to simulate time-evolution within `timespan`.
-To manually input parameter values and initial conditions, use the keywords `fixed_parameters` and `x0`.
-To start the evolution from a steady-state solution, use `steady_solution`.
-
+`fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
+If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
-function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector, timespan::Tuple)
+function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector=[], timespan::Tuple, perturb_initial=0.0)
 
     if !is_rearranged(eom) # check if time-derivatives of the variable are on the right hand side
         eom = HarmonicBalance.rearrange_standard(eom)
@@ -42,18 +40,10 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
         end
     end
 
-    return DifferentialEquations.ODEProblem(f!,x0,timespan)
-end
+    # the initial condition is x0 if specified, taken from fixed_parameters otherwise
+    initial = isempty(x0) ? real.(collect(values(fixed_parameters))[1:length(vars)]) * (1-perturb_initial) : x0
 
-
-#ODEProblem(eom::HarmonicEquation, fixed; kwargs...) = ODEProblem(eom, ParameterList(fixed); kwargs...)
-
-
-# evolving from a steady-state solution found with homotopy continuation
-function ODEProblem(eom::HarmonicEquation; steady_solution::StateDict, sweep=ParameterSweep(), timespan, perturb_initial=0)
-    vars = [HarmonicBalance.declare_variable(v) for v in (HarmonicBalance.var_name.(get_variables(eom)))]
-    initial = real.([steady_solution[v] for v in vars]) * (1-perturb_initial)
-    ODEProblem(eom, steady_solution, sweep=sweep, x0=initial, timespan=timespan)
+    return DifferentialEquations.ODEProblem(f!, initial, timespan)
 end
 
 

@@ -7,7 +7,7 @@ export DifferentialEquation, HarmonicVariable, HarmonicEquation,Problem, Result
 
 const ParameterRange = OrderedDict{Num, Vector{Float64}}; export ParameterRange
 const ParameterList = OrderedDict{Num, Float64}; export ParameterList;
-const StateDict = Dict{Num, ComplexF64}; export StateDict
+const StateDict = OrderedDict{Num, ComplexF64}; export StateDict
 const SteadyState = Vector{ComplexF64}; export SteadyState;
 const ParameterVector = Vector{Float64}; export ParameterVector;
 

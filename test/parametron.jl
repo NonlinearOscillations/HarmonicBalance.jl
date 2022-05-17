@@ -21,6 +21,6 @@ HarmonicBalance.Problem(averagedEOM);
 ref1 = (Ω^2)*u1 + F*cos(θ) + γ*Differential(T)(u1) + (3//4)*α*(u1^3) + γ*ω*v1 + (2//1)*ω*Differential(T)(v1) + (1//4)*η*ω*(v1^3) + (3//4)*η*(u1^2)*Differential(T)(u1) + (1//4)*η*(v1^2)*Differential(T)(u1) + (3//4)*α*(v1^2)*u1 + (1//4)*η*ω*(u1^2)*v1 + (1//2)*η*u1*v1*Differential(T)(v1) + (1//2)*λ*(Ω^2)*v1*sin(ψ) - (ω^2)*u1 - (1//2)*λ*(Ω^2)*u1*cos(ψ)
 ref2 = γ*Differential(T)(v1) + (Ω^2)*v1 + (3//4)*α*(v1^3) + (3//4)*α*(u1^2)*v1 + (1//4)*η*(u1^2)*Differential(T)(v1) + (3//4)*η*(v1^2)*Differential(T)(v1) + (1//2)*λ*(Ω^2)*v1*cos(ψ) + (1//2)*η*u1*v1*Differential(T)(u1) + (1//2)*λ*(Ω^2)*u1*sin(ψ) - F*sin(θ) - (ω^2)*v1 - (2//1)*ω*Differential(T)(u1) - γ*ω*u1 - (1//4)*η*ω*(u1^3) - (1//4)*η*ω*(v1^2)*u1
 
-averaged = HarmonicBalance._equations_without_brackets(averagedEOM)
+averaged = HarmonicBalance._remove_brackets(averagedEOM)
 @test isequal(simplify(expand(averaged[1]-ref1)), 0)
 @test isequal(simplify(expand(averaged[2]-ref2)), 0)

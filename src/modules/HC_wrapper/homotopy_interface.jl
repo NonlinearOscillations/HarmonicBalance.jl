@@ -47,8 +47,8 @@ function Problem(eom::HarmonicEquation; explicit_Jacobian=true)
         size(explicit_Jacobian)[1] == size(explicit_Jacobian)[2] == length(get_variables(eom)) || error("The Jacobian shape must match the number of variables!")
         J = explicit_Jacobian
     else
-        # ignore the jacobian, is later computed implicitly
-        J = false
+        # compute the Jacobian implicitly
+        J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
     end
     vars_orig  = get_variables(eom)
     vars_new = declare_variable.(HarmonicBalance.var_name.(vars_orig))
@@ -69,7 +69,7 @@ end
 
 
 function System(eom::HarmonicEquation)
-    eqs = expand_derivatives.(_equations_without_brackets(eom))
+    eqs = expand_derivatives.(_remove_brackets(eom))
     conv_vars = Num_to_Variable.(get_variables(eom))
     conv_para = Num_to_Variable.(eom.parameters)
     S = HomotopyContinuation.System(parse_equations(eqs),variables=conv_vars,parameters=conv_para)

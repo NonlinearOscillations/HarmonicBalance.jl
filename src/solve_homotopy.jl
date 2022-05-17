@@ -98,6 +98,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
     rounded_solutions = HomotopyContinuation.solutions.(getindex.(raw, 1));
+    all(isempty.(rounded_solutions)) ? error("No solutions found!") : nothing
     solutions = pad_solutions(rounded_solutions)
 
     compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
@@ -125,10 +126,10 @@ get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...) = get_steady_s
 function _compile_Jacobian(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList)
     J_variables = cat(prob.variables, collect(keys(swept_parameters)), dims=1)
 
-    if prob.jacobian != false
+    if prob.jacobian isa Matrix
         compiled_J = compile_matrix(prob.jacobian, J_variables, fixed_parameters)
     else
-        compiled_J = LinearResponse.get_implicit_Jacobian(prob.eom)
+        compiled_J = prob.jacobian # leave implicit Jacobian as is
     end
     compiled_J
 end

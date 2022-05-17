@@ -4,26 +4,20 @@ export get_Jacobian
 $(SIGNATURES)
 
 Obtain the symbolic Jacobian matrix of `eom` (either a `HarmonicEquation` or a `DifferentialEquation`).
+This is the linearised left-hand side of F(u) = du/dT.
 
 """
 function get_Jacobian(eom::HarmonicEquation)
 
-    lhs = Num.(getfield.(HarmonicBalance.rearrange_standard(eom).equations, :lhs))
-
-    old_vars = get_variables(eom)
-    bracket_rules = [var => HarmonicBalance.declare_variable(var_name(var)) for var in old_vars]
-
-    lhs = substitute_all(lhs,bracket_rules)
-    vars = getindex.(bracket_rules, 2)
-    J = Matrix{Num}(undef, length(vars), length(vars))
-    for idx in CartesianIndices(J)
-        J[idx] = expand_derivatives(d(lhs[idx[1]], vars[idx[2]]))
-    end
-    J
+    rearr = !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
+    lhs = _remove_brackets(rearr)
+    vars = _remove_brackets.(eom.variables)
     
+    get_Jacobian(lhs, vars)
+
 end
 
-#   Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`.
+" Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "
 function get_Jacobian(diff_eom::DifferentialEquation)
     @variables T
     harmonic_eq = get_harmonic_equations(diff_eom, slow_time=T, fast_time=first(get_independent_variables(diff_eom)))
@@ -31,20 +25,9 @@ function get_Jacobian(diff_eom::DifferentialEquation)
 end
 
 
-"""Convert a set of equations in variables `vars` into matrix form.
-If the equations are linear, this matrix does not depends on the variables."""
-function equations_to_matrix(eqs::Vector{Num}, vars::Vector{Num})
-    length(eqs) != length(vars) ? error("System under- or over-constrained!") : nothing
-    M = Matrix{Num}(undef, length(eqs), length(eqs))
-    for idx in CartesianIndices(M)
-        M[idx] = expand_derivatives(d(eqs[idx[1]], vars[idx[2]]))
-    end
-    M
-end
-
-# get the Jacobian of a set of equations `eqs` with respect to the variables `vars`
+" Get the Jacobian of a set of equations `eqs` with respect to the variables `vars`. "
 function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
-    length(eqs) == length(vars) || error("Jacobians are only defined for square matrices!")
+    length(eqs) == length(vars) || error("Jacobians are only defined for square systems!")
     M = Matrix{Num}(undef, length(vars), length(vars))
 
     for idx in CartesianIndices(M)
@@ -55,8 +38,10 @@ end
 
 get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num}) = get_Jacobian(Num.(getfield.(eqs, :lhs) .- getfield.(eqs, :rhs)), vars)
 
+
+# the Jacobian of some equations again
 function get_Jacobian_steady(eom::HarmonicEquation; differential_order=0)
-    Hopf_vars = first.(getfield.(filter(x -> x.types[1] == "Hopf", eom.variables), :symbols))
+    Hopf_vars = first.(getfield.(filter(x -> x.type == "Hopf", eom.variables), :symbol))
     Hopf_idx = findall(x -> any(isequal.(x, Hopf_vars)) , get_variables(eom))
     nonsingular = filter( x -> x ∉ Hopf_idx, 1:length(get_variables(eom)))
 

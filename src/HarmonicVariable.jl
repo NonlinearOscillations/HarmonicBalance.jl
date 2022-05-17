@@ -1,4 +1,4 @@
-import Symbolics.get_variables; export get_variables
+import Symbolics: get_variables, substitute; export get_variables
 
 # pretty-printing
 display(var::HarmonicVariable) = display(var.name)
@@ -26,6 +26,10 @@ end
 ###
 # Functions for variable substutions and manipulation of HarmonicVariable
 ###
+
+
+# when HV is used for substitute, substitute its symbol
+substitute(eq::Num, rules::Dict{HarmonicVariable}) = substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
 
 function substitute_all(var::HarmonicVariable, rules)
     sym, freq = var.symbol, var.ω

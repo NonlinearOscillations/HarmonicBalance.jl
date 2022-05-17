@@ -144,10 +144,11 @@ end
 ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
-function substitute_all!(eom::HarmonicEquation, rules::Dict)
-    eom.equations = replace(eom.equations, rules)
-    eom.variables = substitute_all(eom.variables, rules)
-end
+function substitute_all(eom::HarmonicEquation, rules::Union{Dict, Pair}) 
+    new_eom = deepcopy(eom)
+    new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
+    new_eom
+end 
 
 
 "Simplify the equations in HarmonicEquation."

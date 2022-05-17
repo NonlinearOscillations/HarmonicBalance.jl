@@ -1,4 +1,5 @@
-import Symbolics: get_variables, substitute; export get_variables
+import Symbolics: get_variables; export get_variables
+import Base.isequal; export isequal
 
 # pretty-printing
 display(var::HarmonicVariable) = display(var.name)
@@ -29,7 +30,7 @@ end
 
 
 # when HV is used for substitute, substitute its symbol
-substitute(eq::Num, rules::Dict{HarmonicVariable}) = substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
+substitute_all(eq::Union{Num, Equation}, rules::Dict{HarmonicVariable}) = substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
 
 function substitute_all(var::HarmonicVariable, rules)
     sym, freq = var.symbol, var.ω
@@ -44,6 +45,8 @@ substitute_all(vars::Vector{HarmonicVariable}, rules) = [substitute_all(var, rul
 get_variables(vars::Vector{Num}) = unique(flatten([Num.(get_variables(x)) for x in vars]))
 
 get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
+
+isequal(v1::HarmonicVariable, v2::HarmonicVariable) = isequal(v1.symbol, v2.symbol)
 
 
 

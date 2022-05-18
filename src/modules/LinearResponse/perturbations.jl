@@ -56,6 +56,7 @@ end
 function get_implicit_Jacobian(eom::HarmonicEquation)
     M = get_Jacobian_steady(eom, differential_order=0)
     Mp = get_Jacobian_steady(eom, differential_order=1)
+
     function J(soln::OrderedDict)
         -inv(ComplexF64.(substitute_all(Mp, soln))) * ComplexF64.(substitute_all(M, soln))
     end

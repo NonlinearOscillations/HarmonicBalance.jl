@@ -36,19 +36,18 @@ declare_variable(x::Num) = declare_variable(string(x))
 
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
-function Problem(eom::HarmonicEquation; explicit_Jacobian=true)
+function Problem(eom::HarmonicEquation; Jacobian=true)
 
     S = System(eom)
     # use the rearranged system for the proper definition of the Jacobian
     # this possibly has variables in the denominator and cannot be used for solving
-    if explicit_Jacobian == true
+    if Jacobian == true || Jacobian == "explicit"
         J = HarmonicBalance.get_Jacobian(eom)
-    elseif explicit_Jacobian isa Matrix
-        size(explicit_Jacobian)[1] == size(explicit_Jacobian)[2] == length(get_variables(eom)) || error("The Jacobian shape must match the number of variables!")
-        J = explicit_Jacobian
-    else
+    elseif Jacobian == "implicit"
         # compute the Jacobian implicitly
         J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
+    else
+        J = Jacobian
     end
     vars_orig  = get_variables(eom)
     vars_new = declare_variable.(HarmonicBalance.var_name.(vars_orig))

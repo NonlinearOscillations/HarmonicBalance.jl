@@ -2,6 +2,9 @@ export add_Hopf!
 export Hopf_variables
 export replace_Hopf_variable!
 
+using HarmonicBalance: is_rearranged, rearrange_standard
+using HarmonicBalance: LinearResponse.get_implicit_Jacobian
+
 
 "Add a Hopf bifurcation to the system."
 function add_Hopf!(eom::DifferentialEquation, Δω::Num)
@@ -16,44 +19,56 @@ end
 add_Hopf!(eom::DifferentialEquation; frequency::Num, multiplicity::Int) = [add_Hopf!(eom, frequency) for k in 1:multiplicity]
 
 
-
 """
     Hopf_variables(eom, freq)
 """
 Hopf_variables(eom::HarmonicEquation, freq::Num) = filter(x -> any(isequal.(freq, get_all_terms(x.ω))), eom.variables)
 
 
-function replace_Hopf_variable!(eom::HarmonicEquation, freq::Num)
-    isempty(Hopf_variables(eom, freq)) ? error("No Hopf variables found!") : nothing
-    !any(isequal.(eom.parameters, freq)) ? error(freq, " is not a parameter of the harmonic equation!") : nothing
+"""
+    Obtain the Jacobian of `eom` with a free (Hopf) variable `free_var`.
+    `free_var` marks the variable which is free due to U(1) symmetry. Its entry in the Jacobian matrix must be discarded
+    (the discarded eigenvalue is 0, corresponding to a free phase.)
+"""
+function _Hopf_Jacobian(eom::HarmonicEquation, free_var::HarmonicVariable)
+    eom_Jac = rearrange_standard(eom)
+    free_idx = findall(x -> isequal(x, free_var), eom_Jac.variables)  
+    deleteat!(eom_Jac.equations, free_idx)
+    deleteat!(eom_Jac.variables, free_idx)
 
-    pair_to_change = Hopf_variables(eom, freq)[end] # eliminate one of the Cartesian variables, it does not matter from which VDP pair
-    to_eliminate = pair_to_change.symbols[2]
-    rules = Dict(freq => HarmonicBalance.declare_variable(string(freq), first(get_independent_variables(eom))), to_eliminate => Num(0))
+    # the free variable can be fixed to zero, this is also done in the corresponding HarmonicEquation later
+    eom_Jac = substitute_all(eom_Jac, free_var => 0)
+    J = get_implicit_Jacobian(eom_Jac)
+end
+
+
+"""
+    Construct a `Problem` in the case where U(1) symmetry is present
+    due to having added a Hopf variable with frequency `Hopf_ω`.
+"""
+function _Hopf_Problem(eom::HarmonicEquation, Hopf_ω::Num)
+
+    isempty(Hopf_variables(eom, Hopf_ω)) ? error("No Hopf variables found!") : nothing
+    !any(isequal.(eom.parameters, Hopf_ω)) ? error(Hopf_ω, " is not a parameter of the harmonic equation!") : nothing 
+
+    free_var = Hopf_variables(eom, Hopf_ω)[end] # eliminate one of the Cartesian variables, it does not matter which
+    
+    # get the Hopf Jacobian before altering anything - this is the usual Jacobian but the entries corresponding
+    # to the free variable are removed
+    J = _Hopf_Jacobian(eom, free_var)
+    
+    new_symbol = HarmonicBalance.declare_variable(string(Hopf_ω), first(get_independent_variables(eom)))
+    rules = Dict(Hopf_ω => new_symbol, free_var.symbol => Num(0))
     eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
-    eom.parameters = setdiff(eom.parameters, [freq]) # freq is now NOT a parameter anymore
-    eom.variables = setdiff(eom.variables, [pair_to_change])
-    new_variable = HarmonicBalance.declare_variable(string(freq))
-    eom.variables = cat(eom.variables, _VDP_Hopf(pair_to_change, to_eliminate, new_variable)..., dims=1)
-end
+    eom.parameters = setdiff(eom.parameters, [Hopf_ω]) # Hopf_ω is now NOT a parameter anymore
+    
+    free_var.type = "Hopf"
+    free_var.ω = Num(0)
+    free_var.symbol = new_symbol
+    free_var.name = var_name(new_symbol)
 
-function replace_Hopf_variable(eom::HarmonicEquation, freq::Num)
-    new_eom = deepcopy(eom)
-    replace_Hopf_variable!(new_eom, freq)
-    new_eom
-end
-
-
-function _VDP_Hopf(old::HarmonicVariable, eliminated::Num, new_sym::Num)
-    new_VDP = deepcopy(old)
-    idx = findall(x-> isequal(x, eliminated), old.symbols)[1]
-    indep = Num(first(arguments(eliminated.val)))
-    delete!(new_VDP.names, Num(var_name(eliminated)))
-    [deleteat!(f, idx) for f in [new_VDP.symbols, new_VDP.types]]
-
-    new_symbol = HarmonicBalance.declare_variable(string(new_sym), indep)
-    Hopf_variable = HarmonicVariable([new_symbol], Dict(new_sym => string(new_sym)), ["Hopf"], Num(0), Num(0))
-
-    return new_VDP, Hopf_variable
+    # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
+    p = Problem(eom; Jacobian=J)
+    return p
 end
 

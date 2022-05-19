@@ -168,8 +168,9 @@ $(TYPEDFIELDS)
 #  Constructors
 ```julia
 Problem(eom::HarmonicEquation; Jacobian=true) # find and store the symbolic Jacobian
-Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian for now
-Problem(eom::HarmonicEquation; Jacobian::Matrix) # use the given matrix as the Jacobian
+Problem(eom::HarmonicEquation; Jacobian="implicit") # ignore the Jacobian for now, compute implicitly later
+Problem(eom::HarmonicEquation; Jacobian=J) # use J as the Jacobian (a function that takes a Dict)
+Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian
 ```
 """
 mutable struct Problem
@@ -222,7 +223,7 @@ mutable struct Result
     If problem.jacobian is a symbolic matrix, this holds a compiled function.
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
-    jacobian
+    jacobian::Function
     
     Result(sol,swept, fixed, problem, classes, J) = new(sol, swept, fixed, problem, classes, J)
     Result(sol,swept, fixed, problem, classes) = new(sol, swept, fixed, problem, classes)

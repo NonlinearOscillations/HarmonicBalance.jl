@@ -76,7 +76,8 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
     hvars = res.problem.eom.variables # fetch the vector of HarmonicVariable
     λs, vs = eigen(res.jacobian(solution_dict))
 
-    solution_dict = get_single_solution(res, index=index, branch=branch)
+    # convert OrderedDict to Dict - see Symbolics issue #601
+    solution_dict = Dict(get_single_solution(res, index=index, branch=branch))
 
     # blank JacobianSpectrum for each variable
     all_spectra = Dict{Num, JacobianSpectrum}([[nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)])

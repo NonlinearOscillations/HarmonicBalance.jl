@@ -53,7 +53,7 @@ function get_Jacobian_steady(eom::HarmonicEquation; differential_order=0)
 end
 
 # COMPILE THIS!
-function get_implicit_Jacobian(eom::HarmonicEquation)
+function get_implicit_Jacobian(eom::HarmonicEquation)::Function
     M = get_Jacobian_steady(eom, differential_order=0)
     Mp = get_Jacobian_steady(eom, differential_order=1)
 

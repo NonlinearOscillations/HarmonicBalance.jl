@@ -1,3 +1,4 @@
+using LinearAlgebra
 import HomotopyContinuation: Variable
 import HarmonicBalance: Problem; export Problem
 export Num_to_Variable
@@ -46,6 +47,9 @@ function Problem(eom::HarmonicEquation; Jacobian=true)
     elseif Jacobian == "implicit"
         # compute the Jacobian implicitly
         J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
+    elseif Jacobian == "false"
+        dummy_J(arg) = I(1)
+        J = dummy_J
     else
         J = Jacobian
     end

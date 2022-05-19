@@ -16,8 +16,10 @@ end
 
 function save(filename, x::Result)
     x_nofunc = deepcopy(x)
+
     # compiled functions cause problems in saving: ignore J now, compile when loading
-    x_nofunc.jacobian = false
+    null_J() = 0
+    x_nofunc.jacobian = null_J
     JLD2.save(_jld2_name(filename), Dict("object" => x_nofunc))
 end
 

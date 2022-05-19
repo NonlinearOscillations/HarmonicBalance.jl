@@ -10,8 +10,8 @@ files = [
     "powers.jl",
     "harmonics.jl", 
     "fourier.jl",
-    "parametron.jl",
-    "load.jl"
+    "load.jl",
+    "parametron.jl"
     ]
 
 for file in files

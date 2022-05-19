@@ -2,7 +2,7 @@ export get_independent_variables
 export get_harmonic_equations
 export is_rearranged
 export slow_flow, slow_flow!
-export _equations_without_brackets
+export _remove_brackets
 
 show(eom::HarmonicEquation) = show_fields(eom)
 
@@ -105,7 +105,9 @@ Check if `eom` is rearranged to the standard form, such that the derivatives of 
 """
 function is_rearranged(eom::HarmonicEquation)
     tvar = get_independent_variables(eom)[1]
-    isequal(getfield.(eom.equations, :rhs), d(get_variables(eom), tvar))
+
+    # Hopf-containing equations are arranged by construstion (impossible to check)
+    isequal(getfield.(eom.equations, :rhs), d(get_variables(eom), tvar)) || in("Hopf", getfield.(eom.variables, :type))
 end
 
 
@@ -142,10 +144,11 @@ end
 ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
-function substitute_all!(eom::HarmonicEquation, rules::Dict)
-    eom.equations = replace(eom.equations, rules)
-    eom.variables = substitute_all(eom.variables, rules)
-end
+function substitute_all(eom::HarmonicEquation, rules::Union{Dict, Pair}) 
+    new_eom = deepcopy(eom)
+    new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
+    new_eom
+end 
 
 
 "Simplify the equations in HarmonicEquation."
@@ -264,9 +267,14 @@ _set_zero_rhs(eq::Equation) = eq.lhs - eq.rhs ~ 0
 _set_zero_rhs(eqs::Vector{Equation}) = [_set_zero_rhs(eq) for eq in eqs]
 
 
+_remove_brackets(var::Num) = declare_variable(var_name(var))
+_remove_brackets(vars::Vector{Num}) = _remove_brackets.(vars)
+_remove_brackets(hv::HarmonicVariable) = _remove_brackets(hv.symbol)
+
+
 "Returns the equation system in `eom`, dropping all argument brackets (i.e., u(T) becomes u)."
-function _equations_without_brackets(eom::HarmonicEquation)
-    variable_rules = [var => declare_variable(var_name(var)) for var in get_variables(eom)]
+function _remove_brackets(eom::HarmonicEquation)
+    variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
     equations_lhs = Num.(getfield.(eom.equations, :lhs)  - getfield.(eom.equations, :rhs))
     substitute_all(equations_lhs, variable_rules)
 end

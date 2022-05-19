@@ -1,3 +1,4 @@
+using LinearAlgebra
 import HomotopyContinuation: Variable
 import HarmonicBalance: Problem; export Problem
 export Num_to_Variable
@@ -36,19 +37,21 @@ declare_variable(x::Num) = declare_variable(string(x))
 
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
-function Problem(eom::HarmonicEquation; explicit_Jacobian=true)
+function Problem(eom::HarmonicEquation; Jacobian=true)
 
     S = System(eom)
     # use the rearranged system for the proper definition of the Jacobian
     # this possibly has variables in the denominator and cannot be used for solving
-    if explicit_Jacobian == true
+    if Jacobian == true || Jacobian == "explicit"
         J = HarmonicBalance.get_Jacobian(eom)
-    elseif explicit_Jacobian isa Matrix
-        size(explicit_Jacobian)[1] == size(explicit_Jacobian)[2] == length(get_variables(eom)) || error("The Jacobian shape must match the number of variables!")
-        J = explicit_Jacobian
+    elseif Jacobian == "implicit"
+        # compute the Jacobian implicitly
+        J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
+    elseif Jacobian == "false"
+        dummy_J(arg) = I(1)
+        J = dummy_J
     else
-        # ignore the jacobian, is later computed implicitly
-        J = false
+        J = Jacobian
     end
     vars_orig  = get_variables(eom)
     vars_new = declare_variable.(HarmonicBalance.var_name.(vars_orig))
@@ -69,7 +72,7 @@ end
 
 
 function System(eom::HarmonicEquation)
-    eqs = expand_derivatives.(_equations_without_brackets(eom))
+    eqs = expand_derivatives.(_remove_brackets(eom))
     conv_vars = Num_to_Variable.(get_variables(eom))
     conv_para = Num_to_Variable.(eom.parameters)
     S = HomotopyContinuation.System(parse_equations(eqs),variables=conv_vars,parameters=conv_para)

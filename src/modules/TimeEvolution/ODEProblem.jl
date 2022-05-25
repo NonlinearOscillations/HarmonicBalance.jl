@@ -1,5 +1,6 @@
 using LinearAlgebra
-
+import HarmonicBalance: transform_solutions, plot
+export transform_solutions, plot
 
 """ 
 
@@ -62,3 +63,7 @@ function is_stable(soln::StateDict, eom::HarmonicEquation; timespan, tol=1E-1, p
     dist = norm(solution[end] - solution[1]) / (norm(solution[end]) + norm(solution[1]))
     !is_real(solution[end]) || !is_real(solution[1]) ? error("the solution is complex!") : dist < tol
 end
+
+
+transform_solutions(soln::OrdinaryDiffEq.ODECompositeSolution, f::String, harm_eq::HarmonicEquation) = transform_solutions(soln.u, f, harm_eq)
+transform_solutions(s::OrdinaryDiffEq.ODECompositeSolution, funcs::Vector{String}, he::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]

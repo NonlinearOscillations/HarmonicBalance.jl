@@ -44,6 +44,7 @@ module HarmonicBalance
     include("sorting.jl")
     include("classification.jl")
     include("saving.jl")
+    include("transform_solutions.jl")
     include("plotting_static.jl")
     include("plotting_interactive.jl")
     include("hysteresis_sweep.jl")

@@ -6,6 +6,9 @@ using Base
 export plot_1D_solutions, plot_2D_phase_diagram
 export _set_plotting_settings, _prepare_colorbar, _prettify_label
 
+import PyPlot: plot
+export plot
+
 
 "Set global plotting settings"
 function _set_plotting_settings()
@@ -550,3 +553,21 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     return save_dict,im,Nmax
 
 end
+
+
+##########
+# Plot multiple dispatch
+##########
+
+function plot(res::Result; x::String, y::String, kwargs...)
+    if length(size(res.solutions)) == 1
+        plot_1D_solutions(res; x=x, y=y, kwargs...)
+    elseif length(size(res.solutions)) == 2
+        plot_2D_solutions(res; x=x, y=y, kwargs...)
+    else
+        error("error")
+    end
+end
+
+
+plot(res::Result, x::String, y::String; kwargs...) = plot(res; x=x, y=y, kwargs...)

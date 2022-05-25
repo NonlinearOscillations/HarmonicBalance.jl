@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra, PyPlot
 import HarmonicBalance: transform_solutions, plot
 export transform_solutions, plot
 
@@ -16,7 +16,7 @@ Creates an ODEProblem object used by DifferentialEquations.jl from the equations
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
 If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
-function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector=[], timespan::Tuple, perturb_initial=0.0)
+function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector=[], timespan::Tuple, perturb_initial=0.0, kwargs...)
 
     if !is_rearranged(eom) # check if time-derivatives of the variable are on the right hand side
         eom = HarmonicBalance.rearrange_standard(eom)
@@ -44,7 +44,7 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
     # the initial condition is x0 if specified, taken from fixed_parameters otherwise
     initial = isempty(x0) ? real.(collect(values(fixed_parameters))[1:length(vars)]) * (1-perturb_initial) : x0
 
-    return DifferentialEquations.ODEProblem(f!, initial, timespan)
+    return DifferentialEquations.ODEProblem(f!, initial, timespan; kwargs...)
 end
 
 
@@ -67,3 +67,14 @@ end
 
 transform_solutions(soln::OrdinaryDiffEq.ODECompositeSolution, f::String, harm_eq::HarmonicEquation) = transform_solutions(soln.u, f, harm_eq)
 transform_solutions(s::OrdinaryDiffEq.ODECompositeSolution, funcs::Vector{String}, he::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]
+
+
+function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation)
+    if funcs isa String || length(funcs) == 1
+        plot(soln.t, transform_solutions(soln, funcs, harm_eq))
+    elseif length(funcs) == 2
+        plot(transform_solutions(soln, funcs, harm_eq)...)
+    else
+        error("Invalid plotting argument: ", funcs)
+    end
+end

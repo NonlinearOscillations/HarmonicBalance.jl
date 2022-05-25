@@ -29,7 +29,7 @@ fixed = (α => 1, ω0 => 1.0, γ => 1E-2, F => 1E-6)   # fixed parameters
 swept = ω => LinRange(0.9, 1.1, 100)           # range of parameter values
 solutions = get_steady_states(harmonic_eq, swept, fixed)
 
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
 ```
 
 ```@raw html
@@ -54,7 +54,7 @@ fixed = (α => 1, ω0 => 1.0, γ => 1E-2, F => 1E-2)   # fixed parameters
 swept = ω => LinRange(0.9, 1.1, 100)           # range of parameter values
 solutions = get_steady_states(harmonic_eq, swept, fixed)
 
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/linear_response/Duffing_nonlin_amp.png" width="450" alignment="left" \>
@@ -81,7 +81,7 @@ fixed = (α => 1., ω0 => 1.0, γ => 1E-2, ω => 1)   # fixed parameters
 swept = F => 10 .^ LinRange(-6, -1, 200)           # range of parameter values
 solutions = get_steady_states(harmonic_eq, swept, fixed)
 
-plot_1D_solutions(solutions, x="F", y="sqrt(u1^2 + v1^2)");
+plot(solutions, x="F", y="sqrt(u1^2 + v1^2)");
 HarmonicBalance.xscale("log") # use log scale on x
 
 LinearResponse.plot_jacobian_spectrum(solutions, x, 

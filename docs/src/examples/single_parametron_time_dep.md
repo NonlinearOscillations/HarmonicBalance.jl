@@ -30,7 +30,7 @@ fixed_parameters = ParameterList(Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  �
 Finally, we solve the harmonic equations and represent the solutions  by
 
 ```julia
-time_dep = HarmonicBalance.TimeEvolution.ODEProblem(averagedEOM, fixed_parameters, sweep=HarmonicBalance.TimeEvolution.ParameterSweep(), x0 = x0, timespan = times);
+time_dep = HarmonicBalance.TimeEvolution.(averagedEOM, fixed_parameters, sweep=HarmonicBalance.TimeEvolution.ParameterSweep(), x0 = x0, timespan = times);
 time_soln = HarmonicBalance.TimeEvolution.solve(time_dep, saveat=dt);
 HarmonicBalance.plot(getindex.(time_soln.u, 1), getindex.(time_soln.u,2))
 HarmonicBalance.xlabel("u",fontsize=20)

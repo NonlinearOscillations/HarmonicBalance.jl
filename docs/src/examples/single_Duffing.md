@@ -104,7 +104,7 @@ The "Classes" are boolean labels classifying each solution point, which may be u
 
 We now want to visualize the results. Here we plot the solution amplitude, ``\sqrt{U^2 + V^2}`` against the drive frequency ``\omega``: 
 ```julia
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/duffing_single.png" width="450" alignment="center" \>
@@ -170,8 +170,8 @@ Classes: stable, physical, Hopf, binary_labels
 
 Although 9 branches were found in total, only 3 remain physical (real-valued). Let us visualise the amplitudes corresponding to the two harmonics, ``\sqrt{U_1^2 + V_1^2}`` and ``\sqrt{U_2^2 + V_2^2}`` :
 ```julia
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
-plot_1D_solutions(solutions, x="ω", y="sqrt(u2^2 + v2^2)")
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
+plot(solutions, x="ω", y="sqrt(u2^2 + v2^2)")
 ```
 ![fig3](./../assets/duff_nonpert_w_3w.png)
 

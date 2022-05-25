@@ -55,15 +55,15 @@ HarmonicBalance.save("parametron_result.jld2", soln);
 
 During the execution of `get_steady_states`, different solution branches are classified by their proximity in complex space, with subsequent filtering of real (physically accceptable solutions). In addition, the stability properties of each steady state is assesed from the eigenvalues of the Jacobian matrix. All this information can be succintly represented in a 1D plot via
 ```julia
-save_dict = HarmonicBalance.plot_1D_solutions(soln, x="ω", y="sqrt(u1^2 + v1^2)", plot_only=["physical"]);
+save_dict = HarmonicBalance.plot(soln, x="ω", y="sqrt(u1^2 + v1^2)", plot_only=["physical"]);
 ```
-where `save_dict` is a dictionary that contains the plotted data and can be also exported if desired by setting a filename through the argument `filename` in `plot_1D_solutions`. A call to the above function produces the following figure
+where `save_dict` is a dictionary that contains the plotted data and can be also exported if desired by setting a filename through the argument `filename` in `plot`. A call to the above function produces the following figure
 
 ![fig1](./../assets/single_parametron_1D.png)
 
 The user can also can also introduce custom clases based on parameter conditions. Here we show some arbitrary example
 ```julia
-plt = HarmonicBalance.plot_1D_solutions(soln, x="ω", y="sqrt(u1^2 + v1^2)", marker_classification="ω^15 * sqrt(u1^2 + v1^2) < 0.1")
+plt = HarmonicBalance.plot(soln, x="ω", y="sqrt(u1^2 + v1^2)", marker_classification="ω^15 * sqrt(u1^2 + v1^2) < 0.1")
 ```
 producing 
 

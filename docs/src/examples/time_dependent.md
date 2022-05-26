@@ -67,7 +67,7 @@ DifferentialEquations.jl takes it from here - we only need to use `solve`.
 
 ```julia
 time_evo = solve(ode_problem, saveat=1.);
-plot(getindex.(time_evo.u, 1), getindex.(time_evo.u,2))
+plot(time_evo, ["u1", "v1"], harmonic_eqs)
 ```
 
 Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plots
@@ -79,7 +79,7 @@ Let us compare this to the steady state diagram.
 ```julia
 range = ω => LinRange(0.9, 1.1, 100)           # range of parameter values
 solutions = get_steady_states(harmonic_eqs, range, fixed)
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)*sign(u1)");
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)*sign(u1)");
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/parametron_response.png" width="600" alignment="center" \>
@@ -101,7 +101,7 @@ Let us now define a new `ODEProblem` which incorporates `sweep` and again use `s
 ```julia
 ode_problem = ODEProblem(harmonic_eqs, fixed, sweep=sweep, x0=[0.1;0.0], timespan=(0, 2E4))
 time_evo = solve(prob, saveat=100)
-plot(time_evo.t, sqrt.(getindex.(time_evo.u,1).^2 .+ getindex.(time_evo,2).^2))
+plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eqs)
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/sweep_omega.png" width="450" alignment="center" \>
@@ -190,7 +190,7 @@ Solution branches:   9
 
 Let us first see the steady states.
 ```julia
-plt = plot_1D_solutions(soln, x="F0", y="u1^2 + v1^2", yscale=:log);
+plt = plot(soln, x="F0", y="u1^2 + v1^2", yscale=:log);
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/pra_ss.png" width="1000" alignment="center"\>
@@ -212,7 +212,7 @@ TDsoln = solve(TDproblem, saveat=1); # space datapoints by 1
 ```
 Inspecting for example $u_1(T)$ as a function of time,
 ```julia
-plot(TDsoln.t, getindex.(TDsoln.u, 1))
+plot(time_evo, "u1", harmonic_eqs)
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_sweep.png" width="450" alignment="center" \>

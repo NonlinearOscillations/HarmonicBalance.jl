@@ -11,11 +11,16 @@ HarmonicBalance.transform_solutions
 Any function of the steady state solutions may be plotted. 
 In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`. 
 
+Note: from v0.5.2, `plot(r::Result, x::String, y::String)` can be used to call `plot_1D_solutions` and `plot_2D_solutions` as needed.
+To plot a function `y` of a time-dependent result `r`, the syntax is `plot(r::OrdinaryDiffEq.ODECompositeSolution, y, he::HarmonicEquation)`. For `y::String`, `y` is parsed into a function and plotted as a function of time.
+
 ```@docs
 HarmonicBalance.plot_1D_solutions
 HarmonicBalance.plot_1D_jacobian_eigenvalues
 HarmonicBalance.plot_2D_solutions
 ```
+
+
 
 ## Plotting phase diagrams (2D)
 

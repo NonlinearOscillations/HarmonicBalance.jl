@@ -3,8 +3,11 @@ using PyCall
 using Latexify
 using JLD2
 using Base
-export plot_1D_solutions, plot_2D_phase_diagram, transform_solutions
+export plot_1D_solutions, plot_2D_phase_diagram
 export _set_plotting_settings, _prepare_colorbar, _prettify_label
+
+import PyPlot: plot
+export plot
 
 
 "Set global plotting settings"
@@ -64,46 +67,6 @@ function filter_solutions(solution::Vector,  booleans)
     return solution .* factors
 end
 
-
-"""
-$(TYPEDSIGNATURES)
-
-Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
-Returns an array with the values of `f` evaluated for the respective solutions.
-Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
-"""
-function transform_solutions(res::Result, f::String; rules=Dict())
-    # a string is used as input - a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
-    transformed = [Vector{ComplexF64}(undef, length(res.solutions[1])) for k in res.solutions] # preallocate
-        
-    # define variables in rules in this namespace
-    new_keys = declare_variable.(string.(keys(Dict(rules)))) 
-    expr = f isa String ? Num(eval(Meta.parse(f))) : f
-
-    fixed_subs = merge(res.fixed_parameters, Dict(zip(new_keys, values(Dict(rules)))))
-    expr = substitute_all(expr, Dict(fixed_subs))
-
-    vars = res.problem.variables
-    all_symbols = cat(vars, collect(keys(res.swept_parameters)), dims=1)
-    comp_func = build_function(expr, all_symbols) 
-    f = eval(comp_func)
-
-    # preallocate an array for the numerical values, rewrite parts of it
-    # when looping through the solutions
-    vals = Vector{ComplexF64}(undef, length(all_symbols))
-    n_vars = length(vars)
-    n_pars = length(all_symbols) - n_vars
-
-    for idx in CartesianIndices(res.solutions)
-        params_values = res.swept_parameters[Tuple(idx)...]
-        vals[end-n_pars+1:end] .= params_values # param values are common to all branches
-        for (branch,soln) in enumerate(res.solutions[idx])
-            vals[1:n_vars] .= soln
-            transformed[idx][branch] = Base.invokelatest(f, vals)
-        end
-    end
-    return transformed
-end
 
 """
 $(TYPEDSIGNATURES)
@@ -590,3 +553,21 @@ function plot_2D_phase_diagram(res::Result; stable=false,observable="nsols",ax=n
     return save_dict,im,Nmax
 
 end
+
+
+##########
+# Plot multiple dispatch
+##########
+
+function plot(res::Result; x::String, y::String, kwargs...)
+    if length(size(res.solutions)) == 1
+        plot_1D_solutions(res; x=x, y=y, kwargs...)
+    elseif length(size(res.solutions)) == 2
+        plot_2D_solutions(res; x=x, y=y, kwargs...)
+    else
+        error("error")
+    end
+end
+
+
+plot(res::Result, x::String, y::String; kwargs...) = plot(res; x=x, y=y, kwargs...)

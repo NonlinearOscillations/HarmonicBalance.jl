@@ -48,7 +48,7 @@ Classes: stable, physical, Hopf, binary_labels
 ```
 
 ```julia
-plot_1D_solutions(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
+plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
 ```
 
 <img src="/docs/images/DuffingPlot.png" width="500">

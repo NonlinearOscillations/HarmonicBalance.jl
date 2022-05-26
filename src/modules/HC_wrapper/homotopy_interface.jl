@@ -47,7 +47,7 @@ function Problem(eom::HarmonicEquation; Jacobian=true)
     elseif Jacobian == "implicit"
         # compute the Jacobian implicitly
         J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
-    elseif Jacobian == "false"
+    elseif Jacobian == "false" || Jacobian == false
         dummy_J(arg) = I(1)
         J = dummy_J
     else

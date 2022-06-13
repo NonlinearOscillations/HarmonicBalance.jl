@@ -7,7 +7,7 @@ using HarmonicBalance,Latexify,PyPlot
 
 @variables ω₁, ω, γ,λ, t, T, α₁, x(t)
 
-#sympy object for the equation of motion
+# the differential equation of motion
 natural_equation = d(d(x, t),t) + ω₁^2*(1-λ*cos(2*ω*t)) * x + γ*d(x,t)  + α₁*x^3
 
 dEOM = DifferentialEquation(natural_equation, x)

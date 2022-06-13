@@ -68,6 +68,9 @@ function filter_solutions(solution::Vector,  booleans)
 end
 
 
+filter_solutions(res::Result, class::String) = filter_solutions.(res.solutions, res.classes[class])
+
+
 """
 $(TYPEDSIGNATURES)
 

@@ -1,3 +1,5 @@
+export ParameterSweep
+
 function ParameterSweep(functions::Dict, timespan::Tuple)
     t0, t1 = timespan[1], timespan[2]
     sweep_func=Dict{Num,Any}([])

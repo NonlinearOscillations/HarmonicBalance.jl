@@ -30,7 +30,7 @@ dEOM = HarmonicBalance.DifferentialEquation(natural_equation + force, x)
 HarmonicBalance.add_harmonic!(dEOM, x, ω); # single-frequency ansatz
 
 # construct the harmonic equations
-harmonic_eqs = HarmonicBalance.get_harmonic_equations(dEOM)
+harmonic_eq = HarmonicBalance.get_harmonic_equations(dEOM)
 ```
 ```
 A set of 2 harmonic equations
@@ -38,7 +38,7 @@ Variables: u1(T), v1(T)
 ...
 ```
 
-The object `harmonic_eqs` encodes Eq. \eqref{eq:harmeq}.   
+The object `harmonic_eq` encodes Eq. \eqref{eq:harmeq}.   
 
 **We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers.** The desired object here is `DifferentialEquations.ODEProblem`, which is then fed into `DifferentialEquations.solve`.
 
@@ -52,7 +52,7 @@ import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve
 x0 = [0.0; 0.] # initial condition
 fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1., η=>0.3, θ => 0, ψ => 0, ω=>1.) # parameter values
 
-ode_problem = ODEProblem(harmonic_eqs, fixed, x0 = x0, timespan = (0,1000))
+ode_problem = ODEProblem(harmonic_eq, fixed, x0 = x0, timespan = (0,1000))
 ```
 
 ```
@@ -67,7 +67,7 @@ DifferentialEquations.jl takes it from here - we only need to use `solve`.
 
 ```julia
 time_evo = solve(ode_problem, saveat=1.);
-plot(time_evo, ["u1", "v1"], harmonic_eqs)
+plot(time_evo, ["u1", "v1"], harmonic_eq)
 ```
 
 Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plots
@@ -78,7 +78,7 @@ Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plot
 Let us compare this to the steady state diagram.
 ```julia
 range = ω => LinRange(0.9, 1.1, 100)           # range of parameter values
-solutions = get_steady_states(harmonic_eqs, range, fixed)
+solutions = get_steady_states(harmonic_eq, range, fixed)
 plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)*sign(u1)");
 ```
 ```@raw html
@@ -99,16 +99,16 @@ The sweep linearly interpolates between $\omega = 0.9$ at time 0 and $\omega  = 
 
 Let us now define a new `ODEProblem` which incorporates `sweep` and again use `solve`:
 ```julia
-ode_problem = ODEProblem(harmonic_eqs, fixed, sweep=sweep, x0=[0.1;0.0], timespan=(0, 2E4))
-time_evo = solve(prob, saveat=100)
-plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eqs)
+ode_problem = ODEProblem(harmonic_eq, fixed, sweep=sweep, x0=[0.1;0.0], timespan=(0, 2E4))
+time_evo = solve(ode_problem, saveat=100)
+plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/sweep_omega.png" width="450" alignment="center" \>
 ``` ⠀
 We see the system first evolves from the initial condition towards the low-amplitude steady state. The amplitude increases as the sweep proceeds, with a jump occurring around $\omega = 1.08$ (i.e., time 18000).
 
-Successive weeps can be combined,
+Successive sweeps can be combined,
 ```julia
 sweep1 = ParameterSweep(ω => [0.95, 1.0], (0, 2E4))
 sweep2 = ParameterSweep(λ => [0.05, 0.01], (2E4, 4E4))
@@ -190,13 +190,14 @@ Solution branches:   9
 
 Let us first see the steady states.
 ```julia
-plt = plot(soln, x="F0", y="u1^2 + v1^2", yscale=:log);
+plt = plot(solutions, x="F0", y="u1^2 + v1^2", yscale=:log);
+plt = plot(solutions, x="F0", y="u2^2 + v2^2", yscale=:log);
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/pra_ss.png" width="1000" alignment="center"\>
 ```
 
-According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.11$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.10$, meaning a jump should occur. 
+According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.011$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.010$, meaning a jump should occur. 
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
 ```julia
@@ -212,7 +213,7 @@ TDsoln = solve(TDproblem, saveat=1); # space datapoints by 1
 ```
 Inspecting for example $u_1(T)$ as a function of time,
 ```julia
-plot(time_evo, "u1", harmonic_eqs)
+plot(TDsoln, "u1", harmonic_eq)
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_sweep.png" width="450" alignment="center" \>

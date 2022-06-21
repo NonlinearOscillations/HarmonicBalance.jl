@@ -43,7 +43,7 @@ Next, we have to input Eq.\eqref{eq:duffing}. This will be stored as a `Differen
 ```julia
 diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + γ*d(x,t) ~ F*cos(ω*t), x)
 ```
-The harmonic ansatz needs to specified now -- we expand `x` in a single frequency ``\omega``.
+The harmonic ansatz needs to be specified now -- we expand `x` in a single frequency ``\omega``.
 ```julia
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
 ```

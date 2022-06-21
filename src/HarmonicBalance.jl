@@ -57,6 +57,7 @@ module HarmonicBalance
 
     include("modules/TimeEvolution.jl")
     using .TimeEvolution
+    export ParameterSweep
 
     include("modules/Hopf.jl")
     using .Hopf

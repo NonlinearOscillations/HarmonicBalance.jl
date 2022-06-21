@@ -58,7 +58,7 @@ mutable struct DifferentialEquation
     # if expressions are entered instead of equations, automatically set them = 0
     DifferentialEquation(exprs::Vector{Num}, vars::Vector{Num}) = DifferentialEquation(OrderedDict(zip(vars, exprs .~ zeros(Int, length(exprs)))))
 
-    DifferentialEquation(arg1, arg2) = DifferentialEquation([arg1], [arg2])
+    DifferentialEquation(arg1, arg2) = DifferentialEquation(arg1 isa Vector ? arg1 : [arg1], arg2 isa Vector ? arg2 : [arg2])
 end
 
 

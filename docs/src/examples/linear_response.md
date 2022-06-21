@@ -9,13 +9,13 @@ Here we calculate the white noise response of a simple nonlinear system. A set o
 We start by [defining the Duffing oscillator](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/examples/single_Duffing/#The-code)
 ```julia
 using HarmonicBalance
-@variables α, ωF, ω0, F, t, q(t), γ, Γ; # declare constant variables and a function q(t)
+@variables α, ω, ω0, F, γ, t, x(t),; # declare constant variables and a function q(t)
 
 # define ODE
-diff_eq = DifferentialEquation(d(q,t,2) + 2*Γ*d(q,t) + ω0^2*q + γ*q^3 ~ F*cos(ωF*t), q)
+diff_eq = DifferentialEquation(d(x,t,2) + ω0*x + α*x^3 + γ*d(x,t) ~ F*cos(ω*t), x)
 
-# specify the ansatz q = u(T) cos(ωF*t) + v(T) sin(ωF*t)
-add_harmonic!(diff_eq, q, ωF) 
+# specify the ansatz x = u(T) cos(ω*t) + v(T) sin(ω*t)
+add_harmonic!(diff_eq, x, ω) 
 
 # implement ansatz to get harmonic equations
 harmonic_eq = get_harmonic_equations(diff_eq)
@@ -62,10 +62,10 @@ plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
 
 The amplitude is the well-known Duffing curve. Let's see the linear response of the two stable branches, 1 and 2.
 ```julia
-LinearResponse.plot_jacobian_spectrum(solutions, x, 
+HarmonicBalance.LinearResponse.plot_jacobian_spectrum(solutions, x, 
     Ω_range=LinRange(0.9,1.1,300), branch=1, logscale=true);
 
-LinearResponse.plot_jacobian_spectrum(solutions, x, 
+HarmonicBalance.LinearResponse.plot_jacobian_spectrum(solutions, x, 
     Ω_range=LinRange(0.9,1.1,300), branch=2, logscale=true);
 ```
 
@@ -84,7 +84,7 @@ solutions = get_steady_states(harmonic_eq, swept, fixed)
 plot(solutions, x="F", y="sqrt(u1^2 + v1^2)");
 HarmonicBalance.xscale("log") # use log scale on x
 
-LinearResponse.plot_jacobian_spectrum(solutions, x, 
+HarmonicBalance.LinearResponse.plot_jacobian_spectrum(solutions, x, 
     Ω_range=LinRange(0.9,1.1,300), branch=1, logscale=true);
 HarmonicBalance.xscale("log")
 ```

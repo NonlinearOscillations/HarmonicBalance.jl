@@ -1,5 +1,6 @@
 using DataStructures
 using JLD2
+using DelimitedFiles
 
 
 """
@@ -78,3 +79,19 @@ end
 
 _parse_symbol_names(x::Result) = _parse_symbol_names(x.problem)
 _parse_symbol_names(x) = nothing
+
+
+# Exporting to csv
+
+
+"""
+    $(SIGNATURES)
+
+Saves into `filename` a specified solution `branch` of the Result `res`.
+"""
+function export_csv(filename::String, res::Result, branch::Int)
+    branch_data = getindex.(res.solutions, branch)
+    writedlm(filename, branch_data, ',')
+end
+
+export_csv(filename::String, res::Result; branch::Int64) = export_csv(filename, res, branch)

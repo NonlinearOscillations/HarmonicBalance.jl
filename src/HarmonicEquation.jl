@@ -248,14 +248,14 @@ Harmonic equations:
 ```
 
 """
-function get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+function get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing, degree=2)
 
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
 
     all(isempty.(values(diff_eom.harmonics))) && error("No harmonics specified!")
     eom = harmonic_ansatz(diff_eom, fast_time); # substitute trig functions into the differential equation
-    eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time); # drop 2nd order time derivatives
+    eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=degree); # drop 2nd order time derivatives
     fourier_transform!(eom, fast_time); # perform averaging over the frequencies originally specified in dEOM
     ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2); # drop higher powers of the first-order derivatives
     return ft_eom_simplified 

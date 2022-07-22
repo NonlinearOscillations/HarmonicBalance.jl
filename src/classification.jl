@@ -125,3 +125,17 @@ function bitarr_to_int(arr)
     return sum(arr .* (2 .^ collect(length(arr)-1:-1:0)))
 end
 
+
+"""
+$(TYPEDSIGNATURES)
+Removes all solution branches from `res` where NONE of the solution falls into `class`. 
+Typically used to filter out unphysical solutions to prevent huge file sizes.
+"""
+function filter_result!(res::Result, class::String)
+    bools = [any(getindex.(res.classes[class],i)) for i in 1:length(res[1])]
+    res.solutions = [s[bools] for s in res.solutions]
+    for c in filter(x -> x != "binary_labels", keys(res.classes)) # binary_labels stores one Int per parameter set, ignore here
+        res.classes[c] = [s[bools] for s in res.classes[c]]
+    end
+end
+

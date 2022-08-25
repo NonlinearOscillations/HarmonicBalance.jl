@@ -55,4 +55,4 @@ plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
 
 ## Citation
 
-If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this paper](https://arxiv.org/abs/2202.00571).
+If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this paper](https://scipost.org/SciPostPhysCodeb.6).

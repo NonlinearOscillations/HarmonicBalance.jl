@@ -1,5 +1,5 @@
-import SymbolicUtils: quick_cancel; export quick_cancel
-import SymbolicUtils: Postwalk
+import Symbolics.SymbolicUtils: quick_cancel; export quick_cancel
+import Symbolics.SymbolicUtils: Postwalk
 
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly

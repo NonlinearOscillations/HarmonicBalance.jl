@@ -160,7 +160,7 @@ function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int
 
     # only get spectra of the stable points!
     spectra = [JacobianSpectrum(res, branch=branch, index = i) for i in (1:length(res.solutions))[stability]]
-    C = Array{Float64, 2}(undef,  length(Ω_range)-1, length(X)-1)
+    C = Array{Float64, 2}(undef,  length(Ω_range), length(X))
 
     bar = Progress(length(CartesianIndices(C)), 1, "Diagonalizing the Jacobian for each solution ... ", 50)
     for ij in CartesianIndices(C)
@@ -177,5 +177,5 @@ function plot_jacobian_spectrum(res::Result, nat_var::Num; Ω_range, branch::Int
 
     y_label = y_offset=="0.0" ? "noise " * latexify("ω") : "noise " * latexify("ω") * " - " * latexify(y_offset)
     ylabel(y_label, fontsize=24, fontname="Times");
-    return C
+    return X, Ω_range, C
 end

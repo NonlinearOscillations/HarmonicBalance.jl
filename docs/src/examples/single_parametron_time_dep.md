@@ -11,11 +11,11 @@ using HarmonicBalance
 
 natural_equation =  d(d(x,t),t) + γ*d(x,t) + Ω^2*(1-λ*cos(2*ω*t+ψ))*x + α * x^3 + η *d(x,t) * x^2
 forces =  F*cos(ω*t+θ)
-dEOM = HarmonicBalance.DifferentialEquation(natural_equation + forces, x)
+dEOM = DifferentialEquation(natural_equation + forces, x)
 
-HarmonicBalance.add_harmonic!(dEOM, x, ω);
+add_harmonic!(dEOM, x, ω);
 
-@time harmonic_eq = HarmonicBalance.get_harmonic_equations(dEOM)
+@time harmonic_eq = get_harmonic_equations(dEOM)
 ```
 
 We choose to visualize the dynamics of the harmonic variables $u,v$ in phase space. For it, we setup the initial conditions $x(t=0)=x_0$ for the simulation
@@ -32,7 +32,7 @@ Finally, we solve the harmonic equations and represent the solutions  by
 ```julia
 time_dep = HarmonicBalance.TimeEvolution.ODEProblem(harmonic_eq, fixed, sweep=ParameterSweep(), x0 = x0, timespan = times);
 time_soln = HarmonicBalance.TimeEvolution.solve(time_dep, saveat=dt);
-HarmonicBalance.plot(getindex.(time_soln.u, 1), getindex.(time_soln.u,2))
+plot(time_soln, ["u", "v"], harmonic_eq)
 HarmonicBalance.xlabel("u",fontsize=20)
 HarmonicBalance.ylabel("v",fontsize=20)
 ```

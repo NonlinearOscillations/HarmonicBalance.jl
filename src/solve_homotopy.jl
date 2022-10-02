@@ -267,33 +267,3 @@ end
 
 
 tuple_to_vector(t::Tuple) = [i for i in t]
-
-
-###
-# DEPRECATED
-###
-
-
-#=
-
-"Returns the parameters of res which are fixed throughout all solution points."
-function get_fixed_parameters(res::Result)
-    swept_parameters = keys(res.swept_parameters)
-    all_parameters = res.problem.parameters
-    return setdiff(all_parameters, swept_parameters)
-end
-
-function is_Hopf_unstable(solns::Result; index::Int64=0, branch::Int64=0, im_tol=im_tol)
-    unstable(b, i) = is_Hopf_unstable(solns.solutions[i][b], solns.parameters[i], solns.eom, im_tol=im_tol)
-    (index != 0 && branch != 0) && return unstable(branch, index)
-    (index == 0 && branch != 0) && return BitVector([unstable(branch, i) for i in 1:length(solns.solutions)])
-    (index == 0 && branch == 0) && return [BitVector([unstable(b,i) for b in 1:length(solns.solutions[1])]) for i in 1:length(solns.solutions)]
-    (index != 0 && branch == 0) && error("you must specify an index and a branch, only a branch or neither")
-end =#
-
-
-#is_stable(solutions::Vector{SteadyState}, parameters::ParameterVector, eom::Problem; im_tol::Float64) = BitVector([is_stable(single, parameters, eom, im_tol=im_tol) for single in solutions])
-#is_Hopf_unstable(solutions::Vector{SteadyState}, parameters::ParameterVector, eom::Problem; im_tol::Float64) = BitVector([is_Hopf_unstable(single, parameters, eom, im_tol=im_tol) for single in solutions])
-
-
-

@@ -25,7 +25,7 @@ module HarmonicBalance
    end
 
    export is_real
-    is_real(x) = abs(imag(x)) < im_tol
+    is_real(x) = abs(imag(x)) / abs(real(x)) < im_tol || abs(x) < 1E-70
     is_real(x::Array) = any(is_real.(x))
 
     # Symbolics does not natively support complex exponentials of variables
@@ -58,8 +58,8 @@ module HarmonicBalance
     using .TimeEvolution
     export ParameterSweep
 
-    include("modules/Hopf.jl")
-    using .Hopf
+    include("modules/LimitCycles.jl")
+    using .LimitCycles
 
 
 

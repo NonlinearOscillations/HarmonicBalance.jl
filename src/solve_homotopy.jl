@@ -91,6 +91,9 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     # prepare an array of vectors, each representing one set of input parameters
     # an n-dimensional sweep uses an n-dimensional array
     unique_fixed = filter_duplicate_parameters(swept_parameters, fixed_parameters)
+
+    any([in(var_name(var), var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])) for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
+
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
     raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading)
@@ -106,14 +109,19 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J) # a "raw" solution struct
 
     sort_solutions!(result, sorting=sorting) # sort into branches
+    classify_default ? _classify_default!(result) : nothing
+
+    return result
+
+end
+
+
+function _classify_default!(result)
     classify_solutions!(result, is_physical, "physical")
     classify_solutions!(result, is_stable, "stable")
     classify_solutions!(result, is_Hopf_unstable, "Hopf")
     order_branches!(result, ["physical", "stable", "Hopf"]) # shuffle the branches to have relevant ones first
     classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
-
-    return result
-
 end
 
 
@@ -174,9 +182,9 @@ function reorder_solutions!(res::Result, order::Vector{Int64})
     end
 end
 
-"Reorder the elements of `a` to match the index permutation `order`."
+"Reorder EACH ELEMENT of `a` to match the index permutation `order`."
 function reorder_array(a::Array, order::Vector{Int64})
-    #typeof(a[1]) ∉ [Vector, BitVector] && error("cannot unambiguously reorder a non-vector")
+    a[1] isa Array || return a
     new_array = similar(a)
     for (i,el) in enumerate(a)
         new_array[i] = el[order]
@@ -194,7 +202,7 @@ function _prepare_input_params(prob::Problem, sweeps::ParameterRange, fixed_para
     all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)), dims=1)
     # the order of parameters we have now does not correspond to that in prob!
     # get the order from prob and construct a permutation to rearrange our parameters
-    error = ArgumentError("some input parameters are missing or do not appear in the equation")
+    error = ArgumentError("Some input parameters are missing or appear more than once!")
     permutation = try
          p = [findall(x->isequal(x, par), all_keys) for par in prob.parameters] # find the matching position of each parameter
          all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!

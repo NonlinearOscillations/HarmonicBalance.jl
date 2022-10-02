@@ -34,7 +34,7 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
     get_steady_states(prob::Problem, 
                         swept_parameters::ParameterRange,
                         fixed_parameters::ParameterList;
-                        random_warmup=false,
+                        random_warmup=true,
                             threading=false,
                             sorting="hilbert")
 
@@ -275,3 +275,34 @@ end
 
 
 tuple_to_vector(t::Tuple) = [i for i in t]
+
+
+function newton(prob::Problem, soln::OrderedDict)
+
+    vars = _convert_or_zero.(substitute_all(prob.variables, soln))
+    pars = _convert_or_zero.(substitute_all(prob.parameters, soln))
+
+    HomotopyContinuation.newton(prob.system, vars, pars)
+end
+
+
+"""
+    newton(res::Result, soln::OrderedDict)  
+    newton(res::Result; branch, index)
+      
+Run a newton solver on `prob::Problem` starting from the solution `soln` (indexable by `branch` and `index`).
+Any variables/parameters not present in `soln` are set to zero. 
+"""
+newton(res::Result, soln::OrderedDict) = newton(res.problem, soln)
+newton(res::Result; branch, index) = newton(res, res[index][branch])
+
+
+function _convert_or_zero(x, t=ComplexF64)
+    try 
+        convert(t, x)
+    catch ArgumentError
+        @warn string(x) * " not supplied: setting to zero"
+        return 0
+    end
+end
+

@@ -1,4 +1,4 @@
-using LinearAlgebra, PyPlot
+using LinearAlgebra, Latexify
 import HarmonicBalance: transform_solutions, plot
 export transform_solutions, plot
 
@@ -69,11 +69,11 @@ transform_solutions(soln::OrdinaryDiffEq.ODECompositeSolution, f::String, harm_e
 transform_solutions(s::OrdinaryDiffEq.ODECompositeSolution, funcs::Vector{String}, he::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]
 
 
-function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation)
+function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; kwargs...)
     if funcs isa String || length(funcs) == 1
-        plot(soln.t, transform_solutions(soln, funcs, harm_eq))
-    elseif length(funcs) == 2
-        plot(transform_solutions(soln, funcs, harm_eq)...)
+        plot(soln.t, transform_solutions(soln, funcs, harm_eq); legend=false, xlabel="time", ylabel=latexify(funcs), kwargs...)
+    elseif length(funcs) == 2 # plot of func vs func
+        plot(transform_solutions(soln, funcs, harm_eq)...; legend=false, xlabel=latexify(funcs[1]), ylabel=latexify(funcs[2]), kwargs...)
     else
         error("Invalid plotting argument: ", funcs)
     end

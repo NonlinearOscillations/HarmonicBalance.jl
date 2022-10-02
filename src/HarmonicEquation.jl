@@ -54,8 +54,8 @@ function slow_flow!(eom::HarmonicEquation; fast_time::Num, slow_time::Num, degre
     vars = get_variables(eom)
     new_vars = substitute_all.(vars, fast_time => slow_time)
     replace0 = map(Pair, vars, new_vars) # zeroth degree derivative is separate since Differential^0 does not work
-    replace_degrees = map(Pair, d(vars, fast_time), d(new_vars, slow_time))
-    replace = flatten([replace0, replace_degrees])
+    replace_degrees = [map(Pair, d(vars, fast_time, deg), d(new_vars, slow_time, deg)) for deg in 1:degree-1]
+    replace = flatten([replace0, replace_degrees...])
 
     # degree derivatives are removed
     drop = [d(var, fast_time, degree) => 0 for var in get_variables(eom)]
@@ -131,6 +131,9 @@ Get the internal symbols of the independent variables of `eom`.
 function get_variables(eom::HarmonicEquation)
     return flatten(get_variables.(eom.variables))
 end
+
+
+get_variables(p::Problem) = get_variables(p.eom)
 
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"

@@ -44,6 +44,7 @@ function transform_solutions(res::Result, f::String; rules=Dict())
     return transformed
 end
 
+transform_solutions(res::Result, fs::Vector{String}; kwargs...) = [transform_solutions(res, f; kwargs...) for f in fs]
 
 # a simplified version meant to work with arrays of solutions
 # cannot parse parameter values  mainly meant for time-dependent results

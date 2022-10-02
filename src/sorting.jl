@@ -114,9 +114,9 @@ function sort_1D(solns::Vector{Vector{SteadyState}})
     sorted_solns = similar(solns) # preallocate
     sorted_solns[1] = sort(solns[1], by= x->abs.(imag(x))) # prefer real solution at first position
 
-    bar = Progress(length(solns), 1, "Ordering solutions into branches ...")
+    bar = Progress(length(solns), dt=1, desc="Ordering solutions into branches ...", output=stdout)
     for (i, soln) in enumerate(solns[1:end-1])
-        next!(bar)
+        next!(bar);
         matched_indices = align_pair(sorted_solns[i], solns[i+1]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution
         sorted_solns[i+1] = (solns[i+1])[next_indices]
@@ -177,9 +177,9 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest")
     sorted_solns = Inf.*copy(solns)  # infinite solutions are ignored by the align_pair function. This trick allows a consistent ordering "propagation"
     sorted_solns[1,1] = sort(solns[1,1], by= x->abs.(imag(x))) # prefer real solution at first position
 
-    bar = Progress(length(idx_pairs), 1, "Ordering solutions into branches ...")
+    bar = Progress(length(idx_pairs), dt=1, desc="Ordering solutions into branches ...", output=stdout)
     for i in 1:length(idx_pairs)-1 
-        next!(bar)
+        next!(bar);
         neighbors =  get_nn_2D(idx_pairs[i+1],size(solns,1),size(solns,2))
         reference = [sorted_solns[ind...] for ind in neighbors]
         matched_indices = align_pair(reference, solns[idx_pairs[i+1]...]) # pairs of matching indices

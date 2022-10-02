@@ -2,6 +2,36 @@ export get_response
 export plot_response
 
 
+
+"""
+    get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)
+
+Obtain the symbolic linear response matrix of a `diff_eq` corresponding to a perturbation frequency `freq`.
+This routine cannot accept a `HarmonicEquation` since there, some time-derivatives are already dropped.
+`order` denotes the highest differential order to be considered.
+
+"""
+function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)::Matrix
+    @variables T, i
+    time = get_independent_variables(diff_eq)[1]
+
+    eom = HarmonicBalance.harmonic_ansatz(diff_eq, time)
+
+    # replace the time-dependence of harmonic variables by slow time BUT do not drop any derivatives
+    eom = HarmonicBalance.slow_flow(eom, fast_time=time, slow_time=T, degree=order+1)
+
+    eom = HarmonicBalance.fourier_transform(eom, time)
+
+    # get the response matrix by summing the orders
+    M = get_Jacobian(eom.equations, get_variables(eom))
+    for n in 1:order
+        M += (i * freq)^n * get_Jacobian(eom.equations, d(get_variables(eom), T, n))
+    end
+    M = substitute_all(M, [var => HarmonicBalance.declare_variable(var_name(var)) for var in get_variables(eom)])
+    substitute_all(expand_derivatives.(M), i => im)
+end
+
+
 "Get the response matrix corresponding to `res`.
 Any substitution rules not specified in `res` can be supplied in `rules`."
 function ResponseMatrix(res::Result; rules=Dict())
@@ -66,44 +96,6 @@ end
 _plusamp(uv) = norm(uv)^2 - 2*(imag(uv[1])*real(uv[2]) - real(uv[1])*imag(uv[2]))
 _minusamp(uv) = norm(uv)^2 + 2*(imag(uv[1])*real(uv[2]) - real(uv[1])*imag(uv[2]))
 
-
-"""
-$(TYPEDSIGNATURES)
-
-Plot the linear response of a solution `branch` of `res` for the frequencies `Ω_range`.
-
-This method takes n^2 matrix inversions for n elements of `Ω_range`. It therefore takes longer than `plot_jacobian_spectrum` (which is (O(n)))
-but is also valid far from resonance. 
-
-"""
-function plot_response(res::Result, Ω_range; branch::Int, logscale=false)
-    _set_plotting_settings()
-    length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
-    stability = classify_branch(res, branch, "stable") # boolean array
-    !any(stability) && error("Cannot generate a spectrum - no stable solutions!")
-
-    X = Vector{Float64}(collect(values(res.swept_parameters))[1][stability])
-
-    response = ResponseMatrix(res)
-
-    Y = Array{Float64, 2}(undef,  length(Ω_range), length(X))
-
-    # this could be optimized by not grabbing the entire huge dictionary every time
-
-    bar = Progress(length(Y), 1, "Solving the linear response ODE for each solution and input frequency ... ", 50)
-    for j in 1:(size(Y)[2])
-        next!(bar)
-        s = get_single_solution(res, branch=branch, index=j)
-        for i in 1:(size(Y)[1])
-            Y[i,j] = get_response(response, s, reverse(Ω_range)[i])
-        end
-    end
-
-    Y = logscale ? log.(Y) : Y
-    plt = PyPlot.imshow(Y, aspect="auto", extent=[X[1], X[end], Ω_range[1], Ω_range[end]])
-    xlabel(Latexify.latexify(string(first(keys(res.swept_parameters)))),fontsize=20); ylabel("noise angular frequency",fontsize=20);
-    return plt
-end
 
 
 

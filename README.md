@@ -19,10 +19,10 @@ For a detailed description of the package and examples, see the [documentation](
 
 [This repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks) contains a collection of example notebooks.
 
-## [Simple example](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/examples/single_Duffing/)
+## [Simple example](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/examples/simple_Duffing/)
 Let's find the steady states of a driven Duffing oscillator with nonlinear damping, its equation of motion is:
 
-<img src="/docs/images/DuffingEq.png" width="450">
+<img src="/docs/images/github_readme_eq.png" width="450">
 
 ```julia
 using HarmonicBalance
@@ -34,8 +34,8 @@ add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(
 harmonic_eq = get_harmonic_equations(diff_eq)
 
 fixed = (α => 1., ω0 => 1.0, F => 0.01, η=>0.1)   # fixed parameters
-swept = ω => LinRange(0.9, 1.2, 100)           # range of parameter values
-solutions = get_steady_states(harmonic_eq, swept, fixed)
+varied = ω => LinRange(0.9, 1.2, 100)           # range of parameter values
+result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 ```
 A steady state result for 100 parameter points
@@ -48,10 +48,10 @@ Classes: stable, physical, Hopf, binary_labels
 ```
 
 ```julia
-plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)");
+plot(result, "sqrt(u1^2 + v1^2)")
 ```
 
-<img src="/docs/images/DuffingPlot.png" width="500">
+<img src="/docs/images/github_readme_plot.png">
 
 ## Citation
 

@@ -1,6 +1,6 @@
 # [Introduction: the Duffing oscillator](@id Duffing)
 
-Here we show the workflow of HarmonicBalance.jl on a simple example - the driven Duffing oscillator.
+Here we show the workflow of HarmonicBalance.jl on a simple example - the driven Duffing oscillator. The code is also available as a [Jupyter notebook](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks). 
 
 ## The equations
 
@@ -30,7 +30,7 @@ Fortunately, some harmonics are more important than others. By truncating the in
 ```math
 x(t) = U \cos(\omega t) + V \sin(\omega t) \,,
 ```
-which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quadratures ``U`` and ``V`` to be constant then reduces the differential equation \eqref{eq:duffing} to two coupled cubic polynomial equations (for more details on this step, see the appendices in [https://arxiv.org/abs/2202.00571](https://arxiv.org/abs/2202.00571)). Finding the roots of coupled polynomials is in general very hard. We here apply the method of homotopy continuation, as implemented in [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/) which is guaranteed to find the complete set of roots.
+which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quadratures ``U`` and ``V`` to be constant then reduces the differential equation \eqref{eq:duffing} to two coupled cubic polynomial equations (for more details on this step, see the appendices in [https://scipost.org/SciPostPhysCodeb.6](https://scipost.org/SciPostPhysCodeb.6)). Finding the roots of coupled polynomials is in general very hard. We here apply the method of homotopy continuation, as implemented in [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/) which is guaranteed to find the complete set of roots.
 
 ## The code
 
@@ -86,7 +86,7 @@ fixed = (α => 1., ω0 => 1.0, F => 0.01, γ=>0.01) # fixed parameters
 ```
 Now everything is ready to crank the handle. `get_steady_states` solves our `harmonic_eq` using the varied and fixed parameters:
 ```julia
-solutions = get_steady_states(harmonic_eq, varied, fixed)
+result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 The results are `show`n:
 ```
@@ -104,10 +104,10 @@ The "Classes" are boolean labels classifying each solution point, which may be u
 
 We now want to visualize the results. Here we plot the solution amplitude, ``\sqrt{U^2 + V^2}`` against the drive frequency ``\omega``: 
 ```julia
-plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
+plot(result, "sqrt(u1^2 + v1^2)")
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/duffing_single.png" width="450" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/simple_Duffing/response_single.png" alignment="center" \>
 ``` ⠀
 
 This is the expected [response curve](https://en.wikipedia.org/wiki/Duffing_equation#Frequency_response) for the Duffing equation.
@@ -148,15 +148,15 @@ Harmonic equations:
 The variables `u1,v1` now encode `ω` and `u2, v2` encode `3ω`. We see this system is much harder to solve as we now have 4 harmonic variables, resulting in 4 coupled cubic equations. A maximum of ``3^4 = 81`` solutions [may appear](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem)! 
 
 For the above parameters (where a perturbative treatment would have been reasonable), the principal response at ``\omega`` looks rather similar, with a much smaller upconverted component appearing at ``3 \omega``:
-![fig2](./../assets/duff_w_3w.png)
+![fig2](./../assets/simple_Duffing/response_two_weak.png)
 
 ### Non-perturbative results (strong interactions)
 
 The non-perturbative nature of Eq.(3) allows us to capture some behaviour which is *not* a mere extension of the usual single-harmonic Duffing response. Suppose we drive a strongly nonlinear resonator at frequency ``\omega \cong \omega_0 / 3``. Such a drive is far out of resonance, however, the upconverted harmonic ``3 \omega = \omega_0`` is not and may play an important role! Let us try this out:
 ```julia
 fixed = (α => 10., ω0 => 3, F => 5, γ=>0.01)   # fixed parameters
-swept = ω => LinRange(0.9, 1.4, 100)           # range of parameter values
-solutions = get_steady_states(harmonic_eq, swept, fixed)
+varied = ω => LinRange(0.9, 1.4, 100)           # range of parameter values
+result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 ```
 A steady state result for 100 parameter points
@@ -170,9 +170,10 @@ Classes: stable, physical, Hopf, binary_labels
 
 Although 9 branches were found in total, only 3 remain physical (real-valued). Let us visualise the amplitudes corresponding to the two harmonics, ``\sqrt{U_1^2 + V_1^2}`` and ``\sqrt{U_2^2 + V_2^2}`` :
 ```julia
-plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)")
-plot(solutions, x="ω", y="sqrt(u2^2 + v2^2)")
+p1 = plot(result, "sqrt(u1^2 + v1^2)", legend=false)
+p2 = plot(result, "sqrt(u2^2 + v2^2)")
+plot(p1, p2)
 ```
-![fig3](./../assets/duff_nonpert_w_3w.png)
+![fig3](./../assets/simple_Duffing/response_two_strong.png)
 
 The contributions of ``\omega`` and ``3\omega`` are now comparable and the system shows some fairly complex behaviour! This demonstrates how an exact solution within an extended Fourier subspace [Eq. (3)] goes beyond a perturbative treatment.

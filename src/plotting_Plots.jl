@@ -1,7 +1,11 @@
 using Plots, Latexify
-import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram
-Plots.default(label=nothing, linewidth=2)
-Plots.default(fontfamily="Computer Modern", titlefont="Computer Modern" , tickfont="Computer Modern")
+import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig
+
+function _set_Plots_default()
+    font = "Computer Modern"
+    default(linewidth=2, legend=:outerright)
+    default(fontfamily=font, titlefont=font , tickfont=font)
+end
 
 dim(res::Result) = length(size(res.solutions)) # give solution dimensionality
 
@@ -9,7 +13,7 @@ dim(res::Result) = length(size(res.solutions)) # give solution dimensionality
 """
 $(TYPEDSIGNATURES)
 
-## Plotting a `Result` object.
+## Plot a `Result` object.
 
 Class selection done by passing `String` or `Vector{String}` as kwarg:
 
@@ -31,6 +35,7 @@ The x,y,z arguments are Strings compatible with Symbolics.jl
 (the x and y axes are taken automatically from `res`)
 """
 function plot(res::Result, varargs...; kwargs...)::Plots.Plot
+    HarmonicBalance._set_Plots_default()
     if dim(res) == 1
         plot1D(res, varargs...; kwargs...)
     elseif dim(res) == 2
@@ -94,9 +99,14 @@ _is_labeled(p::Plots.Plot, idx::Int64) = in(string(idx), [sub[:label] for sub in
 function plot1D(res::Result; x::String="default", y::String, class="default", not_class=[], add=false, kwargs...)
 
     if class == "default"
-        p = plot1D(res; x=x, y=y, class=["physical", "stable"], kwargs...)
-        plot1D(res; x=x, y=y, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
-        return p
+        if not_class == [] # plot stable full, unstable dashed
+            p = plot1D(res; x=x, y=y, class=["physical", "stable"], kwargs...)
+            plot1D(res; x=x, y=y, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            return p
+        else
+            p = plot1D(res; x=x, y=y, not_class=not_class, class="physical", add=add, kwargs...)
+            return p
+        end
     end
 
     dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
@@ -134,6 +144,9 @@ end
 
 plot2D(res::Result, z::String; kwargs...) = plot2D(res; z=z, kwargs...)
 
+###
+# PHASE DIAGRAMS
+###
 
 """
 $(TYPEDSIGNATURES)
@@ -148,6 +161,7 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 Other kwargs are passed onto Plots.gr()
 """
 function plot_phase_diagram(res::Result; kwargs...)::Plots.Plot
+    _set_Plots_default()
     if dim(res) == 1
         plot_phase_diagram_1D(res; kwargs...)
     elseif dim(res) == 2
@@ -178,8 +192,11 @@ function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwar
     plot(X..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
 end
 
+###
+# TRANSFORMATIONS TO THE LAB frame
+###
 
-function timetrace(soln, res, times)
+function to_lab_frame(soln, res, times)
     
     timetrace = zeros(length(times))
 
@@ -197,10 +214,18 @@ function timetrace(soln, res, times)
     timetrace
 end
 
-timetrace(res::Result, times; index, branch) = timetrace(res[index][branch], res, times)
+
+"""
+    to_lab_frame(res::Result, times; index::Int, branch::Int)
+    to_lab_frame(soln::OrderedDict, res::Result, times)
+
+Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for `times`.
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly. 
+"""
+to_lab_frame(res::Result, times; index::Int, branch::Int) = to_lab_frame(res[index][branch], res, times)
 
 
-function timetrace_velocity(soln, res, times)
+function to_lab_frame_velocity(soln, res, times)
     
     timetrace = zeros(length(times))
 
@@ -216,7 +241,15 @@ function timetrace_velocity(soln, res, times)
     timetrace
 end
 
-timetrace_velocity(res::Result, times; index, branch) = timetrace_velocity(res[index][branch], res, times)
+
+"""
+    to_lab_frame_velocity(res::Result, times; index::Int, branch::Int)
+    to_lab_frame_velocity(soln::OrderedDict, res::Result, times)
+
+Transform a solution's velocity into the lab frame (i.e., invert the harmonic ansatz for dx/dt ) for `times`.
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly. 
+"""
+to_lab_frame_velocity(res::Result, times; index, branch) = to_lab_frame_velocity(res[index][branch], res, times)
 
 
 

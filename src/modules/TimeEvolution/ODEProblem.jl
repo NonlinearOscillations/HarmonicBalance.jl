@@ -70,6 +70,7 @@ transform_solutions(s::OrdinaryDiffEq.ODECompositeSolution, funcs::Vector{String
 
 
 function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; kwargs...)
+    HarmonicBalance._set_Plots_default()
     if funcs isa String || length(funcs) == 1
         plot(soln.t, transform_solutions(soln, funcs, harm_eq); legend=false, xlabel="time", ylabel=latexify(funcs), kwargs...)
     elseif length(funcs) == 2 # plot of func vs func

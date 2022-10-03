@@ -42,6 +42,16 @@ function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; o
 end
 
 
+"""
+    plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
+
+Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`. 
+Slow-time derivatives up to `order` are kept in the process.
+
+Any kwargs are fed to Plots' gr().
+
+Solutions not belonging to the `physical` class are ignored. 
+"""
 function plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
 
 length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")

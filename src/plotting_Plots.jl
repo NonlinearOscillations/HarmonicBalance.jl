@@ -26,13 +26,18 @@ See also `plot!`
 
 The x,y,z arguments are Strings compatible with Symbolics.jl
 
-### 1D plots
-    plot(res::Result; x::String, y::String, class="physical", not_class=[], kwargs...)
+## 1D plots
+    plot(res::Result; x::String, y::String, class="default", not_class=[], kwargs...)
+    plot(res::Result, y::String; kwargs...) # take x automatically from Result
 
-### 2D plots
+default behaviour: plot stable solutions as full lines, unstable as dashed
+###
+
+## 2D plots
+
     plot(res::Result; z::String, class="physical", not_class=[], kwargs...)
 
-(the x and y axes are taken automatically from `res`)
+the x and y axes are taken automatically from `res`
 """
 function plot(res::Result, varargs...; kwargs...)::Plots.Plot
     HarmonicBalance._set_Plots_default()
@@ -152,6 +157,7 @@ plot2D(res::Result, z::String; kwargs...) = plot2D(res; z=z, kwargs...)
 $(TYPEDSIGNATURES)
 
 Plot the number of solutions in a `Result` object as a function of the parameters.
+Works with 1D and 2D datasets.
 
 Class selection done by passing `String` or `Vector{String}` as kwarg:
 

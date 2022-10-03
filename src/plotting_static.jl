@@ -11,7 +11,7 @@ export plot
 
 
 "Set global plotting settings"
-function _set_plotting_settings()
+function _set_plotting_settings()::Nothing
     plt.style.use("default") #reset settings
     rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams") 
     rcParams["text.usetex"]       = true
@@ -43,6 +43,7 @@ function _set_plotting_settings()
     rcParams["ytick.major.pad"]   = 7
     rcParams["figure.autolayout"] = true
     rcParams["figure.dpi"] = 220
+    return nothing
 end
 
 

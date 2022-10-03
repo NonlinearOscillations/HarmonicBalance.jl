@@ -9,6 +9,13 @@ HarmonicBalance.TimeEvolution.ODEProblem
 HarmonicBalance.TimeEvolution.ParameterSweep
 ```
 
+## Plotting
+
+```@docs
+HarmonicBalance.TimeEvolution.plot(::HarmonicBalance.TimeEvolution.OrdinaryDiffEq.ODECompositeSolution, ::Any, ::HarmonicEquation)
+```
+
+## Miscellaneous
 Using a time-dependent simulation can verify solution stability in cases where the Jacobian is too expensive to compute.
 
 ```@docs

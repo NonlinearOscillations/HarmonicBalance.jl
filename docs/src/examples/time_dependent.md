@@ -22,15 +22,14 @@ Here we primarily demonstrate on the [parametrically driven oscillator](@ref par
 We start by defining our system.
 ```julia
 using HarmonicBalance
-@variables Ω, γ, λ, F, x, θ, η, α, ω, ψ, T, t, x(t)
+@variables ω0, γ, λ, F, x, θ, η, α, ω, t, x(t)
 
-natural_equation =  d(d(x,t),t) + γ*d(x,t) + Ω^2*(1-λ*cos(2*ω*t+ψ))*x + α*x^3 + η*d(x,t)*x^2
-force =  F*cos(ω*t+θ)
-dEOM = HarmonicBalance.DifferentialEquation(natural_equation + force, x)
-HarmonicBalance.add_harmonic!(dEOM, x, ω); # single-frequency ansatz
+eq =  d(d(x,t),t) + γ*d(x,t) + ω0^2*(1-λ*cos(2*ω*t))*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t+θ)
 
-# construct the harmonic equations
-harmonic_eq = HarmonicBalance.get_harmonic_equations(dEOM)
+diff_eq = DifferentialEquation(eq, x)
+add_harmonic!(diff_eq, x, ω); # single-frequency ansatz
+
+harmonic_eq = get_harmonic_equations(diff_eq);
 ```
 ```
 A set of 2 harmonic equations
@@ -40,7 +39,7 @@ Variables: u1(T), v1(T)
 
 The object `harmonic_eq` encodes Eq. \eqref{eq:harmeq}.   
 
-**We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers.** The desired object here is `DifferentialEquations.ODEProblem`, which is then fed into `DifferentialEquations.solve`.
+We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers. The desired object here is `DifferentialEquations.ODEProblem`, which is then fed into `DifferentialEquations.solve`.
 
 ## Evolving from an initial condition
 
@@ -50,7 +49,7 @@ For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEqu
 ```julia
 import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve
 x0 = [0.0; 0.] # initial condition
-fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1., η=>0.3, θ => 0, ψ => 0, ω=>1.) # parameter values
+fixed = (ω0 => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1., η=>0.3, θ => 0, ω=>1.) # parameter values
 
 ode_problem = ODEProblem(harmonic_eq, fixed, x0 = x0, timespan = (0,1000))
 ```
@@ -72,17 +71,17 @@ plot(time_evo, ["u1", "v1"], harmonic_eq)
 
 Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plots
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/ss_approach.png" width="900" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/evo_to_steady.png" alignment="center" \>
 ``` ⠀
 
 Let us compare this to the steady state diagram.
 ```julia
-range = ω => LinRange(0.9, 1.1, 100)           # range of parameter values
-solutions = get_steady_states(harmonic_eq, range, fixed)
-plot(solutions, x="ω", y="sqrt(u1^2 + v1^2)*sign(u1)");
+varied = ω => LinRange(0.9, 1.1, 100)
+result = get_steady_states(harmonic_eq, varied, fixed)
+plot(result, "sqrt(u1^2 + v1^2)")
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/parametron_response.png" width="600" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/steady.png" alignment="center" \>
 ``` ⠀
 
 Clearly when evolving from `x0 = [0.,0.]`, the system ends up in the low-amplitude branch 2. With `x0 = [0.2, 0.2]`, the system ends up in branch 3.
@@ -104,7 +103,7 @@ time_evo = solve(ode_problem, saveat=100)
 plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/sweep_omega.png" width="450" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/sweep_omega.png" alignment="center" \>
 ``` ⠀
 We see the system first evolves from the initial condition towards the low-amplitude steady state. The amplitude increases as the sweep proceeds, with a jump occurring around $\omega = 1.08$ (i.e., time 18000).
 
@@ -167,7 +166,7 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 ```
 Solving for a range of drive amplitudes $F_0$,
 ```julia
-fixed_parameters = (
+fixed = (
     ω0 => 1.4504859, # natural frequency of separate modes (in paper's notation, ħω0 - J)
     γ => 27.4E-6,    # damping
     J => 154.1E-6,   # coupling term
@@ -176,9 +175,9 @@ fixed_parameters = (
     η => -0.08,      # pumping leaking to site 2  (F2 = ηF1)
     F0 => 0.002       # pump amplitude (overriden in sweeps)
 )
-range = F0 => LinRange(0.002, 0.025, 50)
+varied = F0 => LinRange(0.002, 0.03, 50)
 
-solutions = get_steady_states(harmonic_eq, range, fixed_parameters)
+result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 ```
 A steady state result for 50 parameter points
@@ -190,43 +189,44 @@ Solution branches:   9
 
 Let us first see the steady states.
 ```julia
-plt = plot(solutions, x="F0", y="u1^2 + v1^2", yscale=:log);
-plt = plot(solutions, x="F0", y="u2^2 + v2^2", yscale=:log);
+p1 = plot(result, "u1^2 + v1^2", legend=false)
+p2 = plot(result, "u2^2 + v2^2")
+plot(p1, p2)
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/pra_ss.png" width="1000" alignment="center"\>
+<img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_steady.png" alignment="center"\>
 ```
 
 According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.011$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.010$, meaning a jump should occur. 
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
 ```julia
-import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve, ParameterSweep
-initial_state = solutions[1][1] # select solution 1, branch 1
+import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve
+initial_state = result[1][1]
 
 T = 2E6
-sweep = ParameterSweep(F0 => (0.002, 0.011), (0,T)) # sweep occurs at (0, T)
+sweep = ParameterSweep(F0 => (0.002, 0.011), (0,T))
 
 # start from initial_state, use sweep, total time is 2*T
-TDproblem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2*T))
-TDsoln = solve(TDproblem, saveat=1); # space datapoints by 1
+time_problem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2*T))
+time_evo = solve(time_problem, saveat=100);
 ```
-Inspecting for example $u_1(T)$ as a function of time,
+Inspecting the amplitude as a function of time,
 ```julia
-plot(TDsoln, "u1", harmonic_eq)
+plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_sweep.png" width="450" alignment="center" \>
+<img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_sweep.png" alignment="center" \>
 ```
 
 we see that initially the sweep is adiabatic as it proceeds along the steady-state branch 1. At around $T = 2E6$, an instability occurs and $u_1(T)$ starts to rapidly oscillate. At that point, the sweep is stopped. Under free time evolution, the system then settles into a limit-cycle solution where the coordinates move along closed trajectories.
 
-By selecting datapoints from late in the simulation (after the sweep is done and the transient dynamics has disappeared), we can inspect the limit cycles.
+By plotting the $u$ and $v$ variables against each other, we observe the limit cycle shapes in phase space,
 ```julia
-u(i) = getindex.(TDsoln.u, i)[Int(1.5*T):end] # i-th coordinate for times (1.5*T, 2*T)
-plot(u(1), u(2))
-plot(u(3), u(4))
+p1 = plot(time_evo, ["u1", "v1"], harmonic_eq)
+p2 = plot(time_evo, ["u2", "v2"], harmonic_eq)
+plot(p1, p2)
 ```
 ```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/limit_cycles.png" width="450" alignment="center" \>
+<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/lc_uv.png" alignment="center" \>
 ```

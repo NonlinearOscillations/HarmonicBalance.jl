@@ -77,13 +77,14 @@ end
 """
 $(TYPEDSIGNATURES)
 Returns true if the solution `soln` of the Result `res` is stable.
-Stable solutions are real and have all Jacobian eigenvalues Re[λ] < 0.
+Stable solutions are real and have all Jacobian eigenvalues Re[λ] <= 0.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
+`rel_tol`: Re(λ) considered <=0 if real.(λ) < rel_tol*abs(λmax)
 """
-function is_stable(soln::StateDict, res::Result; im_tol=im_tol)
+function is_stable(soln::StateDict, res::Result; im_tol=im_tol, rel_tol=1E-10)
     is_physical(soln, res ,im_tol=im_tol) || return false  # the solution is unphysical anyway
-    J = real.(res.jacobian(soln))
-    return all([real.(eigvals(J)) .< 0]...)
+    λs = eigvals(real.(res.jacobian(soln)))
+    return all([real.(λs) .< rel_tol*maximum(abs.(λs))]...)
 end
 
 

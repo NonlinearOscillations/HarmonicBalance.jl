@@ -107,7 +107,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
 
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot1D(res; x=x, y=y, class=["physical", "stable"], kwargs...)
+            p = plot1D(res; x=x, y=y, class=["physical", "stable"], add=add, kwargs...)
             plot1D(res; x=x, y=y, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
             return p
         else

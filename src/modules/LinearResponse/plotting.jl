@@ -63,7 +63,7 @@ C = order == 1 ? get_jacobian_response(res, nat_var, Ω_range, branch) : get_lin
 C = logscale ? log.(C) : C
 
 heatmap(X, Ω_range,  C; color=:viridis, 
-    xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), kwargs...)
+    xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), _set_Plots_default..., kwargs...)
 end
 
 

@@ -88,11 +88,10 @@ Parametric plot of f[1] against f[2]
 
 """
 function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; kwargs...)
-    HarmonicBalance._set_Plots_default()
     if funcs isa String || length(funcs) == 1
-        plot(soln.t, transform_solutions(soln, funcs, harm_eq); legend=false, xlabel="time", ylabel=latexify(funcs), kwargs...)
+        plot(soln.t, transform_solutions(soln, funcs, harm_eq); legend=false, xlabel="time", ylabel=latexify(funcs), _set_Plots_default..., kwargs...)
     elseif length(funcs) == 2 # plot of func vs func
-        plot(transform_solutions(soln, funcs, harm_eq)...; legend=false, xlabel=latexify(funcs[1]), ylabel=latexify(funcs[2]), kwargs...)
+        plot(transform_solutions(soln, funcs, harm_eq)...; legend=false, xlabel=latexify(funcs[1]), ylabel=latexify(funcs[2]), _set_Plots_default..., kwargs...)
     else
         error("Invalid plotting argument: ", funcs)
     end

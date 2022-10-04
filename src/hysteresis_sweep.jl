@@ -89,7 +89,7 @@ function plot_1D_solutions_branch(starting_branch::Int64,res::Result; x::String,
 
     Y_followed = [Ys[branch,param_idx] for (param_idx,branch) in enumerate(followed_branch)]
 
-    lines = plot(transform_solutions(res, x),Y_followed,c="k",marker=m; kwargs...)   
+    lines = plot(transform_solutions(res, x),Y_followed,c="k",marker=m; _set_Plots_default..., kwargs...)   
     
     #extract plotted data and return it
     xdata,ydata = [line.get_xdata() for line in lines], [line.get_ydata() for line in lines]

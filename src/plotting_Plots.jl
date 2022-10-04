@@ -1,11 +1,14 @@
 using Plots, Latexify
 import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig
 
-function _set_Plots_default()
-    # font = "Computer Modern"
-    default(linewidth=2, legend=:outerright)
-    # default(fontfamily=font, titlefont=font , tickfont=font)
-end
+const _set_Plots_default = Dict{Symbol, Any}([
+    :fontfamily => "computer modern",
+    :titlefont => "computer modern",
+    :tickfont => "computer modern",
+    :linewidth => 2,
+    :legend => :outerright])
+
+
 
 dim(res::Result) = length(size(res.solutions)) # give solution dimensionality
 
@@ -39,12 +42,11 @@ default behaviour: plot stable solutions as full lines, unstable as dashed
 
 the x and y axes are taken automatically from `res`
 """
-function plot(res::Result, varargs...; fontfamily="Computer Modern", titlefont="Computer Modern" , tickfont="Computer Modern", kwargs...)::Plots.Plot
-    HarmonicBalance._set_Plots_default()
+function plot(res::Result, varargs...; kwargs...)::Plots.Plot
     if dim(res) == 1
-        plot1D(res, varargs...; fontfamily=fontfamily, titlefont=titlefont , tickfont=tickfont, kwargs...)
+        plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot2D(res, varargs...; fontfamily=fontfamily, titlefont=titlefont , tickfont=tickfont, kwargs...)
+        plot2D(res, varargs...; _set_Plots_default..., kwargs...)
     else
         error("Data dimension ", dim(res), " not supported")
     end
@@ -56,8 +58,8 @@ $(TYPEDSIGNATURES)
 
 Similar to `plot` but adds a plot onto an existing plot.
 """
-function plot!(res::Result, varargs...; fontfamily="Computer Modern", titlefont="Computer Modern" , tickfont="Computer Modern",  kwargs...)::Plots.Plot
-    plot(res, varargs...; add=true, fontfamily=fontfamily, titlefont=titlefont , tickfont=tickfont,  kwargs...)
+function plot!(res::Result, varargs...; kwargs...)::Plots.Plot
+    plot(res, varargs...; add=true, _set_Plots_default..., kwargs...)
 end
 """
 $(TYPEDSIGNATURES)
@@ -166,12 +168,11 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 
 Other kwargs are passed onto Plots.gr()
 """
-function plot_phase_diagram(res::Result; fontfamily="Computer Modern", titlefont="Computer Modern" , tickfont="Computer Modern", kwargs...)::Plots.Plot
-    _set_Plots_default()
+function plot_phase_diagram(res::Result; kwargs...)::Plots.Plot
     if dim(res) == 1
-        plot_phase_diagram_1D(res; fontfamily=fontfamily, titlefont=titlefont , tickfont=tickfont, kwargs...)
+        plot_phase_diagram_1D(res; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot_phase_diagram_2D(res; fontfamily=fontfamily, titlefont=titlefont , tickfont=tickfont, kwargs...)
+        plot_phase_diagram_2D(res; _set_Plots_default..., kwargs...)
     else
         error("Data dimension ", dim(res), " not supported")
     end

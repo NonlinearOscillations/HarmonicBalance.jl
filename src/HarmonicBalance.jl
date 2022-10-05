@@ -56,7 +56,7 @@ module HarmonicBalance
 
     include("modules/TimeEvolution.jl")
     using .TimeEvolution
-    export ParameterSweep
+    export ParameterSweep, ODEProblem, solve
 
     include("modules/LimitCycles.jl")
     using .LimitCycles

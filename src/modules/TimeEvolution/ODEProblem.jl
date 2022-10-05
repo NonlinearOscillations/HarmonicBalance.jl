@@ -1,6 +1,8 @@
 using LinearAlgebra, Latexify
 import HarmonicBalance: transform_solutions, plot, plot!
+import DifferentialEquations: ODEProblem, solve
 export transform_solutions, plot, plot!
+export ODEProblem, solve
 
 """ 
 

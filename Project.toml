@@ -1,7 +1,7 @@
 name = "HarmonicBalance"
 uuid = "e13b9ff6-59c3-11ec-14b1-f3d2cc6c135e"
 authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>"]
-version = "0.6.0"
+version = "0.6.1"
 
 [deps]
 BijectiveHilbert = "91e7fc40-53cd-4118-bd19-d7fcd1de2a54"
@@ -36,8 +36,8 @@ Latexify = "0.15.16"
 Peaks = "0.4.0"
 Plots = "1.35.0"
 ProgressMeter = "1.7.2"
-Symbolics = "4.10.4"
-julia = "1.8.0"
+Symbolics = "4.11.0"
+julia = "1.8.2"
 
 [extras]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

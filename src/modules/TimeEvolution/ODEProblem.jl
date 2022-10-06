@@ -1,6 +1,8 @@
 using LinearAlgebra, Latexify
-import HarmonicBalance: transform_solutions, plot
-export transform_solutions, plot
+import HarmonicBalance: transform_solutions, plot, plot!
+import DifferentialEquations: ODEProblem, solve
+export transform_solutions, plot, plot!
+export ODEProblem, solve
 
 """ 
 
@@ -86,14 +88,21 @@ Plot a function `f` of a time-dependent solution `soln` of `harm_eq`.
 
 Parametric plot of f[1] against f[2]
 
+Also callable as plot!
 """
-function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; kwargs...)
-    HarmonicBalance._set_Plots_default()
+function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; add=false, kwargs...)
+
+    # start a new plot if needed
+    p = add ? plot!() : plot()
+
     if funcs isa String || length(funcs) == 1
-        plot(soln.t, transform_solutions(soln, funcs, harm_eq); legend=false, xlabel="time", ylabel=latexify(funcs), kwargs...)
+        plot!(soln.t, transform_solutions(soln, funcs, harm_eq); HarmonicBalance._set_Plots_default..., xlabel="time", ylabel=latexify(funcs), legend=false, kwargs...)
     elseif length(funcs) == 2 # plot of func vs func
-        plot(transform_solutions(soln, funcs, harm_eq)...; legend=false, xlabel=latexify(funcs[1]), ylabel=latexify(funcs[2]), kwargs...)
+        plot!(transform_solutions(soln, funcs, harm_eq)...; HarmonicBalance._set_Plots_default..., xlabel=latexify(funcs[1]), ylabel=latexify(funcs[2]), legend=false, kwargs...)
     else
         error("Invalid plotting argument: ", funcs)
     end
 end
+
+
+plot!(soln::OrdinaryDiffEq.ODECompositeSolution, varargs...; kwargs...) = plot(soln, varargs...; add=true, kwargs...)

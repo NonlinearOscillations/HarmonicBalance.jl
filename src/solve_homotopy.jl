@@ -7,7 +7,7 @@ $(TYPEDSIGNATURES)
 Return an ordered dictionary specifying all variables and parameters of the solution
 in `result` on `branch` at the position `index`.
 """
-function get_single_solution(res::Result; branch::Int64, index)
+function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num, ComplexF64}
 
     # check if the dimensionality of index matches the solutions
     if length(size(res.solutions)) !== length(index)
@@ -127,6 +127,7 @@ end
 
 get_steady_states(p::Problem, swept, fixed; kwargs...) = get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...) = get_steady_states(Problem(eom), swept, fixed; kwargs...)
+get_steady_states(p::Union{Problem, HarmonicEquation}, fixed; kwargs...) = get_steady_states(p, [], fixed; kwargs...)
 
 
 """ Compile the Jacobian from `prob`, inserting `fixed_parameters`.
@@ -239,7 +240,7 @@ function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVe
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
-    if random_warmup
+    if random_warmup && !isempty(sweep)
         complex_pert = [1E-2 * issubset(p, keys(sweep))*randn(ComplexF64) for p in problem.parameters] # complex perturbation of the warmup parameters
         warmup_parameters = params_1D[Int(round(length(params_1D)/2))] .* (ones(length(params_1D[1])) + complex_pert)
         warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading)

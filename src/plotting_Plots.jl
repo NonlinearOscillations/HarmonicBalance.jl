@@ -1,11 +1,14 @@
 using Plots, Latexify
 import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig
 
-function _set_Plots_default()
-    font = "Computer Modern"
-    default(linewidth=2, legend=:outerright)
-    default(fontfamily=font, titlefont=font , tickfont=font)
-end
+const _set_Plots_default = Dict{Symbol, Any}([
+    :fontfamily => "computer modern",
+    :titlefont => "computer modern",
+    :tickfont => "computer modern",
+    :linewidth => 2,
+    :legend => :outerright])
+
+
 
 dim(res::Result) = length(size(res.solutions)) # give solution dimensionality
 
@@ -40,11 +43,10 @@ default behaviour: plot stable solutions as full lines, unstable as dashed
 the x and y axes are taken automatically from `res`
 """
 function plot(res::Result, varargs...; kwargs...)::Plots.Plot
-    HarmonicBalance._set_Plots_default()
     if dim(res) == 1
-        plot1D(res, varargs...; kwargs...)
+        plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot2D(res, varargs...; kwargs...)
+        plot2D(res, varargs...; _set_Plots_default..., kwargs...)
     else
         error("Data dimension ", dim(res), " not supported")
     end
@@ -56,9 +58,9 @@ $(TYPEDSIGNATURES)
 
 Similar to `plot` but adds a plot onto an existing plot.
 """
-plot!(res::Result, varargs...; kwargs...)::Plots.Plot = plot(res, varargs...; add=true, kwargs...)
-
-
+function plot!(res::Result, varargs...; kwargs...)::Plots.Plot
+    plot(res, varargs...; add=true, _set_Plots_default..., kwargs...)
+end
 """
 $(TYPEDSIGNATURES)
 
@@ -105,7 +107,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
 
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot1D(res; x=x, y=y, class=["physical", "stable"], kwargs...)
+            p = plot1D(res; x=x, y=y, class=["physical", "stable"], add=add, kwargs...)
             plot1D(res; x=x, y=y, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
             return p
         else
@@ -167,11 +169,10 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 Other kwargs are passed onto Plots.gr()
 """
 function plot_phase_diagram(res::Result; kwargs...)::Plots.Plot
-    _set_Plots_default()
     if dim(res) == 1
-        plot_phase_diagram_1D(res; kwargs...)
+        plot_phase_diagram_1D(res; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot_phase_diagram_2D(res; kwargs...)
+        plot_phase_diagram_2D(res; _set_Plots_default..., kwargs...)
     else
         error("Data dimension ", dim(res), " not supported")
     end

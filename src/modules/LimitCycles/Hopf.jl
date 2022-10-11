@@ -4,7 +4,7 @@ export replace_Hopf_variable!
 
 using HarmonicBalance: is_rearranged, rearrange_standard, _remove_brackets
 using HarmonicBalance.LinearResponse: get_implicit_Jacobian, get_Jacobian
-import HarmonicBalance: is_stable, is_physical, is_Hopf_unstable, order_branches!, classify_binaries!
+import HarmonicBalance: is_stable, is_physical, is_Hopf_unstable, order_branches!, classify_binaries!, find_branch_order
 #import HarmonicBalance.get_steady_states; export get_steady_states
 
 
@@ -97,7 +97,13 @@ function _classify_limit_cycles!(res::Result, Δω::Num)
         res.classes[c][idx] .*= abs.(getindex.(res.solutions[idx], Δω_idx)) .> 1E-10
     end
 
-    order_branches!(res, ["physical", "stable", "Hopf"]) # shuffle the branches to have relevant ones first
+    classify_unique!(res, Δω)
+
+    unique_stable = find_branch_order(map(.*, res.classes["stable"], res.classes["unique"]))
+
+    # branches which are unique but never stable
+    unique_unstable = setdiff(find_branch_order(map(.*, res.classes["unique"], res.classes["physical"])), unique_stable)
+    order_branches!(res, vcat(unique_stable, unique_unstable)) # shuffle to have relevant branches first
 end
 
 

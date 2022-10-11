@@ -21,14 +21,19 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1.0" , "large_amplitude")
 
 """
 function classify_solutions!(res::Result, condition::String, name::String; physical=true)
+    values = classify_solutions(res, condition; physical=physical)
+    res.classes[name] = values
+end
+
+
+function classify_solutions(res::Result, condition::String; physical=true)
     expr = Num(eval(Meta.parse(condition)))
     function cond_func(s::OrderedDict, res)
         physical && !is_physical(s, res) && return false
         s = [key => real(s[key]) for key in keys(s)] # make values real
         Bool(substitute_all(expr, s).val)
     end
-    values = classify_solutions(res, cond_func)
-    res.classes[name] = values
+    classify_solutions(res, cond_func)
 end
 
 
@@ -43,7 +48,7 @@ end
 "Return an array of booleans classifying the solution in `res`
 according to `f` (`f` takes a solution dictionary, return a boolean)"
 function classify_solutions(res::Result, f::Function)
-    values = similar(res.solutions, Vector{Bool})
+    values = similar(res.solutions, BitVector)
     for (idx, soln) in enumerate(res.solutions)
         values[idx] = [f(get_single_solution(res, index=idx, branch=b), res) for b in 1:length(soln)]
     end

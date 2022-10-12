@@ -120,7 +120,7 @@ function _classify_default!(result)
     classify_solutions!(result, is_physical, "physical")
     classify_solutions!(result, is_stable, "stable")
     classify_solutions!(result, is_Hopf_unstable, "Hopf")
-    order_branches!(result, ["physical", "stable", "Hopf"]) # shuffle the branches to have relevant ones first
+    order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant ones first
     classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
 end
 
@@ -160,37 +160,38 @@ function compile_matrix(matrix, variables, fixed_parameters)
 end
 
 
-"Order the solution branches in `res` such that close classified positively by `class` are first."
-function order_branches!(res::Result, class::String)
-    indices = findall( x-> x==1, any.(classify_branch(res, class)))
-    order = cat(indices, setdiff(1:length(res.solutions[1]), indices), dims=1) # permutation of indices which puts stable branches first
-    reorder_solutions!(res, order)
+"Find a branch order according `classification`. Place branches where true occurs earlier first."
+function find_branch_order(classification::Vector{BitVector})
+    branches = [getindex.(classification, k) for k in 1:length(classification[1])] # array of branches
+    indices = replace(findfirst.(branches), nothing => Inf)
+    negative = findall(x -> x == Inf, indices) # branches not true anywhere - leave out
+    order = setdiff(sortperm(indices), negative)
 end
 
-"Order the solution branches in `res` such that close classified positively by `classes` are first.
-The order of classes has descending precedence."
-function order_branches!(s::Result, classes::Vector{String})
-    for class in reverse(classes)
-        order_branches!(s, class)
-    end
+find_branch_order(classification::Array) = collect(1:length(classification[1])) # no ordering for >1D
+
+"Order the solution branches in `res` such that close classified positively by `classes` are first."
+function order_branches!(res::Result, classes::Vector{String})
+    for class in classes
+        order_branches!(res, find_branch_order(res.classes[class]))
+    end 
 end
+
+order_branches!(res::Result, class::String) = order_branches!(res, [class])
 
 "Reorder the solutions in `res` to match the index permutation `order`."
-function reorder_solutions!(res::Result, order::Vector{Int64})
-    res.solutions = reorder_array(res.solutions, order)
+function order_branches!(res::Result, order::Vector{Int64})
+    res.solutions = _reorder_nested(res.solutions, order)
     for key in keys(res.classes)
-        res.classes[key] = reorder_array(res.classes[key], order)
+        res.classes[key] = _reorder_nested(res.classes[key], order)
     end
 end
 
-"Reorder EACH ELEMENT of `a` to match the index permutation `order`."
-function reorder_array(a::Array, order::Vector{Int64})
-    a[1] isa Array || return a
-    new_array = similar(a)
-    for (i,el) in enumerate(a)
-        new_array[i] = el[order]
-    end
-    return new_array
+"Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
+function _reorder_nested(a::Array, order::Vector{Int64})
+    a[1] isa Union{Array, BitVector} || return a
+    order = length(order) == length(a) ? order : vcat(order, setdiff(1:length(a[1]), order)) # pad if needed
+    new_array = [el[order] for el in a]
 end
 
 

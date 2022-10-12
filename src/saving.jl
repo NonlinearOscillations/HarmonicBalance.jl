@@ -19,8 +19,7 @@ function save(filename, x::Result)
     x_nofunc = deepcopy(x)
 
     # compiled functions cause problems in saving: ignore J now, compile when loading
-    null_J() = 0
-    x_nofunc.jacobian = null_J
+    x_nofunc.jacobian = 0
     JLD2.save(_jld2_name(filename), Dict("object" => x_nofunc))
 end
 
@@ -37,7 +36,6 @@ reinstated in the `HarmonicBalance` namespace.
 """
 function load(filename)
     loaded = JLD2.load(filename)
-    
     if haskey(loaded,"object") #otherwise save data is from a plot
         loaded = loaded["object"]
         

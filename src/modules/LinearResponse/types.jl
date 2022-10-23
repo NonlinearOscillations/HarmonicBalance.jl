@@ -18,16 +18,16 @@ struct Lorentzian
 
  """
  $(TYPEDEF)
- 
+
  Holds a set of `Lorentzian` objects belonging to a variable.
- 
+
  # Fields
  $(TYPEDFIELDS)
 
  # Constructor
  ```julia
  JacobianSpectrum(res::Result; index::Int, branch::Int)
- ``` 
+ ```
 
  """
  mutable struct JacobianSpectrum

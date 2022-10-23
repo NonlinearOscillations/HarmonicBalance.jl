@@ -1,6 +1,5 @@
 module TimeEvolution
 
-
     using ..HarmonicBalance
     using Symbolics
     using DifferentialEquations

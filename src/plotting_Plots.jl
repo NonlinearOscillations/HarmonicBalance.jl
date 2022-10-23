@@ -76,7 +76,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Go over a solution and an equally-sized array (a "mask") of booleans. 
+Go over a solution and an equally-sized array (a "mask") of booleans.
 true  -> solution unchanged
 false -> changed to NaN (omitted from plotting)
 """
@@ -121,16 +121,16 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     X, Y = transform_solutions(res, [x,y]) # first transform, then filter
     Y = _apply_mask(Y, _get_mask(res, class, not_class))
     branches = _realify(Y)
-          
+
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
-    # colouring is matched to branch index - matched across plots    
+    # colouring is matched to branch index - matched across plots
     for k in findall(x -> !all(isnan.(x)), branches[1:end]) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
         Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
     end
-    
+
     return p
 end
 
@@ -140,11 +140,11 @@ plot1D(res::Result, y::String; kwargs...) = plot1D(res; y=y, kwargs...)
 function plot2D(res::Result; z::String, branch::Int64, class="physical", not_class=[], add=false, kwargs...)
     X, Y = values(res.swept_parameters)
     Z = getindex.(_apply_mask(transform_solutions(res, z), _get_mask(res, class, not_class)), branch) # first transform, then filter
-    
+
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
-     p = plot!(map(_realify, [Y, X, Z])...; 
+     p = plot!(map(_realify, [Y, X, Z])...;
      st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
 end
 
@@ -204,7 +204,7 @@ end
 ###
 
 function to_lab_frame(soln, res, times)
-    
+
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
@@ -227,13 +227,13 @@ end
     to_lab_frame(soln::OrderedDict, res::Result, times)
 
 Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly. 
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
 """
 to_lab_frame(res::Result, times; index::Int, branch::Int) = to_lab_frame(res[index][branch], res, times)
 
 
 function to_lab_frame_velocity(soln, res, times)
-    
+
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
@@ -254,7 +254,7 @@ end
     to_lab_frame_velocity(soln::OrderedDict, res::Result, times)
 
 Transform a solution's velocity into the lab frame (i.e., invert the harmonic ansatz for dx/dt ) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly. 
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
 """
 to_lab_frame_velocity(res::Result, times; index, branch) = to_lab_frame_velocity(res[index][branch], res, times)
 

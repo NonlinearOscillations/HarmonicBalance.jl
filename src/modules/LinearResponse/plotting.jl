@@ -45,12 +45,12 @@ end
 """
     plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
 
-Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`. 
+Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`.
 Slow-time derivatives up to `order` are kept in the process.
 
 Any kwargs are fed to Plots' gr().
 
-Solutions not belonging to the `physical` class are ignored. 
+Solutions not belonging to the `physical` class are ignored.
 """
 function plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
 
@@ -62,7 +62,7 @@ X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
 C = order == 1 ? get_jacobian_response(res, nat_var, Ω_range, branch) : get_linear_response(res, nat_var, Ω_range, branch; order=order)
 C = logscale ? log.(C) : C
 
-heatmap(X, Ω_range,  C; color=:viridis, 
+heatmap(X, Ω_range,  C; color=:viridis,
     xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
 end
 

@@ -1,5 +1,3 @@
-
-
 import HarmonicBalance.classify_solutions
 
 function classify_unique!(res::Result, Δω; class_name="unique")

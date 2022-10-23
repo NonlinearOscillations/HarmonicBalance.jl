@@ -38,7 +38,7 @@ function load(filename)
     loaded = JLD2.load(filename)
     if haskey(loaded,"object") #otherwise save data is from a plot
         loaded = loaded["object"]
-        
+
         # we need the symbols in our namespace to parse strings with `transform_solutions`
         _parse_symbol_names(loaded)
 
@@ -70,7 +70,7 @@ _parse_loaded(x) = x
 
 "Retrieve names for all symbols and declare them in this namespace."
 function _parse_symbol_names(x::Problem)
-    all_symbols= cat(x.parameters, get_variables(x.variables), 
+    all_symbols= cat(x.parameters, get_variables(x.variables),
     get_independent_variables(x.eom), get_independent_variables(x.eom.natural_equation), dims=1)
     return declare_variable.(string.(all_symbols))
 end

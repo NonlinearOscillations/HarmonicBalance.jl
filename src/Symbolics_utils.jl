@@ -25,7 +25,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
  "Declare a variable that is a function of another variable in the the current namespace"
  function declare_variable(name::String, independent_variable::Num)
     # independent_variable = declare_variable(independent_variable) convert string into Num
-    var_sym = Symbol(name)  
+    var_sym = Symbol(name)
     new_var = @variables $var_sym(independent_variable)
     @eval($(var_sym) = first($new_var)) # store the variable under "name" in this namespace
     return eval(var_sym)
@@ -160,7 +160,7 @@ function is_harmonic(x::Num, t::Num)
         return false
     else
         powers = [max_power(first(term.val.arguments), t) for term in t_terms[trigs]]
-        return unique(powers) == [1] 
+        return unique(powers) == [1]
     end
 end
 
@@ -186,7 +186,7 @@ function trig_to_exp(x::Num)
         end
         # avoid Complex{Num} where possible as this causes bugs
         # instead, the Nums store SymbolicUtils Complex types
-        term = Num(term.re.val + im*term.im.val) 
+        term = Num(term.re.val + im*term.im.val)
         append!(rules, [trig => term])
     end
 
@@ -199,7 +199,7 @@ end
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))
- 
+
 
 "Return true if `f` is a sin or cos."
 function is_trig(f::Num)
@@ -261,7 +261,7 @@ end
 function max_power(x::Num, y::Num)
     terms = get_all_terms(x)
     powers = power_of.(terms, y)
-    maximum(powers)   
+    maximum(powers)
 end
 
 max_power(x::Vector{Num}, y::Num) = maximum(max_power.(x, y))

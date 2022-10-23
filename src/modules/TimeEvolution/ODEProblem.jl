@@ -4,7 +4,7 @@ import DifferentialEquations: ODEProblem, solve
 export transform_solutions, plot, plot!
 export ODEProblem, solve
 
-""" 
+"""
 
     ODEProblem(
             eom::HarmonicEquation;
@@ -35,7 +35,7 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
     eqs(v) = [substitute(eq, Dict(zip(vars, v))) for eq in subeqs]
      # substitute  sweep parameters
     eqs(v,T) = [substitute(eq,Dict(zip(keys(sweep), [sweep[p](T) for p in keys(sweep)]))) for eq in eqs(v)]
-    
+
     function f!(du,u,p,T)
         state = eqs(u,T)
         for j in 1:length(vars)

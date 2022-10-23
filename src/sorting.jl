@@ -79,7 +79,7 @@ Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
 reference[1] and to_sort[i1] belong to the same branch
 """
 function align_pair(reference::Vector{Vector{SteadyState}}, to_sort::Vector{SteadyState})
-   
+
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
     cartesians = [(j,i) for i in 1:n for j in 1:n]
@@ -89,7 +89,7 @@ function align_pair(reference::Vector{Vector{SteadyState}}, to_sort::Vector{Stea
     matched_ref = falses(n)
 
     sorted = Array{Tuple{Int64, Int64}, 1}(undef, n)
-    
+
     for i in 1:length(cartesians)
         j,k = sorted_cartesians[i]
         if !matched[k] && !matched_ref[j]
@@ -126,7 +126,7 @@ end
 
 function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     """Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
-    Lx,Ly = size(solns) 
+    Lx,Ly = size(solns)
     mapping = [] # compute mapping between Hilbert indices and 2Ds
     for j in 1:Ly # length of parameter sweep 1
         for i in 1:Lx # length of parameter sweep 2
@@ -134,7 +134,7 @@ function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
             h = encode_hilbert(Simple2D(Int), X)
             X .= 0
             push!(mapping,(h=>decode_hilbert!(Simple2D(Int), X, h)))
-        end 
+        end
     end
     idx_pairs = [el[2] for el in sort(mapping)] # sort along the Hilbert curve. Now we can iterate over these indexes
 end
@@ -156,7 +156,7 @@ function get_nn_2D(idx::Vector{Int64},Nx::Int64,Ny::Int64)
     neighbors = []
     for x2 in x-max_n:x+max_n
         for y2 in y-max_n:y+max_n
-            if (0<x<=Nx) && (0<y<=Ny) && (x != x2 || y != y2) && (1 <= x2 <= Nx) && (1 <= y2 <= Ny) 
+            if (0<x<=Nx) && (0<y<=Ny) && (x != x2 || y != y2) && (1 <= x2 <= Nx) && (1 <= y2 <= Ny)
                 push!(neighbors,[x2,y2])
             end
         end
@@ -165,7 +165,7 @@ function get_nn_2D(idx::Vector{Int64},Nx::Int64,Ny::Int64)
 end
 
 
-function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest") 
+function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest")
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
      # determine a trajectory in 2D space where nodes will be visited
     if sorting=="hilbert" # propagating matching of solutions along a hilbert_curve in 2D
@@ -178,14 +178,14 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest")
     sorted_solns[1,1] = sort(solns[1,1], by= x->abs.(imag(x))) # prefer real solution at first position
 
     bar = Progress(length(idx_pairs), dt=1, desc="Ordering solutions into branches ...", output=stdout)
-    for i in 1:length(idx_pairs)-1 
+    for i in 1:length(idx_pairs)-1
         next!(bar);
         neighbors =  get_nn_2D(idx_pairs[i+1],size(solns,1),size(solns,2))
         reference = [sorted_solns[ind...] for ind in neighbors]
         matched_indices = align_pair(reference, solns[idx_pairs[i+1]...]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution
         sorted_solns[idx_pairs[i+1]...] = (solns[idx_pairs[i+1]...])[next_indices]
-    end 
+    end
     sorted_solns
 end
 

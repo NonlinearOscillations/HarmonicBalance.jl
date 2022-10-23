@@ -81,7 +81,7 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
 
     # blank JacobianSpectrum for each variable
     all_spectra = Dict{Num, JacobianSpectrum}([[nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)])
-        
+
     for (j, λ) in enumerate(λs)
         eigvec = vs[:, j] # the eigenvector
 
@@ -94,7 +94,7 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
             # eigvec_2d is associated to a natural variable -> this variable gets Lorentzian peaks
             peaks =  norm(eigvec_2d) * _pair_to_peaks(λ, eigvec_2d, ω=ωnum)
 
-            all_spectra[u.natural_variable] = add_peak(all_spectra[u.natural_variable], peaks) 
+            all_spectra[u.natural_variable] = add_peak(all_spectra[u.natural_variable], peaks)
         end
 
         # 1 peak for a-type variable
@@ -102,7 +102,7 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
             a = hvars[a_idx]
             eigvec_1d = eigvec[a_idx]
             peak = 2 * norm(eigvec_1d) * Lorentzian(ω0= abs(imag(λ)) , Γ=real(λ))
-            all_spectra[a.natural_variable] = add_peak(all_spectra[a.natural_variable], peak) 
+            all_spectra[a.natural_variable] = add_peak(all_spectra[a.natural_variable], peak)
         end
     end
     #_simplify_spectra!(all_spectra) # condense similar peaks
@@ -129,5 +129,5 @@ function _simplify_spectra!(spectra::Dict{Num, JacobianSpectrum})
     for var in keys(spectra)
         spectra[var] = _simplify_spectrum(spectra[var])
     end
-end 
+end
 

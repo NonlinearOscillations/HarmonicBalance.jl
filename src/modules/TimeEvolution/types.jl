@@ -1,7 +1,7 @@
 import Base: keys, getindex, +
 export +, getindex
 
-""" 
+"""
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.
 During a sweep, the selected parameters vary linearly over some timespan and are constant elsewhere.
@@ -31,7 +31,7 @@ struct ParameterSweep
 
     ParameterSweep(functions...) = new(Dict(functions...))
     ParameterSweep() = ParameterSweep([])
-    
+
 end
 
 
@@ -42,7 +42,7 @@ getindex(s::ParameterSweep, i) = getindex(s.functions, i)
 
 # overload +
 function +(s1::ParameterSweep, s2::ParameterSweep)
-    common_params = intersect(keys(s1), keys(s2))   
+    common_params = intersect(keys(s1), keys(s2))
     !isempty(common_params) && error("cannot combine sweeps of the same parameter")
     return ParameterSweep(merge(s1.functions, s2.functions))
 

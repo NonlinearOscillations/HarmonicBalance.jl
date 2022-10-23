@@ -32,7 +32,7 @@ module HarmonicBalance
     import Base: exp
     exp(x::Complex{Num}) = x.re.val == 0 ? exp(im*x.im.val) : exp(x.re.val + im*x.im.val)
 
-    include("types.jl")    
+    include("types.jl")
 
     include("utils.jl")
     include("Symbolics_customised.jl")

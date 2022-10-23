@@ -17,7 +17,7 @@ import Base.getindex
 export getindex
 export +
 function getindex(p::ParameterRange, idx::Int...)
-   lengths = [length(a) for a in values(p)] 
+   lengths = [length(a) for a in values(p)]
    indices = CartesianIndices(Tuple(lengths))[idx...]
    return [val[indices[j]] for (j,val) in enumerate(values(p))]
 end
@@ -51,7 +51,7 @@ mutable struct DifferentialEquation
     harmonics::OrderedDict{Num, Vector{Num}}
 
     DifferentialEquation(eqs) = new(eqs, OrderedDict([[var, []] for var in keys(eqs)]))
-    
+
     # uses the above constructor if no harmonics defined
     DifferentialEquation(eqs::Vector{Equation}, vars::Vector{Num}) = DifferentialEquation(OrderedDict(zip(vars, eqs)))
 
@@ -78,7 +78,7 @@ end
 """
 $(TYPEDEF)
 
-Holds a variable stored under `symbol` describing the harmonic `ω` of `natural_variable`. 
+Holds a variable stored under `symbol` describing the harmonic `ω` of `natural_variable`.
 
 # Fields
 $(TYPEDFIELDS)
@@ -127,7 +127,7 @@ end
 
 function show(io::IO, eom::HarmonicEquation)
     println(io, "A set of ", length(eom.equations), " harmonic equations")
-    println(io, "Variables: ", join(string.(get_variables(eom)), ", ")) 
+    println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
     println(io, "Parameters: ", join(string.(eom.parameters), ", "))
     println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
     println(io, "\nHarmonic equations:")
@@ -152,7 +152,7 @@ function _show_ansatz(eom::HarmonicEquation)
         harm_vars = filter(x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables)
         ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
         output *= "\n" * string(nat_var) * " = " * ansatz
-    end 
+    end
     output
 end
 
@@ -180,7 +180,7 @@ mutable struct Problem
     parameters::Vector{Num}
     "The input object for HomotopyContinuation.jl solver methods."
     system::HomotopyContinuation.System
-    "The Jacobian matrix (possibly symbolic). 
+    "The Jacobian matrix (possibly symbolic).
     If `false`, the Jacobian is ignored (may be calculated implicitly after solving)."
     jacobian
     "The HarmonicEquation object used to generate this `Problem`."
@@ -193,7 +193,7 @@ end
 
 function show(io::IO, p::Problem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")
-    println(io, "Variables: ", join(string.(p.variables), ", ")) 
+    println(io, "Variables: ", join(string.(p.variables), ", "))
     println(io, "Parameters: ", join(string.(p.parameters), ", "))
     println(io, "Symbolic Jacobian: ", !(p.jacobian==false))
 end
@@ -224,7 +224,7 @@ mutable struct Result
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
     jacobian::Union{Function, Int64}
-    
+
     Result(sol,swept, fixed, problem, classes, J) = new(sol, swept, fixed, problem, classes, J)
     Result(sol,swept, fixed, problem, classes) = new(sol, swept, fixed, problem, classes)
     Result(sol,swept, fixed, problem) = new(sol, swept, fixed, problem, Dict([]))

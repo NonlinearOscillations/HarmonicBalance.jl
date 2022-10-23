@@ -14,9 +14,9 @@ Additional substitution rules can be specified in `rules` in the format `("a" =>
 function transform_solutions(res::Result, f::String; rules=Dict())
     # a string is used as input - a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
     transformed = [Vector{ComplexF64}(undef, length(res.solutions[1])) for k in res.solutions] # preallocate
-        
+
     # define variables in rules in this namespace
-    new_keys = declare_variable.(string.(keys(Dict(rules)))) 
+    new_keys = declare_variable.(string.(keys(Dict(rules))))
     expr = f isa String ? _parse_expression(f) : f
 
     fixed_subs = merge(res.fixed_parameters, Dict(zip(new_keys, values(Dict(rules)))))
@@ -24,7 +24,7 @@ function transform_solutions(res::Result, f::String; rules=Dict())
 
     vars = res.problem.variables
     all_symbols = cat(vars, collect(keys(res.swept_parameters)), dims=1)
-    comp_func = build_function(expr, all_symbols) 
+    comp_func = build_function(expr, all_symbols)
     f = eval(comp_func)
 
     # preallocate an array for the numerical values, rewrite parts of it

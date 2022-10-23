@@ -31,7 +31,7 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
 
 
 """
-    get_steady_states(prob::Problem, 
+    get_steady_states(prob::Problem,
                         swept_parameters::ParameterRange,
                         fixed_parameters::ParameterList;
                         random_warmup=true,
@@ -40,12 +40,12 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
 `swept_parameters` accepts pairs mapping symbolic variables to arrays or `LinRange`.
-`fixed_parameters` accepts pairs mapping symbolic variables to numbers. 
+`fixed_parameters` accepts pairs mapping symbolic variables to numbers.
 
 Keyword arguments
 - `random_warmup`: If `true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving. If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
 This takes far longer but can be more reliable.
-- `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`. 
+- `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`.
 - `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
 
 Example: solving a simple harmonic oscillator ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)``
@@ -61,12 +61,12 @@ A steady state result for 100 parameter points
     Solution branches:   1
        of which real:    1
        of which stable:  1
-    
+
     Classes: stable, physical, Hopf, binary_labels
-    
+
 ```
 
-It is also possible to create multi-dimensional solutions plots. 
+It is also possible to create multi-dimensional solutions plots.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
 julia> range = ParameterRange(ω => LinRange(0.8,1.2,100), F => LinRange(0.1,1.0,10) ) # 100x10 parameter sets
@@ -79,12 +79,12 @@ A steady state result for 1000 parameter points
     Solution branches:   1
        of which real:    1
        of which stable:  1
-    
+
     Classes: stable, physical, Hopf, binary_labels
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, sorting="nearest", classify_default=true)   
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, sorting="nearest", classify_default=true)
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
@@ -97,7 +97,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
     raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading)
-    
+
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
     rounded_solutions = HomotopyContinuation.solutions.(getindex.(raw, 1));
@@ -174,7 +174,7 @@ find_branch_order(classification::Array) = collect(1:length(classification[1])) 
 function order_branches!(res::Result, classes::Vector{String})
     for class in classes
         order_branches!(res, find_branch_order(res.classes[class]))
-    end 
+    end
 end
 
 order_branches!(res::Result, class::String) = order_branches!(res, [class])
@@ -262,7 +262,7 @@ end
 
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."
-function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN) 
+function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN)
     Ls    = length.(solutions)
     nvars = length(solutions[1][1]) # number of variables
     max_N = maximum(Ls) # length to be fixed
@@ -289,18 +289,18 @@ end
 
 
 """
-    newton(res::Result, soln::OrderedDict)  
+    newton(res::Result, soln::OrderedDict)
     newton(res::Result; branch, index)
-      
+
 Run a newton solver on `prob::Problem` starting from the solution `soln` (indexable by `branch` and `index`).
-Any variables/parameters not present in `soln` are set to zero. 
+Any variables/parameters not present in `soln` are set to zero.
 """
 newton(res::Result, soln::OrderedDict) = newton(res.problem, soln)
 newton(res::Result; branch, index) = newton(res, res[index][branch])
 
 
 function _convert_or_zero(x, t=ComplexF64)
-    try 
+    try
         convert(t, x)
     catch ArgumentError
         @warn string(x) * " not supplied: setting to zero"

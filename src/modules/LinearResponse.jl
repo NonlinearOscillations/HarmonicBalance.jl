@@ -18,4 +18,4 @@ module LinearResponse
     include("LinearResponse/response.jl")
     include("LinearResponse/plotting.jl")
 
-end 
+end

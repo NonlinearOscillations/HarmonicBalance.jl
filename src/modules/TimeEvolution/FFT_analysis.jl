@@ -6,9 +6,9 @@ function FFT(soln_u, soln_t; window = DSP.Windows.hanning)
     Output: Fourier transform and frequencies, where window function window was used"
     w = window(length(soln_t))
     dt = soln_t[2]-soln_t[1]
-    
+
     soln_tuples = Tuple.(zip(soln_u, soln_t))
-    
+
     fft_u =length(soln_t)/sum(w)*[fft(w.*[u[j] for (u,t) in soln_tuples])|> fftshift for j in 1:length(soln_u[1])];
     fft_f = fftfreq(length(soln_t), 1/dt) |> fftshift
 
@@ -20,14 +20,14 @@ FFT(soln::OrdinaryDiffEq.ODECompositeSolution; window=DSP.Windows.hanning) = FFT
 
 
 function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
-    "finds peaks in the spectrum and returns corresponding frequency, amplitude and phase. 
+    "finds peaks in the spectrum and returns corresponding frequency, amplitude and phase.
     Frequency and phase are corrected according to Huang Dishan, Mechanical Systems and Signal Processing (1995) 9(2), 113–118
     This correction works for a rectangular window."
 
     # retaining more sigdigits gives more ''spurious'' peaks
     max_indices, mxval = peakprom(round.( abs.(fft_u), sigdigits=3),minprom =1)
     Del = fft_f[2]-fft_f[1] # frequency spacing
-    A1= abs.(fft_u)[max_indices] 
+    A1= abs.(fft_u)[max_indices]
     df = zeros(length(max_indices))
 
     # correction to the amplitude and phase of the peak
@@ -54,7 +54,7 @@ function u_of_t(omegas_peak,As_peak,phis_peak,t)
 end
 
 function uv_nonrotating_frame(omega_rot,omega_peak,A_u_peak,phi_u_peak,A_v_peak,phi_v_peak)
-    "calculates amplitudes and frequencies of the position in the nonrotating frame from the 
+    "calculates amplitudes and frequencies of the position in the nonrotating frame from the
     amplitudes and frequencies in the rotating frame."
     omega_nr = [omega_rot-omega_peak, omega_rot+omega_peak]
     u_nr = [-A_u_peak*cos(phi_u_peak) + A_v_peak*sin(phi_v_peak); -A_u_peak*cos(phi_u_peak) - A_v_peak*sin(phi_v_peak)]./2

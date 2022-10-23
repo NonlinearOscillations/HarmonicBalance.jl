@@ -43,7 +43,7 @@ end
 
 
 """
-    plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
+    plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
 
 Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`.
 Slow-time derivatives up to `order` are kept in the process.

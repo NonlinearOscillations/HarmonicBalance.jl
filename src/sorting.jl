@@ -11,6 +11,10 @@ Sorts `solutions` into branches according to the method `sorting`.
 `solutions` is an n-dimensional array of Vector{Vector}. Each element describes a set of solutions for a given parameter set.
 The output is a similar array, with each solution set rearranged such that neighboring solution sets have the smallest Euclidean distance.
 
+Keyword arguments
+- `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
+- `show_progress`: Indicate whether a progress bar should be displayed.
+
 """
 function sort_solutions(solutions::Array; sorting="hilbert", show_progress=true)
     sorting_schemes = ["none", "hilbert", "nearest"]

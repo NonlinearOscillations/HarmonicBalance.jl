@@ -253,7 +253,7 @@ function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVe
         bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
         for i in 1:length(parameter_values) # do NOT thread this
             p = parameter_values[i]
-            next!(bar)
+            show_progress ? next!(bar) : nothing
             result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=show_progress), p]
         end
     end

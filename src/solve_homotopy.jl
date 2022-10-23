@@ -110,7 +110,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J) # a "raw" solution struct
 
-    sort_solutions!(result, sorting=sorting) # sort into branches
+    sort_solutions!(result, sorting=sorting, show_progress=show_progress) # sort into branches
     classify_default ? _classify_default!(result) : nothing
 
     return result

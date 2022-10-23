@@ -13,19 +13,19 @@ Sorts `solutions` into branches according to the method `sorting`.
 The output is a similar array, with each solution set rearranged such that neighboring solution sets have the smallest Euclidean distance.
 
 """
-function sort_solutions(solutions::Array; sorting="hilbert")
+function sort_solutions(solutions::Array; sorting="hilbert", show_progress=true)
     sorting_schemes = ["none", "hilbert", "nearest"]
     sorting ∈ sorting_schemes || error("Only the following sorting options are allowed:  ", sorting_schemes)
     sorting == "none" && return solutions
      l = length(size(solutions))
-     l == 1 && return sort_1D(solutions)
-     l == 2 && return sort_2D(solutions, sorting=sorting)
+     l == 1 && return sort_1D(solutions, show_progress=show_progress)
+     l == 2 && return sort_2D(solutions, sorting=sorting, show_progress=show_progress)
      error("do not know how to solve solution which are not 1D or 2D")
 end
 
 
-function sort_solutions!(solutions::Result; sorting="hilbert")
-    solutions.solutions = sort_solutions(solutions.solutions, sorting=sorting)
+function sort_solutions!(solutions::Result; sorting="hilbert", show_progress=true)
+    solutions.solutions = sort_solutions(solutions.solutions, sorting=sorting, show_progress=show_progress)
 end
 
 #####
@@ -110,13 +110,13 @@ align_pair(ref::Vector{SteadyState}, to_sort::Vector{SteadyState}) = align_pair(
 """
 Go through a vector of solution and sort each according to Euclidean norm.
 """
-function sort_1D(solns::Vector{Vector{SteadyState}})
+function sort_1D(solns::Vector{Vector{SteadyState}}, show_progress=true)
     sorted_solns = similar(solns) # preallocate
     sorted_solns[1] = sort(solns[1], by= x->abs.(imag(x))) # prefer real solution at first position
 
     bar = Progress(length(solns), dt=1, desc="Ordering solutions into branches ...", output=stdout)
     for (i, soln) in enumerate(solns[1:end-1])
-        next!(bar);
+        show_progress ? next!(bar) : nothing
         matched_indices = align_pair(sorted_solns[i], solns[i+1]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution
         sorted_solns[i+1] = (solns[i+1])[next_indices]
@@ -165,7 +165,7 @@ function get_nn_2D(idx::Vector{Int64},Nx::Int64,Ny::Int64)
 end
 
 
-function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest")
+function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest", show_progress=true)
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
      # determine a trajectory in 2D space where nodes will be visited
     if sorting=="hilbert" # propagating matching of solutions along a hilbert_curve in 2D
@@ -179,7 +179,7 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest")
 
     bar = Progress(length(idx_pairs), dt=1, desc="Ordering solutions into branches ...", output=stdout)
     for i in 1:length(idx_pairs)-1
-        next!(bar);
+        show_progress ? next!(bar) : nothing
         neighbors =  get_nn_2D(idx_pairs[i+1],size(solns,1),size(solns,2))
         reference = [sorted_solns[ind...] for ind in neighbors]
         matched_indices = align_pair(reference, solns[idx_pairs[i+1]...]) # pairs of matching indices

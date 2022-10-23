@@ -2,7 +2,7 @@ using Plots, Latexify, ProgressMeter
 export plot_linear_response
 
 
-function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int)
+function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true)
     stable = classify_branch(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
@@ -13,13 +13,13 @@ function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int)
     # evaluate the Jacobians for the different values of noise frequency Ω
     for ij in CartesianIndices(C)
         C[ij] = abs(evaluate(spectra[ij[2]][nat_var], Ω_range[ij[1]]))
-        next!(bar)
+        show_progress ? next!(bar) : nothing
     end
     C
 end
 
 
-function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; order)
+function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; order, show_progress=true)
 
     stable = classify_branch(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
@@ -36,7 +36,7 @@ function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; o
         for i in 1:(size(C)[1])
             C[i,j] = get_response(response, s, Ω_range[i])
         end
-        next!(bar)
+        show_progress ? next!(bar) : nothing
     end
     C
 end
@@ -52,14 +52,14 @@ Any kwargs are fed to Plots' gr().
 
 Solutions not belonging to the `physical` class are ignored.
 """
-function plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, kwargs...)
+function plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
 
 length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 stable = classify_branch(res, branch, "stable") # boolean array
 
 X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
 
-C = order == 1 ? get_jacobian_response(res, nat_var, Ω_range, branch) : get_linear_response(res, nat_var, Ω_range, branch; order=order)
+C = order == 1 ? get_jacobian_response(res, nat_var, Ω_range, branch, show_progress=show_progress) : get_linear_response(res, nat_var, Ω_range, branch; order=order, show_progress=show_progress)
 C = logscale ? log.(C) : C
 
 heatmap(X, Ω_range,  C; color=:viridis,

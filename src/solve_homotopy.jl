@@ -35,8 +35,9 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
                         swept_parameters::ParameterRange,
                         fixed_parameters::ParameterList;
                         random_warmup=true,
-                            threading=false,
-                            sorting="hilbert")
+                        threading=false,
+                        show_progress=true,
+                        sorting="hilbert")
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
 `swept_parameters` accepts pairs mapping symbolic variables to arrays or `LinRange`.
@@ -47,6 +48,7 @@ Keyword arguments
 This takes far longer but can be more reliable.
 - `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`.
 - `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
+- `show_progress`: Indicate whether a progress bar should be displayed.
 
 Example: solving a simple harmonic oscillator ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)``
 to obtain the response as a function of ``ω``
@@ -84,7 +86,7 @@ A steady state result for 1000 parameter points
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, sorting="nearest", classify_default=true)
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, show_progress=true, sorting="nearest", classify_default=true)
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
@@ -96,7 +98,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
-    raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading)
+    raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading, show_progress=show_progress)
 
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
@@ -237,22 +239,22 @@ end
 
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=false, threading=false)
+function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[], random_warmup=false, threading=false, show_progress=true)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
     if random_warmup && !isempty(sweep)
         complex_pert = [1E-2 * issubset(p, keys(sweep))*randn(ComplexF64) for p in problem.parameters] # complex perturbation of the warmup parameters
         warmup_parameters = params_1D[Int(round(length(params_1D)/2))] .* (ones(length(params_1D[1])) + complex_pert)
-        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading)
-        result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading)
+        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading, show_progress=show_progress)
+        result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading, show_progress=show_progress)
     else
         result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
         bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
         for i in 1:length(parameter_values) # do NOT thread this
             p = parameter_values[i]
             next!(bar)
-            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=false), p]
+            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=show_progress), p]
         end
     end
 

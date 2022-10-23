@@ -1,4 +1,3 @@
-
 using BijectiveHilbert
 using LinearAlgebra
 import Distances
@@ -110,7 +109,7 @@ align_pair(ref::Vector{SteadyState}, to_sort::Vector{SteadyState}) = align_pair(
 """
 Go through a vector of solution and sort each according to Euclidean norm.
 """
-function sort_1D(solns::Vector{Vector{SteadyState}}, show_progress=true)
+function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
     sorted_solns = similar(solns) # preallocate
     sorted_solns[1] = sort(solns[1], by= x->abs.(imag(x))) # prefer real solution at first position
 

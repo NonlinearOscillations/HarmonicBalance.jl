@@ -11,7 +11,7 @@ show(eom::HarmonicEquation) = show_fields(eom)
     harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian")
 
 Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the time variable.
-For each harmonic of each variable, instance(s) of `HarmonicVariable` are automatically created and named. 
+For each harmonic of each variable, instance(s) of `HarmonicVariable` are automatically created and named.
 
 """
 function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
@@ -20,7 +20,7 @@ function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
     rules, vars = Dict(), []
 
     # keep count to label new variables
-    uv_idx = 1 
+    uv_idx = 1
     a_idx = 1
 
     for nvar in get_variables(diff_eom) # sum over natural variables
@@ -39,12 +39,12 @@ function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
             end
             to_substitute += rule
         end
-        
+
         rules[nvar] = to_substitute # total sub rule for nvar
     end
     eqs = substitute_all(eqs, rules)
     HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), diff_eom)
-end 
+end
 
 
 function slow_flow!(eom::HarmonicEquation; fast_time::Num, slow_time::Num, degree=2)
@@ -126,7 +126,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Get the internal symbols of the independent variables of `eom`. 
+Get the internal symbols of the independent variables of `eom`.
 """
 function get_variables(eom::HarmonicEquation)
     return flatten(get_variables.(eom.variables))
@@ -140,7 +140,7 @@ get_variables(p::Problem) = get_variables(p.eom)
 function _parameters(eom::HarmonicEquation)
     all_symbols = flatten([cat(get_variables(eq.lhs), get_variables(eq.rhs), dims=1) for eq in eom.equations])
     # subtract the set of independent variables (i.e., time) from all free symbols
-    setdiff(all_symbols, get_variables(eom), get_independent_variables(eom)) 
+    setdiff(all_symbols, get_variables(eom), get_independent_variables(eom))
 end
 
 
@@ -149,11 +149,11 @@ end
 ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
-function substitute_all(eom::HarmonicEquation, rules::Union{Dict, Pair}) 
+function substitute_all(eom::HarmonicEquation, rules::Union{Dict, Pair})
     new_eom = deepcopy(eom)
     new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
     new_eom
-end 
+end
 
 
 "Simplify the equations in HarmonicEquation."
@@ -200,13 +200,13 @@ function fourier_transform!(eom::HarmonicEquation, time::Num)
         # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
         if hvar.type == "u"
             avg_eqs[i] = fourier_cos_term(eq, hvar.ω, time)
-        elseif hvar.type == "v" 
+        elseif hvar.type == "v"
             avg_eqs[i] = fourier_sin_term(eq, hvar.ω, time)
         elseif hvar.type == "a"
             avg_eqs[i] = fourier_cos_term(eq, 0, time) # pick out the constants
         end
     end
-    
+
     eom.equations = avg_eqs
 end
 
@@ -214,7 +214,7 @@ end
 """
     get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
 
-Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping 
+Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping
 higher-order derivatives to obtain
 a set of ODEs (the harmonic equations) governing the harmonics of `diff_eom`.
 
@@ -242,7 +242,7 @@ A set of 2 harmonic equations
 Variables: u1(T), v1(T)
 Parameters: ω0, ω, F
 
-Harmonic ansatz: 
+Harmonic ansatz:
 x(t) = u1*cos(ωt) + v1*sin(ωt)
 
 Harmonic equations:
@@ -263,7 +263,7 @@ function get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothin
     eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=degree); # drop 2nd order time derivatives
     fourier_transform!(eom, fast_time); # perform averaging over the frequencies originally specified in dEOM
     ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2); # drop higher powers of the first-order derivatives
-    return ft_eom_simplified 
+    return ft_eom_simplified
 end
 
 

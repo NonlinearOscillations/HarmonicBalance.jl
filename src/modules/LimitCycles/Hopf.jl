@@ -34,7 +34,7 @@ get_Hopf_variables(eom::HarmonicEquation, Δω::Num) = filter(x -> any(isequal.(
 
 """
     Obtain the Jacobian of `eom` with a gauge-fixed (Hopf) variable `fixed_var`.
-    `fixed_var` marks the variable which is fixed to zero due to U(1) symmetry. 
+    `fixed_var` marks the variable which is fixed to zero due to U(1) symmetry.
     This leaves behind a finite degeneracy of solutions (see Chapter 6 of thesis).
 
     The Jacobian is always 'implicit' - a function which only returns the numerical Jacobian when a numerical solution
@@ -48,23 +48,23 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Construct a `Problem` from `eom` in the case where U(1) symmetry is present 
+Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a Hopf variable with frequency `Δω`.
 """
 function _Hopf_Problem(eom::HarmonicEquation, Δω::Num; explicit_Jacobian=false)
 
     eom = deepcopy(eom) # do not mutate eom
     isempty(get_Hopf_variables(eom, Δω)) ? error("No Hopf variables found!") : nothing
-    !any(isequal.(eom.parameters, Δω)) ? error(Δω, " is not a parameter of the harmonic equation!") : nothing 
+    !any(isequal.(eom.parameters, Δω)) ? error(Δω, " is not a parameter of the harmonic equation!") : nothing
 
     # eliminate one of the Cartesian variables
-    fixed_var = get_Hopf_variables(eom, Δω)[1] 
-    
+    fixed_var = get_Hopf_variables(eom, Δω)[1]
+
     # get the Hopf Jacobian before altering anything - this is the usual Jacobian but the entries corresponding
     # to the free variable are removed
     J = explicit_Jacobian ? substitute_all(get_Jacobian(eom), _remove_brackets(fixed_var) => 0) : _Hopf_implicit_Jacobian(eom, fixed_var)
     _fix_gauge!(eom, Δω, fixed_var)
-    
+
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
     p = Problem(eom; Jacobian=J)
     return p
@@ -72,13 +72,13 @@ end
 
 
 """
-    get_steady_states(eom::HarmonicEquation, swept, fixed, Δω; kwargs...)   
+    get_steady_states(eom::HarmonicEquation, swept, fixed, Δω; kwargs...)
 
 Variant of `get_steady_states` for a limit cycle problem characterised by a Hopf frequency (usually called Δω)
 
 Solutions with Δω = 0 are labelled unphysical since this contradicts the assumption of distinct harmonic variables corresponding to distinct harmonics.
 """
-function get_steady_states(eom::HarmonicEquation, swept, fixed, Δω; explicit_Jacobian=false, kwargs...)   
+function get_steady_states(eom::HarmonicEquation, swept, fixed, Δω; explicit_Jacobian=false, kwargs...)
     prob = _Hopf_Problem(eom, Δω, explicit_Jacobian=explicit_Jacobian);
     result = HarmonicBalance.get_steady_states(prob, swept, fixed; random_warmup=true, threading=true, classify_default=true, kwargs...)
 
@@ -110,7 +110,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fix the gauge in `eom` where `Δω` is the limit cycle frequency by constraining `fixed_var` to zero and promoting `Δω` to a variable. 
+Fix the gauge in `eom` where `Δω` is the limit cycle frequency by constraining `fixed_var` to zero and promoting `Δω` to a variable.
 """
 function _fix_gauge!(eom::HarmonicEquation, Δω::Num, fixed_var::HarmonicVariable)
 
@@ -118,7 +118,7 @@ function _fix_gauge!(eom::HarmonicEquation, Δω::Num, fixed_var::HarmonicVariab
     rules = Dict(Δω => new_symbol, fixed_var.symbol => Num(0))
     eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
     eom.parameters = setdiff(eom.parameters, [Δω]) # Δω is now NOT a parameter anymore
-    
+
     fixed_var.type = "Hopf"
     fixed_var.ω = Num(0)
     fixed_var.symbol = new_symbol

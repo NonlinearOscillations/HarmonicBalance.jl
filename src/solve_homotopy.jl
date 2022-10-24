@@ -31,22 +31,24 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
 
 
 """
-    get_steady_states(prob::Problem, 
+    get_steady_states(prob::Problem,
                         swept_parameters::ParameterRange,
                         fixed_parameters::ParameterList;
                         random_warmup=true,
-                            threading=false,
-                            sorting="hilbert")
+                        threading=false,
+                        show_progress=true,
+                        sorting="hilbert")
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
 `swept_parameters` accepts pairs mapping symbolic variables to arrays or `LinRange`.
-`fixed_parameters` accepts pairs mapping symbolic variables to numbers. 
+`fixed_parameters` accepts pairs mapping symbolic variables to numbers.
 
 Keyword arguments
 - `random_warmup`: If `true`, a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving. If `random_warmup=false`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
 This takes far longer but can be more reliable.
-- `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`. 
+- `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`.
 - `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
+- `show_progress`: Indicate whether a progress bar should be displayed.
 
 Example: solving a simple harmonic oscillator ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)``
 to obtain the response as a function of ``ω``
@@ -61,12 +63,12 @@ A steady state result for 100 parameter points
     Solution branches:   1
        of which real:    1
        of which stable:  1
-    
+
     Classes: stable, physical, Hopf, binary_labels
-    
+
 ```
 
-It is also possible to create multi-dimensional solutions plots. 
+It is also possible to create multi-dimensional solutions plots.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
 julia> range = ParameterRange(ω => LinRange(0.8,1.2,100), F => LinRange(0.1,1.0,10) ) # 100x10 parameter sets
@@ -79,12 +81,12 @@ A steady state result for 1000 parameter points
     Solution branches:   1
        of which real:    1
        of which stable:  1
-    
+
     Classes: stable, physical, Hopf, binary_labels
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, sorting="nearest", classify_default=true)   
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; random_warmup=true, threading=false, show_progress=true, sorting="nearest", classify_default=true)
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
@@ -96,8 +98,8 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
-    raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading)
-    
+    raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, random_warmup=random_warmup, threading=threading, show_progress=show_progress)
+
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
     rounded_solutions = HomotopyContinuation.solutions.(getindex.(raw, 1));
@@ -108,7 +110,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J) # a "raw" solution struct
 
-    sort_solutions!(result, sorting=sorting) # sort into branches
+    sort_solutions!(result, sorting=sorting, show_progress=show_progress) # sort into branches
     classify_default ? _classify_default!(result) : nothing
 
     return result
@@ -174,7 +176,7 @@ find_branch_order(classification::Array) = collect(1:length(classification[1])) 
 function order_branches!(res::Result, classes::Vector{String})
     for class in classes
         order_branches!(res, find_branch_order(res.classes[class]))
-    end 
+    end
 end
 
 order_branches!(res::Result, class::String) = order_branches!(res, [class])
@@ -237,22 +239,22 @@ end
 
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[],random_warmup=false, threading=false)
+function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[], random_warmup=false, threading=false, show_progress=true)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
     if random_warmup && !isempty(sweep)
         complex_pert = [1E-2 * issubset(p, keys(sweep))*randn(ComplexF64) for p in problem.parameters] # complex perturbation of the warmup parameters
         warmup_parameters = params_1D[Int(round(length(params_1D)/2))] .* (ones(length(params_1D[1])) + complex_pert)
-        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading)
-        result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading)
+        warmup_solution = HomotopyContinuation.solve(problem.system,  target_parameters=warmup_parameters, threading=threading, show_progress=show_progress)
+        result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading, show_progress=show_progress)
     else
         result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
         bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
         for i in 1:length(parameter_values) # do NOT thread this
             p = parameter_values[i]
-            next!(bar)
-            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=false), p]
+            show_progress ? next!(bar) : nothing
+            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=show_progress), p]
         end
     end
 
@@ -262,7 +264,7 @@ end
 
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."
-function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN) 
+function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN)
     Ls    = length.(solutions)
     nvars = length(solutions[1][1]) # number of variables
     max_N = maximum(Ls) # length to be fixed
@@ -289,18 +291,18 @@ end
 
 
 """
-    newton(res::Result, soln::OrderedDict)  
+    newton(res::Result, soln::OrderedDict)
     newton(res::Result; branch, index)
-      
+
 Run a newton solver on `prob::Problem` starting from the solution `soln` (indexable by `branch` and `index`).
-Any variables/parameters not present in `soln` are set to zero. 
+Any variables/parameters not present in `soln` are set to zero.
 """
 newton(res::Result, soln::OrderedDict) = newton(res.problem, soln)
 newton(res::Result; branch, index) = newton(res, res[index][branch])
 
 
 function _convert_or_zero(x, t=ComplexF64)
-    try 
+    try
         convert(t, x)
     catch ArgumentError
         @warn string(x) * " not supplied: setting to zero"

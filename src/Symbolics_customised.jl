@@ -31,7 +31,7 @@ expand_all(x::Num) = Num(expand_all(x.val))
 
 "Apply a function f on every member of a sum or a product"
 _apply_termwise(f, x::Add) = sum([f(arg) for arg in arguments(x)])
-_apply_termwise(f, x::Mul) = prod([f(arg) for arg in arguments(x)])	
+_apply_termwise(f, x::Mul) = prod([f(arg) for arg in arguments(x)])
 _apply_termwise(f, x::Div) = _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
 _apply_termwise(f,x) = f(x)
 
@@ -77,7 +77,7 @@ function exp_to_trig(x)
 
 			# put trigarg => -trigarg the lowest alphabetic argument of trigarg is lower than that of -trigarg
 			# this is a meaningless key but gives unique signs to all sums
-			is_first = minimum(string.(arguments(trigarg))) == first_symbol			
+			is_first = minimum(string.(arguments(trigarg))) == first_symbol
 			return is_first ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
 		end
 

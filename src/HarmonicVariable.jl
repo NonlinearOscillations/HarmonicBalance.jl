@@ -8,7 +8,7 @@ display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name"))
 
 function _coordinate_transform(new_var, ω, t, type)
     coords = Dict([
-        "u" =>  new_var * cos(ω*t), 
+        "u" =>  new_var * cos(ω*t),
         "v" => new_var * sin(ω*t),
         "a" => new_var])
     return coords[type]

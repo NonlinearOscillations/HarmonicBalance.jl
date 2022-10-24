@@ -3,7 +3,7 @@ export get_Jacobian
 """
 Here stability and linear response is treated with the slow-flow approximation (SFA), see Chapter 5 of JK's thesis.
 Linear response always appears as a sum of Lorentzians, but is inaccurate where these are peaked far from the drive frequency.
-The Jacobian is stored in the Problem object as a function that takes a solution dictionary to give the numerical Jacobian. 
+The Jacobian is stored in the Problem object as a function that takes a solution dictionary to give the numerical Jacobian.
 """
 
 """
@@ -18,7 +18,7 @@ function get_Jacobian(eom::HarmonicEquation)
     rearr = !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
     lhs = _remove_brackets(rearr)
     vars = _remove_brackets.(eom.variables)
-    
+
     get_Jacobian(lhs, vars)
 
 end
@@ -57,11 +57,11 @@ Code folllows for an implicit treatment of the Jacobian. Usually we rearrange th
 function _get_J_matrix(eom::HarmonicEquation; order=0)
 
     order > 1 && error("Cannot get a J matrix of order > 1 from the harmonic equations.\nThese are by definition missing higher derivatives")
-    
+
     vars_simp = Dict([var => HarmonicBalance._remove_brackets(var) for var in get_variables(eom)])
     T = get_independent_variables(eom)[1]
     J = get_Jacobian(eom.equations, d(get_variables(eom), T, order))
-    
+
     expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp))
 end
 

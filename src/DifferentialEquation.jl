@@ -16,7 +16,7 @@ julia> add_harmonic!(diff_eq, x, ω) # expand x using ω
 
 System of 1 differential equations
 Variables:       x(t)
-Harmonic ansatz: x(t) => ω;   
+Harmonic ansatz: x(t) => ω;
 
 (ω0^2)*x(t) + Differential(t)(Differential(t)(x(t))) ~ F*cos(t*ω)
 ```
@@ -36,7 +36,7 @@ get_variables(diff_eom::DifferentialEquation) = collect(keys(diff_eom.equations)
 
 is_harmonic(diff_eom::DifferentialEquation, t::Num) = all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
 
-"Pretty printing of the newly defined types" 
+"Pretty printing of the newly defined types"
 function show_fields(object)
     for field in fieldnames(typeof(object)) # display every field
         display(string(field)); display(getfield(object, field))

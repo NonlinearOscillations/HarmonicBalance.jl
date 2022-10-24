@@ -55,7 +55,7 @@ function Problem(eom::HarmonicEquation; Jacobian=true)
     end
     vars_orig  = get_variables(eom)
     vars_new = declare_variable.(HarmonicBalance.var_name.(vars_orig))
-    return Problem(vars_new, eom.parameters, S, J,eom)   
+    return Problem(vars_new, eom.parameters, S, J,eom)
 end
 
 
@@ -63,7 +63,7 @@ end
 function Problem(equations::Vector{Num},variables::Vector{Num},parameters::Vector{Num})
     conv_vars = Num_to_Variable.(variables)
     conv_para = Num_to_Variable.(parameters)
-    
+
     eqs_HC=[Expression(eval(symbol)) for symbol in [Meta.parse(s) for s in [string(eq) for eq in equations]]] #note in polar coordinates there could be imaginary factors, requiring the extra replacement "I"=>"1im"
     system = HomotopyContinuation.System(eqs_HC, variables = conv_vars, parameters = conv_para)
     J = HarmonicBalance.get_Jacobian(equations,variables) #all derivatives are assumed to be in the left hand side;

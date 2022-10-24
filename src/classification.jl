@@ -124,7 +124,7 @@ function classify_binaries!(res::Result)
     res.classes["binary_labels"] = bin_label
 end
 
-clean_bitstrings(res::Result) = [[el for el in bit_string[phys_string]] 
+clean_bitstrings(res::Result) = [[el for el in bit_string[phys_string]]
 for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])]; #remove unphysical solutions from strings
 
 function bitarr_to_int(arr)
@@ -134,7 +134,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Removes all solution branches from `res` where NONE of the solution falls into `class`. 
+Removes all solution branches from `res` where NONE of the solution falls into `class`.
 Typically used to filter out unphysical solutions to prevent huge file sizes.
 """
 function filter_result!(res::Result, class::String)

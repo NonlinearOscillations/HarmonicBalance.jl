@@ -25,7 +25,7 @@ module HarmonicBalance
    end
 
    export is_real
-    is_real(x) = abs(imag(x)) / abs(real(x)) < im_tol::Float64 || abs(x) < 1E-70
+    is_real(x) = abs(imag(x)) / abs(real(x)) < im_tol::Float64 || abs(x) < 1e-20
     is_real(x::Array) = any(is_real.(x))
 
     # Symbolics does not natively support complex exponentials of variables

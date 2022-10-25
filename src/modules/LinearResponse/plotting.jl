@@ -9,7 +9,9 @@ function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int;
     spectra = [JacobianSpectrum(res, branch=branch, index = i) for i in findall(stable)]
     C = Array{Float64, 2}(undef,  length(Ω_range), length(spectra))
 
-    bar = Progress(length(CartesianIndices(C)), 1, "Diagonalizing the Jacobian for each solution ... ", 50)
+    if show_progress
+        bar = Progress(length(CartesianIndices(C)), 1, "Diagonalizing the Jacobian for each solution ... ", 50)
+    end
     # evaluate the Jacobians for the different values of noise frequency Ω
     for ij in CartesianIndices(C)
         C[ij] = abs(evaluate(spectra[ij[2]][nat_var], Ω_range[ij[1]]))
@@ -28,7 +30,9 @@ function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; o
     C = Array{Float64, 2}(undef,  length(Ω_range), sum(stable))
 
     # note: this could be optimized by not grabbing the entire huge dictionary every time
-    bar = Progress(length(C), 1, "Solving the linear response ODE for each solution and input frequency ... ", 50)
+    if show_progress
+        bar = Progress(length(C), 1, "Solving the linear response ODE for each solution and input frequency ... ", 50)
+    end
     for j in findall(stable)
 
          # get response for each individual point

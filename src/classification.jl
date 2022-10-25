@@ -73,7 +73,7 @@ $(TYPEDSIGNATURES)
 Returns true if the solution `soln` of the Result `res` is physical (= real number).
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
-function is_physical(soln::StateDict, res::Result; im_tol=im_tol)
+function is_physical(soln::StateDict, res::Result; im_tol=IM_TOL)
     var_values = [getindex(soln, v) for v in res.problem.variables]
     return all(abs.(imag.(var_values)).<im_tol) && any(isnan.(var_values).==false)
 end
@@ -86,7 +86,7 @@ Stable solutions are real and have all Jacobian eigenvalues Re[λ] <= 0.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 `rel_tol`: Re(λ) considered <=0 if real.(λ) < rel_tol*abs(λmax)
 """
-function is_stable(soln::StateDict, res::Result; im_tol=im_tol, rel_tol=1E-10)
+function is_stable(soln::StateDict, res::Result; im_tol=IM_TOL, rel_tol=1E-10)
     is_physical(soln, res ,im_tol=im_tol) || return false  # the solution is unphysical anyway
     λs = eigvals(real.(res.jacobian(soln)))
     return all([real.(λs) .< rel_tol*maximum(abs.(λs))]...)
@@ -100,7 +100,7 @@ Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with 
 are complex conjugates of each other.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
-function is_Hopf_unstable(soln::StateDict, res::Result; im_tol=im_tol)
+function is_Hopf_unstable(soln::StateDict, res::Result; im_tol=IM_TOL)
     is_physical(soln, res, im_tol=im_tol) || return false  # the solution is unphysical anyway
     J = res.jacobian(soln)
     unstable = filter(x -> real(x) > 0, eigvals(J))

@@ -33,14 +33,15 @@ The x,y,z arguments are Strings compatible with Symbolics.jl
     plot(res::Result; x::String, y::String, class="default", not_class=[], kwargs...)
     plot(res::Result, y::String; kwargs...) # take x automatically from Result
 
-default behaviour: plot stable solutions as full lines, unstable as dashed
+Default behaviour is to plot stable solutions as full lines, unstable as dashed
 ###
 
 ## 2D plots
+    plot(res::Result; z::String, branch::Int64, class="physical", not_class=[], kwargs...)
+    
+To make the 2d plot less chaotic it is required to specify the specific `branch` to plot, labeled by a `Int64`.
 
-    plot(res::Result; z::String, class="physical", not_class=[], kwargs...)
-
-the x and y axes are taken automatically from `res`
+The x and y axes are taken automatically from `res`
 """
 function plot(res::Result, varargs...; kwargs...)::Plots.Plot
     if dim(res) == 1

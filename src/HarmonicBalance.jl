@@ -18,14 +18,14 @@ module HarmonicBalance
     Float64(x::Num) = Float64(x.val)
 
    # default global settings
-   export im_tol
-   im_tol = 1E-6
+   export IM_TOL
+   IM_TOL::Float64 = 1E-6
    function set_imaginary_tolerance(x::Float64)
-       @eval(im_tol = $x)
+       @eval(IM_TOL::Float64 = $x)
    end
 
    export is_real
-    is_real(x) = abs(imag(x)) / abs(real(x)) < im_tol || abs(x) < 1E-70
+    is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL::Float64 || abs(x) < 1e-20
     is_real(x::Array) = any(is_real.(x))
 
     # Symbolics does not natively support complex exponentials of variables

@@ -250,7 +250,9 @@ function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVe
         result_full = HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution), start_parameters=warmup_parameters, target_parameters=parameter_values, threading=threading, show_progress=show_progress)
     else
         result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
-        bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
+        if show_progress
+            bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
+        end
         for i in 1:length(parameter_values) # do NOT thread this
             p = parameter_values[i]
             show_progress ? next!(bar) : nothing

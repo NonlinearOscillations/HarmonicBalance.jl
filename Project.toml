@@ -37,6 +37,7 @@ Plots = "1.35.0"
 ProgressMeter = "1.7.2"
 Symbolics = "4.11.0"
 julia = "1.8.2"
+OrderedCollections = "1.4.1"
 
 [extras]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

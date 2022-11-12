@@ -1,7 +1,7 @@
 module HarmonicBalance
 
     using Printf
-    using DataStructures
+    using OrderedCollections
     import Base: show, display; export show
     export *
     export @variables

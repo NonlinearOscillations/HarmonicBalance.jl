@@ -8,7 +8,7 @@ using Test
 
 files = [
     "powers.jl",
-    "harmonics.jl", 
+    "harmonics.jl",
     "fourier.jl",
     "load.jl",
     "parametron.jl"

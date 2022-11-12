@@ -1,5 +1,3 @@
-
-
 using Pkg
 current_path = @__DIR__
 Pkg.activate(current_path * "/../.");

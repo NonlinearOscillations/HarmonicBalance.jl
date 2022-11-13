@@ -43,11 +43,15 @@ To make the 2d plot less chaotic it is required to specify the specific `branch`
 
 The x and y axes are taken automatically from `res`
 """
-function plot(res::Result, varargs...; kwargs...)::Plots.Plot
+function plot(res::Result, varargs...; cut=Pair(missing, missing), kwargs...)::Plots.Plot
     if dim(res) == 1
         plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot2D(res, varargs...; _set_Plots_default..., kwargs...)
+        if ismissing(cut.first)
+            plot2D(res, varargs...; _set_Plots_default..., kwargs...)
+        else
+            plot2D_cut(res, varargs...; cut=cut, _set_Plots_default..., kwargs...)
+        end
     else
         error("Data dimension ", dim(res), " not supported")
     end
@@ -129,7 +133,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     # colouring is matched to branch index - matched across plots
     for k in findall(x -> !all(isnan.(x)), branches[1:end]) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
+        Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=nothing, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
     end
 
     return p
@@ -145,8 +149,47 @@ function plot2D(res::Result; z::String, branch::Int64, class="physical", not_cla
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
-     p = plot!(map(_realify, [Y, X, Z])...;
-     st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
+    p = plot!(map(_realify, [Y, X, Z])...;
+    st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
+end
+
+function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_class=[], add=false, kwargs...)
+
+    if class == "default"
+        if not_class == [] # plot stable full, unstable dashed
+            p = plot2D_cut(res; y=y, cut=cut, class=["physical", "stable"], add=add, kwargs...)
+            plot2D_cut(res; y=y, cut=cut, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            return p
+        else
+            p = plot2D_cut(res; y=y, cut=cut, not_class=not_class, class="physical", add=add, kwargs...)
+            return p
+        end
+    end
+
+    # the swept params are ranges and thus a sorted search can be performed
+    cut_par, cut_value = cut
+    cut_par_index = searchsortedfirst(res.swept_parameters[cut_par], cut_value)
+
+    # compare strings beacuse type Num cannot be compared
+    swept_pars = res.swept_parameters.keys
+    x_index = findfirst(sym -> string(sym)!=string(cut_par), swept_pars)
+    isnothing(x_index) && error("The variable $cut_par was not swept over.")
+    x = swept_pars[x_index]
+
+    X = res.swept_parameters[x]
+    Y =_apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) # first transform, then filter
+    branches = _realify(x_index==1 ? Y[:, cut_par_index] : Y[cut_par_index, :])
+
+    # start a new plot if needed
+    p = add ? Plots.plot!() : Plots.plot()
+
+    # colouring is matched to branch index - matched across plots
+    for k in findall(branch -> !all(isnan.(branch)), branches[1:end]) # skip NaN branches but keep indices
+        l = _is_labeled(p, k) ? nothing : k
+        Plots.plot!(X, branches[k]; color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
+    end
+
+    return p
 end
 
 

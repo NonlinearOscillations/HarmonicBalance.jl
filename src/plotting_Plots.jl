@@ -1,12 +1,12 @@
 using Plots, Latexify
-import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig
+import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 
 const _set_Plots_default = Dict{Symbol, Any}([
     :fontfamily => "computer modern",
     :titlefont => "computer modern",
     :tickfont => "computer modern",
     :linewidth => 2,
-    :legend => :outerright])
+    :legend_position => :outerright])
 
 
 
@@ -43,11 +43,15 @@ To make the 2d plot less chaotic it is required to specify the specific `branch`
 
 The x and y axes are taken automatically from `res`
 """
-function plot(res::Result, varargs...; kwargs...)::Plots.Plot
+function plot(res::Result, varargs...; cut=Pair(missing, missing), kwargs...)::Plots.Plot
     if dim(res) == 1
         plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
-        plot2D(res, varargs...; _set_Plots_default..., kwargs...)
+        if ismissing(cut.first)
+            plot2D(res, varargs...; _set_Plots_default..., kwargs...)
+        else
+            plot2D_cut(res, varargs...; cut=cut, _set_Plots_default..., kwargs...)
+        end
     else
         error("Data dimension ", dim(res), " not supported")
     end
@@ -181,8 +185,47 @@ function plot2D(res::Result; z::String, branch::Int64, class="physical", not_cla
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
-     p = plot!(map(_realify, [Y, X, Z])...;
-     st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
+    p = plot!(map(_realify, [Y, X, Z])...;
+    st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
+end
+
+function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_class=[], add=false, kwargs...)
+
+    if class == "default"
+        if not_class == [] # plot stable full, unstable dashed
+            p = plot2D_cut(res; y=y, cut=cut, class=["physical", "stable"], add=add, kwargs...)
+            plot2D_cut(res; y=y, cut=cut, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            return p
+        else
+            p = plot2D_cut(res; y=y, cut=cut, not_class=not_class, class="physical", add=add, kwargs...)
+            return p
+        end
+    end
+
+    # the swept params are ranges and thus a sorted search can be performed
+    cut_par, cut_value = cut
+    cut_par_index = searchsortedfirst(res.swept_parameters[cut_par], cut_value)
+
+    # compare strings beacuse type Num cannot be compared
+    swept_pars = res.swept_parameters.keys
+    x_index = findfirst(sym -> string(sym)!=string(cut_par), swept_pars)
+    isnothing(x_index) && error("The variable $cut_par was not swept over.")
+    x = swept_pars[x_index]
+
+    X = res.swept_parameters[x]
+    Y =_apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) # first transform, then filter
+    branches = _realify(x_index==1 ? Y[:, cut_par_index] : Y[cut_par_index, :])
+
+    # start a new plot if needed
+    p = add ? Plots.plot!() : Plots.plot()
+
+    # colouring is matched to branch index - matched across plots
+    for k in findall(branch -> !all(isnan.(branch)), branches[1:end]) # skip NaN branches but keep indices
+        l = _is_labeled(p, k) ? nothing : k
+        Plots.plot!(X, branches[k]; color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
+    end
+
+    return p
 end
 
 
@@ -219,7 +262,7 @@ end
 plot_phase_diagram(res::Result, class::String; kwargs...) = plot_phase_diagram(res; class=class, kwargs...)
 
 
-function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwargs...)
+function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
     X, Y = values(res.swept_parameters)
     Z = sum.(_get_mask(res, class, not_class))
 
@@ -230,10 +273,53 @@ function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwar
 end
 
 
-function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)
+function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
     X = values(res.swept_parameters)
     Y = sum.(_get_mask(res, class, not_class))
     plot(X..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
+end
+
+###
+# Spaghetti Plot
+###
+
+function plot_spaghetti(res::Result; x::String, y::String, z::String, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
+
+    if class == "default"
+        if not_class == [] # plot stable full, unstable dashed
+            p = plot_spaghetti(res; x=x, y=y, z=z, class=["physical", "stable"], add=add, kwargs...)
+            plot_spaghetti(res; x=x, y=y, z=z, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            return p
+        else
+            p = plot_spaghetti(res; x=x, y=y, z=z, class="physical", not_class=not_class, add=add, kwargs...)
+            return p
+        end
+    end
+
+    vars = res.problem.variables
+    x_index = findfirst(sym -> string(sym)==x, vars)
+    y_index = findfirst(sym -> string(sym)==y, vars)
+    isnothing(x_index) && error("The variable $x is not a defined variable.")
+    isnothing(y_index) && error("The variable $y is not a defined variable.")
+
+    swept_pars = res.swept_parameters.keys
+    z_index = findfirst(sym -> string(sym)==z, swept_pars)
+    isnothing(z_index) && error("The variable $z was not swept over.")
+
+    Z = res.swept_parameters.vals[z_index]
+    X = _apply_mask(transform_solutions(res, x), _get_mask(res, class, not_class)) |> _realify
+    Y = _apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) |> _realify
+
+    # start a new plot if needed
+    p = add ? Plots.plot!() : Plots.plot()
+
+    # colouring is matched to branch index - matched across plots
+    for k in findall(x -> !all(isnan.(x)), X[1:end]) # skip NaN branches but keep indices
+        l = _is_labeled(p, k) ? nothing : k
+        Plots.plot!(X[k], Y[k], Z; _set_Plots_default...,
+         color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
+    end
+    return p
 end
 
 ###

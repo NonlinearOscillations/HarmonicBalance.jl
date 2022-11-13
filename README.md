@@ -2,6 +2,7 @@
 
 ![tests](https://github.com/NonlinearOscillations/HarmonicBalance.jl/workflows/Run%20tests/badge.svg?branch=master)
 [![docs](https://img.shields.io/badge/docs-online-blue.svg)](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/)
+[![Downloads](https://shields.io/endpoint?url=https://pkgs.genieframework.com/api/v1/badge/HarmonicBalance)](https://pkgs.genieframework.com?packages=HarmonicBalance)
 
 **HarmonicBalance.jl** is a Julia package for solving nonlinear differential equations using the method of harmonic balance.
 

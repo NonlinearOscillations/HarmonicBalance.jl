@@ -6,7 +6,7 @@ const _set_Plots_default = Dict{Symbol, Any}([
     :titlefont => "computer modern",
     :tickfont => "computer modern",
     :linewidth => 2,
-    :legend => :outerright])
+    :legend_position => :outerright])
 
 
 
@@ -38,7 +38,7 @@ Default behaviour is to plot stable solutions as full lines, unstable as dashed
 
 ## 2D plots
     plot(res::Result; z::String, branch::Int64, class="physical", not_class=[], kwargs...)
-    
+
 To make the 2d plot less chaotic it is required to specify the specific `branch` to plot, labeled by a `Int64`.
 
 The x and y axes are taken automatically from `res`
@@ -183,7 +183,7 @@ end
 plot_phase_diagram(res::Result, class::String; kwargs...) = plot_phase_diagram(res; class=class, kwargs...)
 
 
-function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwargs...)
+function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
     X, Y = values(res.swept_parameters)
     Z = sum.(_get_mask(res, class, not_class))
 
@@ -194,10 +194,51 @@ function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwar
 end
 
 
-function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)
+function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
     X = values(res.swept_parameters)
     Y = sum.(_get_mask(res, class, not_class))
     plot(X..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
+end
+
+###
+# Spaghetti Plot
+###
+
+function plot_spaghetti(res::Result; z::String, oscillator::Int64=1, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
+
+    if class == "default"
+        if not_class == [] # plot stable full, unstable dashed
+            p = plot_spaghetti(res; z=z, oscillator=oscillator, class=["physical", "stable"], add=add, kwargs...)
+            plot_spaghetti(res; z=z, oscillator=oscillator, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            return p
+        else
+            p = plot_spaghetti(res; z=z, oscillator=oscillator, class="physical", not_class=not_class, add=add, kwargs...)
+            return p
+        end
+    end
+
+    vars = res.problem.variables
+    oscillator*2 > length(vars) && error("The specified oscillator $oscillator is not present in the problem.")
+    u = "u$oscillator"; v = "v$oscillator"
+
+    swept_pars = res.swept_parameters.keys
+    z_index = findfirst(sym -> string(sym)==z, swept_pars)
+    isnothing(z_index) && error("The variable $z was not swept over.")
+
+    Z = res.swept_parameters.vals[z_index]
+    U = _apply_mask(transform_solutions(res, u), _get_mask(res, class, not_class)) |> _realify
+    V = _apply_mask(transform_solutions(res, v), _get_mask(res, class, not_class)) |> _realify
+
+    # start a new plot if needed
+    p = add ? Plots.plot!() : Plots.plot()
+
+    # colouring is matched to branch index - matched across plots
+    for k in findall(x -> !all(isnan.(x)), U[1:end]) # skip NaN branches but keep indices
+        l = _is_labeled(p, k) ? nothing : k
+        Plots.plot!(U[k], V[k], Z; _set_Plots_default...,
+         color=k, label=l, xlabel=latexify(u), ylabel=latexify(v), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
+    end
+    return p
 end
 
 ###

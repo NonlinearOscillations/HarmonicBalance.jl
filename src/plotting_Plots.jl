@@ -1,5 +1,5 @@
 using Plots, Latexify
-import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig
+import Plots.plot, Plots.plot!; export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 
 const _set_Plots_default = Dict{Symbol, Any}([
     :fontfamily => "computer modern",

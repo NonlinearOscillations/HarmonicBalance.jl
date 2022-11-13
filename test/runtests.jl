@@ -1,5 +1,3 @@
-
-
 using Pkg
 current_path = @__DIR__
 Pkg.activate(current_path * "/../.");
@@ -8,7 +6,7 @@ using Test
 
 files = [
     "powers.jl",
-    "harmonics.jl", 
+    "harmonics.jl",
     "fourier.jl",
     "load.jl",
     "parametron.jl"

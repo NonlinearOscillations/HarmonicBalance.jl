@@ -1,5 +1,5 @@
 using Symbolics
-using DataStructures
+using OrderedCollections
 import HomotopyContinuation
 import Base.convert; export convert
 

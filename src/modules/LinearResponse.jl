@@ -4,7 +4,7 @@ module LinearResponse
     using LinearAlgebra
     using Printf
     using Symbolics
-    using DataStructures
+    using OrderedCollections
     using ..HarmonicBalance
     using ..HC_wrapper
     using DocStringExtensions

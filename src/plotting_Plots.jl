@@ -204,39 +204,41 @@ end
 # Spaghetti Plot
 ###
 
-function plot_spaghetti(res::Result; z::String, oscillator::Int64=1, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
+function plot_spaghetti(res::Result; x::String, y::String, z::String, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
 
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot_spaghetti(res; z=z, oscillator=oscillator, class=["physical", "stable"], add=add, kwargs...)
-            plot_spaghetti(res; z=z, oscillator=oscillator, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            p = plot_spaghetti(res; x=x, y=y, z=z, class=["physical", "stable"], add=add, kwargs...)
+            plot_spaghetti(res; x=x, y=y, z=z, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
             return p
         else
-            p = plot_spaghetti(res; z=z, oscillator=oscillator, class="physical", not_class=not_class, add=add, kwargs...)
+            p = plot_spaghetti(res; x=x, y=y, z=z, class="physical", not_class=not_class, add=add, kwargs...)
             return p
         end
     end
 
     vars = res.problem.variables
-    oscillator*2 > length(vars) && error("The specified oscillator $oscillator is not present in the problem.")
-    u = "u$oscillator"; v = "v$oscillator"
+    x_index = findfirst(sym -> string(sym)==x, vars)
+    y_index = findfirst(sym -> string(sym)==y, vars)
+    isnothing(x_index) && error("The variable $x is not a defined variable.")
+    isnothing(y_index) && error("The variable $y is not a defined variable.")
 
     swept_pars = res.swept_parameters.keys
     z_index = findfirst(sym -> string(sym)==z, swept_pars)
     isnothing(z_index) && error("The variable $z was not swept over.")
 
     Z = res.swept_parameters.vals[z_index]
-    U = _apply_mask(transform_solutions(res, u), _get_mask(res, class, not_class)) |> _realify
-    V = _apply_mask(transform_solutions(res, v), _get_mask(res, class, not_class)) |> _realify
+    X = _apply_mask(transform_solutions(res, x), _get_mask(res, class, not_class)) |> _realify
+    Y = _apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) |> _realify
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), U[1:end]) # skip NaN branches but keep indices
+    for k in findall(x -> !all(isnan.(x)), X[1:end]) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(U[k], V[k], Z; _set_Plots_default...,
-         color=k, label=l, xlabel=latexify(u), ylabel=latexify(v), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
+        Plots.plot!(X[k], Y[k], Z; _set_Plots_default...,
+         color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
     end
     return p
 end

@@ -15,10 +15,10 @@ using HarmonicBalance
 Subsequently, we type define parameters in the problem and the oscillating amplitude function $x(t)$ using the `variables` macro from `Symbolics.jl` 
 
 ```julia
-@variables Ω,γ,λ,F, x,θ,η,α, ω, ψ, t, x(t)
+@variables Ω, γ, λ, F, x, θ, η, α, ω, ψ, t, x(t)
 
-natural_equation =  d(d(x,t),t) + γ*d(x,t) + Ω^2*(1-λ*cos(2*ω*t+ψ))*x + α * x^3 + η *d(x,t) * x^2
-forces =  F*cos(ω*t+θ)
+natural_equation =  d(d(x,t),t) + γ*d(x,t) + Ω^2*(1-λ*cos(2*ω*t+ψ))*x + α*x^3 + η*d(x,t) * x^2
+forces =  F*cos(ω*t + θ)
 diff_eq = DifferentialEquation(natural_equation + forces, x)
 ```
 
@@ -43,8 +43,8 @@ The output of these equations are consistent with the result found in the litera
 We start with a `varied` set containing one parameter, $\omega$,
 
 ```julia
-fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1.,  η=>0.3, θ => 0, ψ => 0)
-varied = ω => LinRange(0.9, 1.1, 100)
+fixed = (Ω => 1.0, γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1.0, η=>0.3, θ => 0, ψ => 0)
+varied = ω => range(0.9, 1.1, 100)
 
 result = get_steady_states(harmonic_eq, varied, fixed)
 ```
@@ -93,7 +93,7 @@ The parametrically driven oscillator boasts a stability diagram called "Arnold's
 
 To perform a 2D sweep over driving frequency $\omega$ and parametric drive strength $\lambda$, we keep `fixed` from before but include 2 variables in `varied`
 ```julia
-varied = (ω => LinRange(0.8, 1.2,50), λ => LinRange(0.001, 0.6, 50))
+varied = (ω => range(0.8, 1.2, 50), λ => range(0.001, 0.6, 50))
 result_2D = get_steady_states(harmonic_eq, varied, fixed);
 ```
 
@@ -112,7 +112,7 @@ In addition to phase diagrams, we can plot functions of the solution. The syntax
 ```julia
 # overlay branches with different colors
 plot(result_2D, "sqrt(u1^2 + v1^2)", branch=1, class="stable", camera=(60,-40))
-plot!(result_2D, "sqrt(u1^2 + v1^2)", branch=2, class="stable", color=:red)```
+plot!(result_2D, "sqrt(u1^2 + v1^2)", branch=2, class="stable", color=:red)
 ```
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/parametron/2d_amp.png" alignment="center" width="500px"\>

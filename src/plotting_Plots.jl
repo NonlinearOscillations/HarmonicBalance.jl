@@ -38,7 +38,7 @@ Default behaviour is to plot stable solutions as full lines, unstable as dashed
 
 ## 2D plots
     plot(res::Result; z::String, branch::Int64, class="physical", not_class=[], kwargs...)
-    
+
 To make the 2d plot less chaotic it is required to specify the specific `branch` to plot, labeled by a `Int64`.
 
 The x and y axes are taken automatically from `res`
@@ -88,13 +88,49 @@ end
 
 
 # convert x to Float64, raising a warning if complex
-function _realify(x)
-    !is_real(x) && !isnan(x) ? (@warn "Values with non-negligible complex parts have been projected on the real axis!", x) : nothing
+function _realify(x, warn=true)
+    !is_real(x) && !isnan(x) && warn ? (@warn "Values with non-negligible complex parts have been projected on the real axis!", x) : nothing
     real(x)
 end
 
-_realify(v::Vector) = [_realify.(getindex.(v, k)) for k in 1:length(v[1])]
-_realify(a::Array) = _realify.(a)
+function _realify(v::Vector, warn=true)
+    v_real = Vector{Vector{Float64}}(undef, length(v[1]))
+    for branch in eachindex(v_real)
+        values = getindex.(v, branch)
+        values_real = Vector{Float64}(undef, length(values))
+        for (j,x) in pairs(values)
+            if !is_real(x) && !isnan(x) && warn
+                (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
+                warn = false
+            end
+            values_real[j] = real(x)
+        end
+        v_real[branch] = values_real
+    end
+    return v_real
+end
+
+function _realify(a::Matrix, warn=true)
+    a_real = Array{Vector{Vector{Float64}}}(undef, size(a)...)
+    for idx in CartesianIndices(a)
+        v = a[idx]
+        v_real = Vector{Vector{Float64}}(undef, length(v[1]))
+        for branch in eachindex(v_real)
+            values = getindex.(v, branch)
+            values_real = Vector{Float64}(undef, length(values))
+            for (j,x) in pairs(values)
+                if !is_real(x) && !isnan(x) && warn
+                    (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
+                    warn = false
+                end
+                values_real[j] = real(x)
+            end
+            v_real[branch] = values_real
+        end
+        a_real[idx] = v_real
+    end
+    return a_real
+end
 
 _vectorise(s::Vector) = s
 _vectorise(s) = [s]

@@ -133,7 +133,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     # colouring is matched to branch index - matched across plots
     for k in findall(x -> !all(isnan.(x)), branches[1:end]) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=nothing, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
+        Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
     end
 
     return p

@@ -288,6 +288,19 @@ end
 # Spaghetti Plot
 ###
 
+"""
+$(TYPEDSIGNATURES)
+
+Plot a three dimension line plot of a `Result` object as a function of the parameters.
+Works with 1D and 2D datasets.
+
+Class selection done by passing `String` or `Vector{String}` as kwarg:
+
+    class::String       :   only count solutions in this class ("all" --> plot everything)
+    not_class::String   :   do not count solutions in this class
+
+Other kwargs are passed onto Plots.gr()
+"""
 function plot_spaghetti(res::Result; x::String, y::String, z::String, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
 
     if class == "default"

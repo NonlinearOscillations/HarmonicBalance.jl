@@ -16,7 +16,7 @@ Keyword arguments
 - `show_progress`: Indicate whether a progress bar should be displayed.
 
 """
-function sort_solutions(solutions::Array; sorting="hilbert", show_progress=true)
+function sort_solutions(solutions::Array; sorting="nearest", show_progress=true)
     sorting_schemes = ["none", "hilbert", "nearest"]
     sorting ∈ sorting_schemes || error("Only the following sorting options are allowed:  ", sorting_schemes)
     sorting == "none" && return solutions
@@ -27,7 +27,7 @@ function sort_solutions(solutions::Array; sorting="hilbert", show_progress=true)
 end
 
 
-function sort_solutions!(solutions::Result; sorting="hilbert", show_progress=true)
+function sort_solutions!(solutions::Result; sorting="nearest", show_progress=true)
     solutions.solutions = sort_solutions(solutions.solutions, sorting=sorting, show_progress=show_progress)
 end
 

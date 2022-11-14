@@ -23,17 +23,22 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
     class       :   only plot solutions in this class(es) ("all" --> plot everything)
     not_class   :   do not plot solutions in this class(es)
 
-Other kwargs are passed onto Plots.gr()
+Other kwargs are passed onto Plots.gr().
 
 See also `plot!`
 
-The x,y,z arguments are Strings compatible with Symbolics.jl
+The x,y,z arguments are Strings compatible with Symbolics.jl, e.g., `y=2*sqrt(u1^2+v1^2)` plots
+the amplitude of the first quadratures multiplied by 2.
 
 ## 1D plots
     plot(res::Result; x::String, y::String, class="default", not_class=[], kwargs...)
     plot(res::Result, y::String; kwargs...) # take x automatically from Result
 
-Default behaviour is to plot stable solutions as full lines, unstable as dashed
+Default behaviour is to plot stable solutions as full lines, unstable as dashed.
+
+If a sweep in two parameters were done, i.e., `dim(res)==2`, a one dimensional cut can be
+plotted by using the keyword `cut` were it takes a `Pair{Num, Float64}` type entry. For example,
+`plot(res, y="sqrt(u1^2+v1^2), cut=(λ => 0.2))` plots a cut at `λ = 0.2`.
 ###
 
 ## 2D plots
@@ -283,6 +288,19 @@ end
 # Spaghetti Plot
 ###
 
+"""
+$(TYPEDSIGNATURES)
+
+Plot a three dimension line plot of a `Result` object as a function of the parameters.
+Works with 1D and 2D datasets.
+
+Class selection done by passing `String` or `Vector{String}` as kwarg:
+
+    class::String       :   only count solutions in this class ("all" --> plot everything)
+    not_class::String   :   do not count solutions in this class
+
+Other kwargs are passed onto Plots.gr()
+"""
 function plot_spaghetti(res::Result; x::String, y::String, z::String, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
 
     if class == "default"

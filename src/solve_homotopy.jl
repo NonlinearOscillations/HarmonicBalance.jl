@@ -37,7 +37,7 @@ get_single_solution(res::Result, index) = [get_single_solution(res, index=index,
                         random_warmup=true,
                         threading=false,
                         show_progress=true,
-                        sorting="hilbert")
+                        sorting="nearest")
 
 Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_parameters` constant.
 `swept_parameters` accepts pairs mapping symbolic variables to arrays or `LinRange`.

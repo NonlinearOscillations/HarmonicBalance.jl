@@ -5,7 +5,10 @@ using HarmonicBalance
 
 makedocs(
 	sitename="HarmonicBalance.jl",
-	format = Documenter.HTML(mathengine=MathJax()),
+	format = Documenter.HTML(
+		mathengine=MathJax(),
+		assets = ["assets/favicon.ico"]
+	),
 	pages = [
 		"Background" => Any[
 			"background/harmonic_balance.md"

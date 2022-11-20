@@ -2,12 +2,12 @@
 Here the methods to find a
 """
 # multiply a peak by a number.
- function *(number::Float64, peak::Lorentzian) # multiplication operation
+ function Base.:*(number::Float64, peak::Lorentzian) # multiplication operation
     Lorentzian(peak.ω0, peak.Γ, peak.A*number)
  end
 
 
- *(number::Float64, s::JacobianSpectrum) = JacobianSpectrum([number * peak for peak in s.peaks])
+ Base.:*(number::Float64, s::JacobianSpectrum) = JacobianSpectrum([number * peak for peak in s.peaks])
 
 
 function show(io::IO, s::JacobianSpectrum)

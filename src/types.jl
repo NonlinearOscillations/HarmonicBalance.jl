@@ -237,3 +237,6 @@ end
 # overload to use [] for indexing
 Base.getindex(r::Result, idx::Int...) = get_single_solution(r, idx)
 Base.size(r::Result) = size(r.solutions)
+
+branch_count(r::Result) = length(r.solutions[1])
+get_branch(r::Result, idx) = getindex.(r.solutions, idx)

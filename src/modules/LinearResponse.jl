@@ -9,7 +9,7 @@ module LinearResponse
     using ..HC_wrapper
     using DocStringExtensions
 
-    import Base: *, show; export *, show
+    import Base: show; export show
 
     include("LinearResponse/types.jl")
     include("LinearResponse/utils.jl")

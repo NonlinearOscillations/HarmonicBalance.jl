@@ -77,37 +77,33 @@ end
 
 
 """
-Match a to_sort vector of solutions to a set of reference vector of solutions.
+Match a to_sort vector of solutions to a set of reference vectors of solutions.
 Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
 reference[1] and to_sort[i1] belong to the same branch
 """
-function align_pair(reference::Vector{Vector{SteadyState}}, to_sort::Vector{SteadyState})
-
+function align_pair(reference, to_sort::Vector{SteadyState})
+    
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
-    cartesians = [(j,i) for i in 1:n for j in 1:n]
-    sorted_cartesians = cartesians[sortperm(vec(distances))]
+    sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]
 
     matched = falses(n)
     matched_ref = falses(n)
 
-    sorted = Array{Tuple{Int64, Int64}, 1}(undef, n)
+    sorted = Vector{CartesianIndex}(undef, n)
 
-    for i in 1:length(cartesians)
-        j,k = sorted_cartesians[i]
+    for idx in sorted_cartesians
+        j,k = idx[1], idx[2]
         if !matched[k] && !matched_ref[j]
             matched[k] = true
             matched_ref[j] = true
-            sorted[j] = (j,k)
+            sorted[j] = idx
         end
     end
 
     return sorted
 
 end
-
-
-align_pair(ref::Vector{SteadyState}, to_sort::Vector{SteadyState}) = align_pair([ref], to_sort)
 
 
 """

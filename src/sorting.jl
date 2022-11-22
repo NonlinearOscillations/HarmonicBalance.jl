@@ -66,10 +66,10 @@ end
 
 "Match each solution from to_sort to a closest partner from refs"
 function get_distance_matrix(refs::Vector{Vector{SteadyState}}, to_sort::Vector{SteadyState})
-    distances = [get_distance_matrix(ref, to_sort) for ref in refs]
+    distances = map( ref -> get_distance_matrix(ref, to_sort), refs)
     lowest_distances = similar(distances[1])
-    for (i, el) in enumerate(lowest_distances)
-        lowest_distances[i] = min([d[i] for d in distances]...)
+    for idx in CartesianIndices(lowest_distances)
+        lowest_distances[idx] = minimum( x[idx] for x in distances )
     end
     lowest_distances
 end

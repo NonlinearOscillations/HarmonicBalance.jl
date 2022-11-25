@@ -73,18 +73,18 @@ transform_solutions(s::OrdinaryDiffEq.ODESolution, funcs::Vector{String}, harm_e
 
 
 """
-    plot(soln::ODECompositeSolution, f::String, harm_eq::HarmonicEquation; kwargs...)
+    plot(soln::ODESolution, f::String, harm_eq::HarmonicEquation; kwargs...)
 
 Plot a function `f` of a time-dependent solution `soln` of `harm_eq`.
 
 ## As a function of time
 
-    plot(soln::ODECompositeSolution, f::String, harm_eq::HarmonicEquation; kwargs...)
+    plot(soln::ODESolution, f::String, harm_eq::HarmonicEquation; kwargs...)
 
 `f` is parsed by Symbolics.jl
 
 ## parametric plots
-    plot(soln::ODECompositeSolution, f::Vector{String}, harm_eq::HarmonicEquation; kwargs...)
+    plot(soln::ODESolution, f::Vector{String}, harm_eq::HarmonicEquation; kwargs...)
 
 Parametric plot of f[1] against f[2]
 

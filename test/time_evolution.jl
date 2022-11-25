@@ -21,3 +21,5 @@ ode_problem = ODEProblem(harmonic_eq, fixed, sweep = sweep, x0 =[0.01; 0.0], tim
 time_soln = solve(ode_problem, Tsit5(), saveat = 100);
 
 transform_solutions(time_soln, "sqrt(u1^2+v1^2)", harmonic_eq)
+
+HarmonicBalance.FFT(time_soln)

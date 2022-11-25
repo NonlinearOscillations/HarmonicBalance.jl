@@ -16,7 +16,7 @@ function FFT(soln_u, soln_t; window = DSP.Windows.hanning)
     return(fft_u / length(fft_f), 2*pi*fft_f)
 end
 
-FFT(soln::OrdinaryDiffEq.ODECompositeSolution; window=DSP.Windows.hanning) = FFT(soln.u, soln.t, window=window)
+FFT(soln::OrdinaryDiffEq.ODESolution; window=DSP.Windows.hanning) = FFT(soln.u, soln.t, window=window)
 
 
 function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)

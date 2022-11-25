@@ -1,6 +1,6 @@
 using LinearAlgebra, Latexify
 import HarmonicBalance: transform_solutions, plot, plot!
-import DifferentialEquations: ODEProblem, solve
+import OrdinaryDiffEq: ODEProblem, solve
 export transform_solutions, plot, plot!
 export ODEProblem, solve
 
@@ -14,7 +14,7 @@ export ODEProblem, solve
             timespan::Tuple
             )
 
-Creates an ODEProblem object used by DifferentialEquations.jl from the equations in `eom` to simulate time-evolution within `timespan`.
+Creates an ODEProblem object used by OrdinaryDiffEq.jl from the equations in `eom` to simulate time-evolution within `timespan`.
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
 If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
@@ -46,7 +46,7 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
     # the initial condition is x0 if specified, taken from fixed_parameters otherwise
     initial = isempty(x0) ? real.(collect(values(fixed_parameters))[1:length(vars)]) * (1-perturb_initial) : x0
 
-    return DifferentialEquations.ODEProblem(f!, initial, timespan; kwargs...)
+    return OrdinaryDiffEq.ODEProblem(f!, initial, timespan; kwargs...)
 end
 
 
@@ -67,8 +67,8 @@ function is_stable(soln::StateDict, eom::HarmonicEquation; timespan, tol=1E-1, p
 end
 
 
-transform_solutions(soln::OrdinaryDiffEq.ODECompositeSolution, f::String, harm_eq::HarmonicEquation) = transform_solutions(soln.u, f, harm_eq)
-transform_solutions(s::OrdinaryDiffEq.ODECompositeSolution, funcs::Vector{String}, he::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]
+transform_solutions(soln::OrdinaryDiffEq.ODESolution, f::String, harm_eq::HarmonicEquation) = transform_solutions(soln.u, f, harm_eq)
+transform_solutions(s::OrdinaryDiffEq.ODESolution, funcs::Vector{String}, harm_eq::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]
 
 
 
@@ -90,7 +90,7 @@ Parametric plot of f[1] against f[2]
 
 Also callable as plot!
 """
-function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::HarmonicEquation; add=false, kwargs...)
+function plot(soln::OrdinaryDiffEq.ODESolution, funcs, harm_eq::HarmonicEquation; add=false, kwargs...)
 
     # start a new plot if needed
     p = add ? plot!() : plot()
@@ -105,4 +105,4 @@ function plot(soln::OrdinaryDiffEq.ODECompositeSolution, funcs, harm_eq::Harmoni
 end
 
 
-plot!(soln::OrdinaryDiffEq.ODECompositeSolution, varargs...; kwargs...) = plot(soln, varargs...; add=true, kwargs...)
+plot!(soln::OrdinaryDiffEq.ODESolution, varargs...; kwargs...) = plot(soln, varargs...; add=true, kwargs...)

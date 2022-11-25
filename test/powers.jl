@@ -1,7 +1,7 @@
 import HarmonicBalance: drop_powers, max_power
 import HarmonicBalance.Symbolics.expand
 
-@variables a,b,c 
+@variables a,b,c
 
 @test max_power(a^2 + b, a) == 2
 @test max_power( a*((a+b)^4 )^2 + a, a) == 9

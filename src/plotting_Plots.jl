@@ -80,7 +80,9 @@ Only `branches` are considered.
 function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
     classes == "all" && return fill(trues(length(branches)), size(res.solutions))
     bools = vcat([res.classes[c] for c in _str_to_vec(classes)], [map(.!, res.classes[c]) for c in _str_to_vec(not_classes)])
-    m = map( x -> [getindex(x, b) for b in branches], map(.*, bools...))
+    #m = map( x -> [getindex(x, b) for b in [branches...]], map(.*, bools...))
+
+    m = map( x -> x[[branches...]], map(.*, bools...))
 end
 
 
@@ -98,47 +100,39 @@ end
 
 
 # convert x to Float64, raising a warning if complex
-function _realify(x, warn=true)
-    !is_real(x) && !isnan(x) && warn ? (@warn "Values with non-negligible complex parts have been projected on the real axis!", x) : nothing
-    real(x)
-end
+# function _realify(x, warn=true)
+#     warn && !is_real(x) && !isnan(x) ? (@warn "Values with non-negligible complex parts have been projected on the real axis!", x) : nothing
+#     real(x)
+# end
 
-function _realify(v::Vector, warn=true)
-    v_real = Vector{Vector{Float64}}(undef, length(v[1]))
-    for branch in eachindex(v_real)
-        values = getindex.(v, branch)
-        values_real = Vector{Float64}(undef, length(values))
-        for (j,x) in pairs(values)
-            if !is_real(x) && !isnan(x) && warn
-                (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
-                warn = false
-            end
-            values_real[j] = real(x)
-        end
-        v_real[branch] = values_real
-    end
-    return v_real
-end
+# function _realify(v::Vector, warn=true)
+#     v_real = Vector{Vector{Float64}}(undef, length(v[1]))
+#     for branch in eachindex(v_real)
+#         values = getindex.(v, branch)
+#         values_real = Vector{Float64}(undef, length(values))
+#         for (j,x) in pairs(values)
+#             if !is_real(x) && !isnan(x) && warn
+#                 (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
+#                 warn = false
+#             end
+#             values_real[j] = real(x)
+#         end
+#         v_real[branch] = values_real
+#     end
+#     return v_real
+# end
 
-function _realify(a::Matrix, warn=true)
-    a_real = Array{Vector{Vector{Float64}}}(undef, size(a)...)
-    for idx in CartesianIndices(a)
-        v = a[idx]
-        v_real = Vector{Vector{Float64}}(undef, length(v[1]))
-        for branch in eachindex(v_real)
-            values = getindex.(v, branch)
-            values_real = Vector{Float64}(undef, length(values))
-            for (j,x) in pairs(values)
-                if !is_real(x) && !isnan(x) && warn
-                    (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
-                    warn = false
-                end
-                values_real[j] = real(x)
-            end
-            v_real[branch] = values_real
+function _realify(a; warn=true)
+
+    a_real = isa(a, Array) ? similar(a) : [a]
+    for (i, el) in enumerate(a)
+        if warn && !is_real(el) && !isnan(el)
+            (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
+            warn=false
         end
-        a_real[idx] = v_real
+        a_real[i] = real(el)
     end
+
     return a_real
 end
 
@@ -189,8 +183,8 @@ plot1D(res::Result, y::String; kwargs...) = plot1D(res; y=y, kwargs...)
 
 function plot2D(res::Result; z::String, branch::Int64, class="physical", not_class=[], add=false, kwargs...)
     X, Y = values(res.swept_parameters)
-    Z = getindex.(_apply_mask(transform_solutions(res, z), _get_mask(res, class, not_class)), branch) # first transform, then filter
-
+    Z = getindex.(_apply_mask(transform_solutions(res, z, branches=branch), _get_mask(res, class, not_class, branches=branch)), 1) # there is only one branch
+    println(typeof(Z), size(Z))
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))

@@ -15,7 +15,7 @@ In the [background](@ref intro_hb), we showed that nonlinear driven systems may 
 \end{equation}
 ```
 
-As long as the chosen harmonics constituting $\mathbf{u}(T)$ capture the system's behaviour, we may numerically evolve  Eq. \eqref{eq:harmeq} instead of the full problem. Since the components of $\mathbf{u}(T)$ only vary very slowly (and are constant in a steady state), this is usually _vastly_ more efficient than evolving the full problem. 
+As long as the chosen harmonics constituting $\mathbf{u}(T)$ capture the system's behaviour, we may numerically evolve  Eq. \eqref{eq:harmeq} instead of the full problem. Since the components of $\mathbf{u}(T)$ only vary very slowly (and are constant in a steady state), this is usually _vastly_ more efficient than evolving the full problem.
 
 Here we primarily demonstrate on the [parametrically driven oscillator](@ref parametron). The relevant notebooks may be found [in the example repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks).
 
@@ -37,7 +37,7 @@ Variables: u1(T), v1(T)
 ...
 ```
 
-The object `harmonic_eq` encodes Eq. \eqref{eq:harmeq}.   
+The object `harmonic_eq` encodes Eq. \eqref{eq:harmeq}.
 
 We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers. The desired object here is `DifferentialEquations.ODEProblem`, which is then fed into `DifferentialEquations.solve`.
 
@@ -45,9 +45,9 @@ We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.s
 
 Given $\mathbf{u}(T_0)$, what is $\mathbf{u}(T)$ at future times?
 
-For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref HarmonicBalance.TimeEvolution.ODEProblem). The syntax is similar to DifferentialEquations.jl : 
+For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref HarmonicBalance.TimeEvolution.ODEProblem). The syntax is similar to DifferentialEquations.jl :
 ```julia
-import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve
+import HarmonicBalance.TimeEvolution: ODEProblem, OrdinaryDiffEq.solve
 x0 = [0.0; 0.] # initial condition
 fixed = (ω0 => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1., η=>0.3, θ => 0, ω=>1.) # parameter values
 
@@ -152,7 +152,7 @@ Here we reconstruct the results of [Zambon et al., Phys Rev. A 102, 023526 (2020
 using HarmonicBalance
 @variables γ, F, α, ω0, F0, η, ω, J, t, x(t), y(t);
 
-diff_eq = DifferentialEquation([d(x,t,2) + γ * d(x,t) + ω0^2 * x + α*x^3+ 2*J*ω0*(x-y) - F0*cos(ω*t), 
+diff_eq = DifferentialEquation([d(x,t,2) + γ * d(x,t) + ω0^2 * x + α*x^3+ 2*J*ω0*(x-y) - F0*cos(ω*t),
             d(y,t,2) + γ * d(y,t) + ω0^2 * y + α*y^3 + 2*J*ω0*(y-x) - η*F0*cos(ω*t)], [x,y])
 
 ```
@@ -197,11 +197,11 @@ plot(p1, p2)
 <img style="display: block; margin: 0 auto; padding-bottom: 20px" src="../../assets/time_dependent/lc_steady.png" alignment="center"\>
 ```
 
-According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.011$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.010$, meaning a jump should occur. 
+According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.011$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.010$, meaning a jump should occur.
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
 ```julia
-import HarmonicBalance.TimeEvolution: ODEProblem, DifferentialEquations.solve
+import HarmonicBalance.TimeEvolution: ODEProblem, OrdinaryDiffEq.solve
 initial_state = result[1][1]
 
 T = 2E6

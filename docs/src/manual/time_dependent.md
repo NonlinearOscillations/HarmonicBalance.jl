@@ -2,7 +2,7 @@
 
 Generally, solving the ODE of oscillatory systems in time requires numerically tracking the oscillations. This is a computationally expensive process; however, using the harmonic ansatz removes the oscillatory time-dependence. Simulating instead the harmonic variables of a `HarmonicEquation` is vastly more efficient - a steady state of the system appears as a fixed point in multidimensional space rather than an oscillatory function.
 
-The module `TimeEvolution` is used to interface `HarmonicEquation` with the powerful solvers contained in `DifferentialEquations.jl`. Time-dependent parameter sweeps are  defined using the object `ParameterSweep`.
+The module `TimeEvolution` is used to interface `HarmonicEquation` with the powerful solvers contained in `DifferentialEquations.jl`. Time-dependent parameter sweeps are defined using the object `ParameterSweep`.
 
 ```@docs
 HarmonicBalance.TimeEvolution.ODEProblem
@@ -12,7 +12,7 @@ HarmonicBalance.TimeEvolution.ParameterSweep
 ## Plotting
 
 ```@docs
-HarmonicBalance.TimeEvolution.plot(::HarmonicBalance.TimeEvolution.OrdinaryDiffEq.ODECompositeSolution, ::Any, ::HarmonicEquation)
+HarmonicBalance.TimeEvolution.plot(::HarmonicBalance.TimeEvolution.OrdinaryDiffEq.ODESolution, ::Any, ::HarmonicEquation)
 ```
 
 ## Miscellaneous

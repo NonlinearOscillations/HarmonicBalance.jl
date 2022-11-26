@@ -80,7 +80,7 @@ Only `branches` are considered.
 function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
     classes == "all" && return fill(trues(length(branches)), size(res.solutions))
     bools = vcat([res.classes[c] for c in _vectorise(classes)], [map(.!, res.classes[c]) for c in _vectorise(not_classes)])
-    map( x -> x[_vectorise(branches)], map(.*, bools...))
+    map( x -> x[branches], map(.*, bools...))
 end
 
 

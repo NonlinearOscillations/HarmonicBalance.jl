@@ -79,8 +79,8 @@ Only `branches` are considered.
 """
 function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
     classes == "all" && return fill(trues(length(branches)), size(res.solutions))
-    bools = vcat([res.classes[c] for c in _vectorise(classes)], [map(.!, res.classes[c]) for c in _vectorise(not_classes)])
-    map( x -> x[_vectorise(branches)], map(.*, bools...))
+    bools = vcat([res.classes[c] for c in _str_to_vec(classes)], [map(.!, res.classes[c]) for c in _str_to_vec(not_classes)])
+    m = map( x -> [getindex(x, b) for b in branches], map(.*, bools...))
 end
 
 
@@ -142,8 +142,8 @@ function _realify(a::Matrix, warn=true)
     return a_real
 end
 
-_vectorise(s::Vector) = s
-_vectorise(s) = [s]
+_str_to_vec(s::Vector) = s
+_str_to_vec(s) = [s]
 
 
 # return true if p already has a label for branch index idx

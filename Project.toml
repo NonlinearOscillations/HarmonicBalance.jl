@@ -23,7 +23,7 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
-# BijectiveHilbert = "0.3.0"
+BijectiveHilbert = "0.3.0"
 DSP = "0.7.7"
 Distances = "0.10.7"
 DocStringExtensions = "0.9.2"

@@ -134,6 +134,7 @@ end
 
 
 get_variables(p::Problem) = get_variables(p.eom)
+get_variables(res::Result) = get_variables(res.problem)
 
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"

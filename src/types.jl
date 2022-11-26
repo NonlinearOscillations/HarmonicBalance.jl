@@ -1,7 +1,6 @@
 using Symbolics
 using OrderedCollections
 import HomotopyContinuation
-import Base.convert; export convert
 
 export DifferentialEquation, HarmonicVariable, HarmonicEquation,Problem, Result
 
@@ -11,12 +10,7 @@ const StateDict = OrderedDict{Num, ComplexF64}; export StateDict
 const SteadyState = Vector{ComplexF64}; export SteadyState;
 const ParameterVector = Vector{Float64}; export ParameterVector;
 
-
-
-import Base.getindex
-export getindex
-export +
-function getindex(p::ParameterRange, idx::Int...)
+function Base.getindex(p::ParameterRange, idx::Int...)
    lengths = [length(a) for a in values(p)]
    indices = CartesianIndices(Tuple(lengths))[idx...]
    return [val[indices[j]] for (j,val) in enumerate(values(p))]
@@ -241,6 +235,8 @@ end
 
 
 # overload to use [] for indexing
-function getindex(r::Result, idx::Int...)
-    return get_single_solution(r, idx)
-end
+Base.getindex(r::Result, idx::Int...) = get_single_solution(r, idx)
+Base.size(r::Result) = size(r.solutions)
+
+branch_count(r::Result) = length(r.solutions[1])
+get_branch(r::Result, idx) = getindex.(r.solutions, idx)

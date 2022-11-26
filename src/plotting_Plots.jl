@@ -74,12 +74,13 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return an array of bools to mark solutions in `res` which fall into `classes` but not `not_classes`
+Return an array of bools to mark solutions in `res` which fall into `classes` but not `not_classes`.
+Only `branches` are considered.
 """
-function _get_mask(res, classes, not_classes=[])
-    classes == "all" && return fill(trues(length(res.solutions[1])), size(res.solutions))
+function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
+    classes == "all" && return fill(trues(length(branches)), size(res.solutions))
     bools = vcat([res.classes[c] for c in _vectorise(classes)], [map(.!, res.classes[c]) for c in _vectorise(not_classes)])
-    map(.*, bools...)
+    map( x -> x[_vectorise(branches)], map(.*, bools...))
 end
 
 
@@ -149,32 +150,35 @@ _vectorise(s) = [s]
 _is_labeled(p::Plots.Plot, idx::Int64) = in(string(idx), [sub[:label] for sub in p.series_list])
 
 
-function plot1D(res::Result; x::String="default", y::String, class="default", not_class=[], add=false, kwargs...)
+function plot1D(res::Result; x::String="default", y::String, class="default", not_class=[], branches=1:branch_count(res), add=false, kwargs...)
 
     if class == "default"
+        args = [:x => x, :y => y, :branches => branches]
         if not_class == [] # plot stable full, unstable dashed
-            p = plot1D(res; x=x, y=y, class=["physical", "stable"], add=add, kwargs...)
-            plot1D(res; x=x, y=y, class="physical", not_class="stable", add=true, style=:dash, kwargs...)
+            p = plot1D(res; args..., class=["physical", "stable"], add=add, kwargs...)
+            plot1D(res; args..., class="physical", not_class="stable", add=true, style=:dash, kwargs...)
             return p
         else
-            p = plot1D(res; x=x, y=y, not_class=not_class, class="physical", add=add, kwargs...)
+            p = plot1D(res; args..., not_class=not_class, class="physical", add=add, kwargs...)
             return p
         end
     end
 
     dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
     x = x == "default" ? string(first(keys(res.swept_parameters))) : x
-    X, Y = transform_solutions(res, [x,y]) # first transform, then filter
-    Y = _apply_mask(Y, _get_mask(res, class, not_class))
-    branches = _realify(Y)
+    X = transform_solutions(res, x, branches=branches)
+    Y = transform_solutions(res, y, branches=branches)
+    Y = _apply_mask(Y, _get_mask(res, class, not_class, branches=branches))
+    branch_data = _realify(Y)
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), branches[1:end]) # skip NaN branches but keep indices
-        l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(_realify.(getindex.(X, k)), branches[k];  color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
+    for k in findall(x -> !all(isnan.(x)), branch_data[1:end]) # skip NaN branch_data
+        global_index = branches[k]
+        lab = _is_labeled(p, global_index) ? nothing : global_index
+        Plots.plot!(_realify.(getindex.(X, k)), branch_data[k];  color=k, label=lab, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
     end
 
     return p

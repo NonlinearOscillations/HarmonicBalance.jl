@@ -9,7 +9,8 @@ files = [
     "harmonics.jl",
     "fourier.jl",
     "load.jl",
-    "parametron.jl"
+    "parametron.jl",
+    "plotting.jl"
     ]
 
 for file in files

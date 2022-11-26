@@ -9,6 +9,7 @@ files = [
     "harmonics.jl",
     "fourier.jl",
     "load.jl",
+    "sorting.jl",
     "parametron.jl"
     ]
 

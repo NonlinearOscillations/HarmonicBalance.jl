@@ -175,7 +175,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), branch_data[1:end]) # skip NaN branch_data
+    for k in findall(x -> !all(isnan.(x)), branch_data) # skip NaN branch_data
         global_index = branches[k]
         lab = _is_labeled(p, global_index) ? nothing : global_index
         Plots.plot!(_realify.(getindex.(X, k)), branch_data[k];  color=k, label=lab, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
@@ -229,7 +229,7 @@ function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_clas
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(branch -> !all(isnan.(branch)), branches[1:end]) # skip NaN branches but keep indices
+    for k in findall(branch -> !all(isnan.(branch)), branches) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
         Plots.plot!(X, branches[k]; color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
     end
@@ -336,7 +336,7 @@ function plot_spaghetti(res::Result; x::String, y::String, z::String, class="def
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), X[1:end]) # skip NaN branches but keep indices
+    for k in findall(x -> !all(isnan.(x)), X) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
         Plots.plot!(X[k], Y[k], Z; _set_Plots_default...,
          color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)

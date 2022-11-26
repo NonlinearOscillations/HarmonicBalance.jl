@@ -37,7 +37,7 @@ Peaks = "0.4.1"
 Plots = "1.36.4"
 ProgressMeter = "1.7.2"
 Symbolics = "4.13.0"
-julia = "1.8.3"
+julia = "1.8.2"
 
 [extras]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

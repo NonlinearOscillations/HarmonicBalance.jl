@@ -16,7 +16,9 @@ varied = ω => range(0.9, 1.1, 100)
 res = get_steady_states(harmonic_eq, varied, fixed)
 
 # plot 1D result
-plot(res, x="ω", y="u1");
+plot(res, x="ω", y="u1")
+plot(res, x="ω", y="u1", branches=2:3)
+plot(res, x="ω", y="u1", branches=[1, 3])
 
 fixed = (ω0 => 1.0, γ => 1e-2, α => 1.0, η => 0.3)
 varied = (ω => LinRange(0.9, 1.1, 10), λ => LinRange(0.01, 0.05, 10))

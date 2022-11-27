@@ -106,7 +106,7 @@ function _realify(a::Array{T} where T <: Number; warning="")
     a_real = similar(a, Float64)
     for i in eachindex(a)
         if !isnan(a[i]) && !warned && !is_real(a[i])
-            @warn "Values with non-negligible complex parts have 
+            @warn "Values with non-negligible complex parts have
             been projected on the real axis! " * warning
             warned = true
         end
@@ -145,7 +145,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     Y = _apply_mask(Y, _get_mask(res, class, not_class, branches=branches))
 
     # reformat and project onto real, warning if needed
-    branch_data = [_realify( getindex.(Y, i), warning= "branch " * string(k) ) for (i,k) in enumerate(branches)]   
+    branch_data = [_realify( getindex.(Y, i), warning= "branch " * string(k) ) for (i,k) in enumerate(branches)]
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
@@ -198,15 +198,17 @@ function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_clas
 
     X = res.swept_parameters[x]
     Y =_apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) # first transform, then filter
-    branches = _realify(x_index==1 ? Y[:, cut_par_index] : Y[cut_par_index, :])
+    branches = x_index==1 ? Y[:, cut_par_index] : Y[cut_par_index, :]
+
+    branch_data = [_realify( getindex.(branches, i), warning= "branch " * string(k) ) for (i,k) in enumerate(1:branch_count(res))]
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(branch -> !all(isnan.(branch)), branches[1:end]) # skip NaN branches but keep indices
+    for k in findall(branch -> !all(isnan.(branch)), branch_data) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(X, branches[k]; color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
+        Plots.plot!(X, _realify(getindex.(branches, k)); color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
     end
 
     return p
@@ -281,6 +283,9 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 Other kwargs are passed onto Plots.gr()
 """
 function plot_spaghetti(res::Result; x::String, y::String, z::String, class="default", not_class=[], add=false, kwargs...)::Plots.Plot
+    if dim(res) == 2
+        error("Data dimension ", dim(res), " not supported")
+    end
 
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
@@ -304,16 +309,18 @@ function plot_spaghetti(res::Result; x::String, y::String, z::String, class="def
     isnothing(z_index) && error("The variable $z was not swept over.")
 
     Z = res.swept_parameters.vals[z_index]
-    X = _apply_mask(transform_solutions(res, x), _get_mask(res, class, not_class)) |> _realify
-    Y = _apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) |> _realify
+    X = _apply_mask(transform_solutions(res, x), _get_mask(res, class, not_class))
+    Y = _apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class))
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
+    branch_data = [_realify( getindex.(X, i), warning= "branch " * string(k) ) for (i,k) in enumerate(1:branch_count(res))]
+
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), X[1:end]) # skip NaN branches but keep indices
+    for k in findall(x -> !all(isnan.(x)), branch_data) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(X[k], Y[k], Z; _set_Plots_default...,
+        Plots.plot!(_realify(getindex.(X, k)), _realify(getindex.(Y, k)), Z; _set_Plots_default...,
          color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
     end
     return p

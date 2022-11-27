@@ -26,7 +26,7 @@ module HarmonicBalance
 
    export is_real
     is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL::Float64 || abs(x) < 1e-70
-    is_real(x::Array) = any(is_real.(x))
+    is_real(x::Array) = is_real.(x)
 
     # Symbolics does not natively support complex exponentials of variables
     import Base: exp

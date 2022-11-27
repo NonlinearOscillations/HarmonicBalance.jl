@@ -99,42 +99,22 @@ function _apply_mask(solns::Array{Vector{ComplexF64}},  booleans)
 end
 
 
-# convert x to Float64, raising a warning if complex
-# function _realify(x, warn=true)
-#     warn && !is_real(x) && !isnan(x) ? (@warn "Values with non-negligible complex parts have been projected on the real axis!", x) : nothing
-#     real(x)
-# end
+""" Project the array `a` into the real axis, warning if its contents are complex. """
+function _realify(a::Array{T} where T <: Number; warning="")
 
-# function _realify(v::Vector, warn=true)
-#     v_real = Vector{Vector{Float64}}(undef, length(v[1]))
-#     for branch in eachindex(v_real)
-#         values = getindex.(v, branch)
-#         values_real = Vector{Float64}(undef, length(values))
-#         for (j,x) in pairs(values)
-#             if !is_real(x) && !isnan(x) && warn
-#                 (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
-#                 warn = false
-#             end
-#             values_real[j] = real(x)
-#         end
-#         v_real[branch] = values_real
-#     end
-#     return v_real
-# end
-
-function _realify(a; warn=true)
-
-    a_real = isa(a, Array) ? similar(a) : [a]
-    for (i, el) in enumerate(a)
-        if warn && !is_real(el) && !isnan(el)
-            (@warn "Values with non-negligible complex parts have been projected on the real axis!", x)
-            warn=false
+    warned = false
+    a_real = similar(a, Float64)
+    for i in eachindex(a)
+        if !isnan(a[i]) && !warned && !is_real(a[i])
+            @warn "Values with non-negligible complex parts have 
+            been projected on the real axis! " * warning
+            warned = true
         end
-        a_real[i] = real(el)
+        a_real[i] = real(a[i])
     end
-
     return a_real
 end
+
 
 _str_to_vec(s::Vector) = s
 _str_to_vec(s) = [s]
@@ -163,16 +143,18 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     X = transform_solutions(res, x, branches=branches)
     Y = transform_solutions(res, y, branches=branches)
     Y = _apply_mask(Y, _get_mask(res, class, not_class, branches=branches))
-    branch_data = _realify(Y)
+
+    # reformat and project onto real, warning if needed
+    branch_data = [_realify( getindex.(Y, i), warning= "branch " * string(k) ) for (i,k) in enumerate(branches)]   
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()
 
     # colouring is matched to branch index - matched across plots
-    for k in findall(x -> !all(isnan.(x)), branch_data[1:end]) # skip NaN branch_data
+    for k in findall(x -> !all(isnan.(x)), branch_data) # skip NaN branch_data
         global_index = branches[k]
         lab = _is_labeled(p, global_index) ? nothing : global_index
-        Plots.plot!(_realify.(getindex.(X, k)), branch_data[k];  color=k, label=lab, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
+        Plots.plot!(_realify(getindex.(X, k)), branch_data[k];  color=k, label=lab, xlabel=latexify(x), ylabel=latexify(y), kwargs...)
     end
 
     return p
@@ -184,7 +166,6 @@ plot1D(res::Result, y::String; kwargs...) = plot1D(res; y=y, kwargs...)
 function plot2D(res::Result; z::String, branch::Int64, class="physical", not_class=[], add=false, kwargs...)
     X, Y = values(res.swept_parameters)
     Z = getindex.(_apply_mask(transform_solutions(res, z, branches=branch), _get_mask(res, class, not_class, branches=branch)), 1) # there is only one branch
-    println(typeof(Z), size(Z))
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))

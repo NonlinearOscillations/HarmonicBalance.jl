@@ -1,6 +1,3 @@
-import Base: keys, getindex, +
-export +, getindex
-
 """
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.
@@ -36,12 +33,12 @@ end
 
 
 # overload so that ParameterSweep can be accessed like a Dict
-keys(s::ParameterSweep) = keys(s.functions)
-getindex(s::ParameterSweep, i) = getindex(s.functions, i)
+Base.keys(s::ParameterSweep) = keys(s.functions)
+Base.getindex(s::ParameterSweep, i) = getindex(s.functions, i)
 
 
 # overload +
-function +(s1::ParameterSweep, s2::ParameterSweep)
+function Base.:+(s1::ParameterSweep, s2::ParameterSweep)
     common_params = intersect(keys(s1), keys(s2))
     !isempty(common_params) && error("cannot combine sweeps of the same parameter")
     return ParameterSweep(merge(s1.functions, s2.functions))

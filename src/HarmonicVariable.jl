@@ -1,5 +1,4 @@
 import Symbolics: get_variables; export get_variables
-import Base.isequal; export isequal
 
 # pretty-printing
 display(var::HarmonicVariable) = display(var.name)
@@ -46,7 +45,7 @@ get_variables(vars::Vector{Num}) = unique(flatten([Num.(get_variables(x)) for x 
 
 get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
 
-isequal(v1::HarmonicVariable, v2::HarmonicVariable) = isequal(v1.symbol, v2.symbol)
+Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable) = isequal(v1.symbol, v2.symbol)
 
 
 

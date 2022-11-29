@@ -68,7 +68,7 @@ end
 
 
 transform_solutions(soln::OrdinaryDiffEq.ODESolution, f::String, harm_eq::HarmonicEquation) = transform_solutions(soln.u, f, harm_eq)
-transform_solutions(s::OrdinaryDiffEq.ODESolution, funcs::Vector{String}, harm_eq::HarmonicEquation) = [transform_solutions(s, f, he) for f in funcs]
+transform_solutions(s::OrdinaryDiffEq.ODESolution, funcs::Vector{String}, harm_eq::HarmonicEquation) = [transform_solutions(s, f, harm_eq) for f in funcs]
 
 
 

@@ -97,7 +97,7 @@ drop_powers(expr::Vector{Num}, var::Num, deg::Int) = [drop_powers(x, var, deg) f
 
 # calls the above for various types of the first argument
 drop_powers(eq::Equation, var, deg) = drop_powers(eq.lhs, var, deg) .~ drop_powers(eq.lhs, var, deg)
-drop_powers(eqs::Vector{Equation}, var, deg) = [drop_powers(eq.lhs, var, deg) .~ drop_powers(eq.rhs, var, deg) for eq in eqs]
+drop_powers(eqs::Vector{Equation}, var, deg) = [Equation(drop_powers(eq.lhs, var, deg), drop_powers(eq.rhs, var, deg)) for eq in eqs]
 drop_powers(expr, var::Num, deg::Int) = drop_powers(expr, [var], deg)
 drop_powers(x, vars, deg) = drop_powers(Num(x), vars, deg)
 
@@ -233,7 +233,7 @@ end
 
 
 function _fourier_term(x::Equation, ω, t, f)
-    _fourier_term(x.lhs, ω, t, f) .~ _fourier_term(x.rhs, ω, t, f)
+    Equation(_fourier_term(x.lhs, ω, t, f) , _fourier_term(x.rhs, ω, t, f))
 end
 
 "Return the coefficient of f(ωt) in `x` where `f` is a cos or sin."

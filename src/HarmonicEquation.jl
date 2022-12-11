@@ -24,18 +24,18 @@ function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
     a_idx = 1
 
     for nvar in get_variables(diff_eom) # sum over natural variables
-        to_substitute = 0 # combine all the subtitution rules for var
+        to_substitute = Num(0) # combine all the subtitution rules for var
         for ω in diff_eom.harmonics[nvar]
             if !isequal(ω, 0) # nonzero harmonic - create u,v
                 rule_u, hvar_u = _create_harmonic_variable(nvar, ω, time, "u", new_symbol="u"*string(uv_idx))
                 rule_v, hvar_v = _create_harmonic_variable(nvar, ω, time, "v", new_symbol="v"*string(uv_idx))
                 rule = rule_u + rule_v
                 uv_idx += 1
-                append!(vars, [hvar_u, hvar_v])
+                push!(vars, hvar_u, hvar_v)
             else # zero harmonic - create a
                 rule, hvar = _create_harmonic_variable(nvar, ω, time, "a", new_symbol="a"*string(a_idx))
                 a_idx += 1
-                append!(vars, [hvar])
+                push!(vars, hvar)
             end
             to_substitute += rule
         end
@@ -196,8 +196,8 @@ function fourier_transform!(eom::HarmonicEquation, time::Num)
     # loop over the HarmonicVariables, each generates one equation
     for (i, hvar) in enumerate(eom.variables)
         # find the equation belonging to this variable
-        eq_idx = findall(x -> isequal(x, hvar.natural_variable), collect(keys(eom.natural_equation.equations)))
-        eq = eom.equations[eq_idx...]
+        eq_idx = findfirst(x -> isequal(x, hvar.natural_variable), collect(keys(eom.natural_equation.equations)))
+        eq = eom.equations[eq_idx]
         # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
         if hvar.type == "u"
             avg_eqs[i] = fourier_cos_term(eq, hvar.ω, time)

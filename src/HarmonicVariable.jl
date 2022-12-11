@@ -5,7 +5,7 @@ display(var::HarmonicVariable) = display(var.name)
 display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name")))
 
 
-function _coordinate_transform(new_var, ω, t, type)
+function _coordinate_transform(new_var, ω, t, type)::Num
     coords = Dict([
         "u" =>  new_var * cos(ω*t),
         "v" => new_var * sin(ω*t),
@@ -14,7 +14,7 @@ function _coordinate_transform(new_var, ω, t, type)
 end
 
 
-function _create_harmonic_variable(nat_var::Num, ω::Num, t::Num, type::String; new_symbol::String)
+function _create_harmonic_variable(nat_var::Num, ω::Num, t::Num, type::String; new_symbol::String)::Tuple{Num, HarmonicVariable}
     new_var = declare_variable(new_symbol, t) # this holds the internal symbol
     name = type * "_{" * var_name(nat_var) * "," * Base.replace(string(ω),"*"=>"") * "}"
     rule = _coordinate_transform(new_var, ω, t, type) # contribution of this harmonic variable to the natural variable
@@ -45,7 +45,7 @@ get_variables(vars::Vector{Num}) = unique(flatten([Num.(get_variables(x)) for x 
 
 get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
 
-Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable) = isequal(v1.symbol, v2.symbol)
+Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable)::Bool = isequal(v1.symbol, v2.symbol)
 
 
 

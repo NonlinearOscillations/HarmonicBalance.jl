@@ -44,7 +44,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
  Perform substitutions in `rules` on `x`.
  `include_derivatives=true` also includes all derivatives of the variables of the keys of `rules`.
  """
- function substitute_all(x::Union{Num, Equation}, rules::Dict; include_derivatives=true)
+ function substitute_all(x::T, rules::Dict; include_derivatives=true)::T where {T<:Union{Equation, Num}}
     if include_derivatives
         rules = merge(rules, Dict([Differential(var) => Differential(rules[var]) for var in keys(rules)]))
     end
@@ -52,7 +52,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
  end
 
  "Variable substitution - dictionary"
-function substitute_all(dict::Dict, rules::Dict)
+function substitute_all(dict::Dict, rules::Dict)::Dict
     new_keys = substitute_all.(keys(dict), rules)
     new_values = substitute_all.(values(dict), rules)
     return Dict(zip(new_keys, new_values))
@@ -150,7 +150,7 @@ function _get_all_terms(x::Add)::Vector{Num}
 end
 
 
-function is_harmonic(x::Num, t::Num)
+function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)
     t_terms = setdiff(all_terms, get_independent(all_terms, t))
     isempty(t_terms) && return true
@@ -160,7 +160,7 @@ function is_harmonic(x::Num, t::Num)
         return false
     else
         powers = [max_power(first(term.val.arguments), t) for term in t_terms[trigs]]
-        return unique(powers) == [1]
+        return all(isone, powers)
     end
 end
 

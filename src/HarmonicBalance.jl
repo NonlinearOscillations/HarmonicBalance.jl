@@ -62,7 +62,8 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-    precomp_path = (@__DIR__) * "/../test/parametron.jl"
-    @precompile_all_calls include(precomp_path)
+    precomp_path = (@__DIR__) * "/../test/"
+    @precompile_all_calls include(precomp_path * "parametron.jl")
+    @precompile_all_calls include(precomp_path * "plotting.jl")
 
 end # module

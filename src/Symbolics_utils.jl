@@ -44,7 +44,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
  Perform substitutions in `rules` on `x`.
  `include_derivatives=true` also includes all derivatives of the variables of the keys of `rules`.
  """
- function substitute_all(x::Union{Num, Equation}, rules::Dict; include_derivatives=true)
+ function substitute_all(x::T, rules::Dict; include_derivatives=true)::T where {T<:Union{Equation, Num}}
     if include_derivatives
         rules = merge(rules, Dict([Differential(var) => Differential(rules[var]) for var in keys(rules)]))
     end
@@ -52,7 +52,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
  end
 
  "Variable substitution - dictionary"
-function substitute_all(dict::Dict, rules::Dict)
+function substitute_all(dict::Dict, rules::Dict)::Dict
     new_keys = substitute_all.(keys(dict), rules)
     new_values = substitute_all.(values(dict), rules)
     return Dict(zip(new_keys, new_values))
@@ -97,7 +97,7 @@ drop_powers(expr::Vector{Num}, var::Num, deg::Int) = [drop_powers(x, var, deg) f
 
 # calls the above for various types of the first argument
 drop_powers(eq::Equation, var, deg) = drop_powers(eq.lhs, var, deg) .~ drop_powers(eq.lhs, var, deg)
-drop_powers(eqs::Vector{Equation}, var, deg) = [drop_powers(eq.lhs, var, deg) .~ drop_powers(eq.rhs, var, deg) for eq in eqs]
+drop_powers(eqs::Vector{Equation}, var, deg) = [Equation(drop_powers(eq.lhs, var, deg), drop_powers(eq.rhs, var, deg)) for eq in eqs]
 drop_powers(expr, var::Num, deg::Int) = drop_powers(expr, [var], deg)
 drop_powers(x, vars, deg) = drop_powers(Num(x), vars, deg)
 
@@ -150,7 +150,7 @@ function _get_all_terms(x::Add)::Vector{Num}
 end
 
 
-function is_harmonic(x::Num, t::Num)
+function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)
     t_terms = setdiff(all_terms, get_independent(all_terms, t))
     isempty(t_terms) && return true
@@ -160,7 +160,7 @@ function is_harmonic(x::Num, t::Num)
         return false
     else
         powers = [max_power(first(term.val.arguments), t) for term in t_terms[trigs]]
-        return unique(powers) == [1]
+        return all(isone, powers)
     end
 end
 
@@ -233,7 +233,7 @@ end
 
 
 function _fourier_term(x::Equation, ω, t, f)
-    _fourier_term(x.lhs, ω, t, f) .~ _fourier_term(x.rhs, ω, t, f)
+    Equation(_fourier_term(x.lhs, ω, t, f) , _fourier_term(x.rhs, ω, t, f))
 end
 
 "Return the coefficient of f(ωt) in `x` where `f` is a cos or sin."

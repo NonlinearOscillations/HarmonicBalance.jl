@@ -95,7 +95,7 @@ exp_to_trig(x::Complex{Num}) = exp_to_trig(x.re)+im* exp_to_trig(x.im)
 
 # sometimes, expressions get stored as Complex{Num} with no way to decode what real(x) and imag(x)
 # this overloads the Num constructor to return a Num if x.re and x.im have similar arguments
-Num(x::Complex{Num}) = isequal(x.re.val.arguments, x.im.val.arguments) ? Num(first(x.re.val.arguments)) : error("Cannot convert Complex{Num} " * string(x) * " to Num")
+Num(x::Complex{Num})::Num = isequal(x.re.val.arguments, x.im.val.arguments) ? Num(first(x.re.val.arguments)) : error("Cannot convert Complex{Num} " * string(x) * " to Num")
 
 
 #=

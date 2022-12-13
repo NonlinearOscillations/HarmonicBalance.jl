@@ -22,7 +22,8 @@ Harmonic ansatz: x(t) => ω;
 ```
 """
 function add_harmonic!(diff_eom::DifferentialEquation, var::Num, ω)
-    diff_eom.harmonics[var] = unique(cat(diff_eom.harmonics[var], ω, dims=1))
+    push!(diff_eom.harmonics[var], ω)
+    diff_eom.harmonics[var] = unique(diff_eom.harmonics[var])
     diff_eom
 end
 
@@ -34,7 +35,7 @@ Return the dependent variables of `diff_eom`.
 get_variables(diff_eom::DifferentialEquation) = collect(keys(diff_eom.equations))
 
 
-is_harmonic(diff_eom::DifferentialEquation, t::Num) = all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
+is_harmonic(diff_eom::DifferentialEquation, t::Num)::Bool = all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
 
 "Pretty printing of the newly defined types"
 function show_fields(object)

@@ -11,6 +11,7 @@ module HarmonicBalance
     using ProgressMeter
     import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym
     using DocStringExtensions
+    using SnoopPrecompile
 
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
@@ -61,6 +62,8 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-
+    precomp_path = (@__DIR__) * "/../test/"
+    @precompile_all_calls include(precomp_path * "parametron.jl")
+    @precompile_all_calls include(precomp_path * "plotting.jl")
 
 end # module

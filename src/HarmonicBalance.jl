@@ -62,26 +62,7 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-
-    @precompile_setup begin
-        # Putting some things in `setup` can reduce the size of the
-        # precompile file and potentially make loading faster.
-        #list = [OtherType("hello"), OtherType("world!")]
-
-        @variables Ω,γ,λ,F, x,θ,η,α, ω0, ω,t,T, ψ
-        @variables x(t)
-
-        natural_equation =  d(d(x,t),t) + γ*d(x,t) + Ω^2*(1-λ*cos(2*ω*t+ψ))*x + α * x^3 +η *d(x,t) * x^2
-        forces =  F*cos(ω*t+θ)
-
-        @precompile_all_calls begin
-            # all calls in this block will be precompiled, regardless of whether
-            # they belong to your package or not (on Julia 1.8 and higher)
-            dEOM = DifferentialEquation(natural_equation + forces, x)
-            add_harmonic!(dEOM, x, ω)
-            harmonic_eq = get_harmonic_equations(dEOM);
-        end
-    end
-
+    precomp_path = (@__DIR__) * "/../test/parametron.jl"
+    @precompile_all_calls include(precomp_path)
 
 end # module

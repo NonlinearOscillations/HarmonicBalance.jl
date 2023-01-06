@@ -15,7 +15,7 @@ p = HarmonicBalance.Problem(harmonic_eq);
 
 fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1.,  η=>0.3, θ => 0, ψ => 0)
 varied = ω => LinRange(0.9, 1.1, 100)
-res = get_steady_states(p, varied, fixed, show_progress=false)
+res = get_steady_states(p, varied, fixed, show_progress=false);
 
 # save the result, try and load in the next step
 #current_path = @__DIR__
@@ -24,7 +24,7 @@ res = get_steady_states(p, varied, fixed, show_progress=false)
 # try to run a 2D calculation
 fixed = (Ω => 1.0,γ => 1E-2, F => 1E-3,  α => 1.,  η=>0.3, θ => 0, ψ => 0)
 varied = (ω => LinRange(0.9, 1.1, 10), λ => LinRange(0.01, 0.05, 10))
-res = get_steady_states(p, varied, fixed, show_progress=false)
+res = get_steady_states(p, varied, fixed, show_progress=false);
 
 
 ###

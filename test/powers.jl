@@ -1,5 +1,5 @@
 import HarmonicBalance: drop_powers, max_power
-import HarmonicBalance.Symbolics.expand
+import HarmonicBalance.HarmonicBalanceBase.Symbolics.expand
 
 @variables a,b,c
 

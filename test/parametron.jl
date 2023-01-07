@@ -1,5 +1,5 @@
 using HarmonicBalance
-using Symbolics
+using HarmonicBalanceBase.Symbolics
 #using Test # do not use Test as this file is used for precompilation
 
 @variables Ω,γ,λ,F, x,θ,η,α, ω0, ω,t,T, ψ

@@ -1,5 +1,5 @@
 import HarmonicBalance.load
 
 # load the previously-saved result
-current_path = @__DIR__
-@test load(current_path * "/parametron_result.jld2") isa HarmonicBalance.Result
+parametron_result_path = joinpath(@__DIR__, "parametron_result.jld2")
+@test load(parametron_result_path) isa HarmonicBalance.Result

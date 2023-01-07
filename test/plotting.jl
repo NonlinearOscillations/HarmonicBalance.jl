@@ -1,6 +1,5 @@
 using HarmonicBalance, Plots
 default(show=false)
-#using Test #
 
 @variables γ, λ, x, η, α, ω0, ω
 @variables t x(t)

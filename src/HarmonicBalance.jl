@@ -34,10 +34,6 @@ module HarmonicBalance
     exp(x::Complex{Num}) = x.re.val == 0 ? exp(im*x.im.val) : exp(x.re.val + im*x.im.val)
 
     include("types.jl")
-
-    include("utils.jl")
-    include("Symbolics_customised.jl")
-    include("Symbolics_utils.jl")
     include("DifferentialEquation.jl")
     include("HarmonicVariable.jl")
     include("HarmonicEquation.jl")
@@ -47,7 +43,6 @@ module HarmonicBalance
     include("saving.jl")
     include("transform_solutions.jl")
     include("plotting_Plots.jl")
-    include("hysteresis_sweep.jl")
 
     include("modules/HC_wrapper.jl")
     using .HC_wrapper

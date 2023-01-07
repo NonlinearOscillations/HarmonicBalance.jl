@@ -147,8 +147,7 @@ end
 
 """
 Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
-Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments
-    in the order set in `variables`.
+Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments in the order set in `variables`.
 """
 function compile_matrix(matrix, variables, fixed_parameters)
     J = substitute_all(matrix, fixed_parameters)
@@ -311,4 +310,3 @@ function _convert_or_zero(x, t=ComplexF64)
         return 0
     end
 end
-

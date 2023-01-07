@@ -88,8 +88,13 @@ end
 
 
 # overload to use [] for indexing
-Base.getindex(r::Result, idx::Int...) = get_single_solution(r, idx)
-Base.size(r::Result) = size(r.solutions)
+import Base: getindex, size
+getindex(r::Result, idx::Int...) = get_single_solution(r, idx)
+size(r::Result) = size(r.solutions)
 
 branch_count(r::Result) = length(r.solutions[1])
 get_branch(r::Result, idx) = getindex.(r.solutions, idx)
+
+import HarmonicBalanceBase: get_variables
+get_variables(p::Problem) = get_variables(p.eom)
+get_variables(res::Result) = get_variables(res.problem)

@@ -1,22 +1,55 @@
 module HarmonicBalance
 
-    using Printf
-    using OrderedCollections
-    import Base: show, display; export show
+    using HarmonicBalanceBase
+    # Symbolics_customised
+    export quick_cancel
+    # Symbolics_utils
     export *
     export @variables
+    export rearrange
+    export drop_powers
+    export get_averaged_equations
     export d
-    export plot
-    using Symbolics
-    using ProgressMeter
-    import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym
-    using DocStringExtensions
-    using SnoopPrecompile
+    export substitute_all
+    export get_all_terms
+    export var_name
+    # Types
+    export ParameterRange
+    export ParameterList
+    export StateDict
+    export SteadyState
+    export ParameterVector
+    export DifferentialEquation
+    export HarmonicVariable
+    export HarmonicEquation
+    export Problem
+    export Result
+    # DE
+    export add_harmonic!
+    export is_harmonic
+    export get_variables
+    export get_independent_variables
+    export get_harmonic_equations
+    export is_rearranged
+    export slow_flow, slow_flow!
+    export _remove_brackets
 
+    import HarmonicBalanceBase.OrderedCollections: OrderedDict
+
+
+    import Base: show, display; export show
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
     Float64(x::Complex{Num}) = Float64(ComplexF64(x))
     Float64(x::Num) = Float64(x.val)
+    # Symbolics does not natively support complex exponentials of variables
+    import Base: exp
+    exp(x::Complex{Num}) = x.re.val == 0 ? exp(im*x.im.val) : exp(x.re.val + im*x.im.val)
+
+    using Printf
+    using ProgressMeter
+    using DocStringExtensions
+    using SnoopPrecompile
 
    # default global settings
    export IM_TOL
@@ -29,14 +62,8 @@ module HarmonicBalance
     is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL::Float64 || abs(x) < 1e-70
     is_real(x::Array) = is_real.(x)
 
-    # Symbolics does not natively support complex exponentials of variables
-    import Base: exp
-    exp(x::Complex{Num}) = x.re.val == 0 ? exp(im*x.im.val) : exp(x.re.val + im*x.im.val)
 
     include("types.jl")
-    include("DifferentialEquation.jl")
-    include("HarmonicVariable.jl")
-    include("HarmonicEquation.jl")
     include("solve_homotopy.jl")
     include("sorting.jl")
     include("classification.jl")
@@ -49,10 +76,6 @@ module HarmonicBalance
 
     include("modules/LinearResponse.jl")
     using .LinearResponse
-
-    include("modules/TimeEvolution.jl")
-    using .TimeEvolution
-    export ParameterSweep, ODEProblem, solve
 
     include("modules/LimitCycles.jl")
     using .LimitCycles

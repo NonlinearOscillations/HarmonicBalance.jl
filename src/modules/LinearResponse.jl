@@ -1,13 +1,13 @@
 module LinearResponse
 
-    using Symbolics: variables
+    using HarmonicBalanceBase.Symbolics: variables
     using LinearAlgebra
     using Printf
-    using Symbolics
-    using OrderedCollections
+    using HarmonicBalanceBase.Symbolics
+    using HarmonicBalanceBase.OrderedCollections
     using ..HarmonicBalance
     using ..HC_wrapper
-    using DocStringExtensions
+    using HarmonicBalanceBase.DocStringExtensions
 
     import Base: show; export show
 

@@ -2,9 +2,9 @@ module HC_wrapper
 
     using HomotopyContinuation: independent_normal
     using Base: get_uuid_name
-    using Symbolics
+    using HarmonicBalanceBase.Symbolics
     using HomotopyContinuation
-    using DocStringExtensions
+    using HarmonicBalanceBase.DocStringExtensions
     using ..HarmonicBalance
 
     include("HC_wrapper/homotopy_interface.jl")

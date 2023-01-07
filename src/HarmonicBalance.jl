@@ -34,7 +34,9 @@ module HarmonicBalance
     export slow_flow, slow_flow!
     export _remove_brackets
 
-    import HarmonicBalanceBase.OrderedCollections: OrderedDict
+    using HarmonicBalanceBase.OrderedCollections
+    using HarmonicBalanceBase.Symbolics
+    using HarmonicBalanceBase.DocStringExtensions
 
 
     import Base: show, display; export show
@@ -48,7 +50,6 @@ module HarmonicBalance
 
     using Printf
     using ProgressMeter
-    using DocStringExtensions
     using SnoopPrecompile
 
    # default global settings
@@ -80,8 +81,8 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-    precomp_path = (@__DIR__) * "/../test/"
-    @precompile_all_calls include(precomp_path * "parametron.jl")
-    @precompile_all_calls include(precomp_path * "plotting.jl")
+    # precomp_path = (@__DIR__) * "/../test/"
+    # @precompile_all_calls include(precomp_path * "parametron.jl")
+    # @precompile_all_calls include(precomp_path * "plotting.jl")
 
 end # module

@@ -1,8 +1,8 @@
 module LimitCycles
 
 using ..HarmonicBalance
-using Symbolics
-using DocStringExtensions
+using HarmonicBalanceBase.Symbolics
+using HarmonicBalanceBase.DocStringExtensions
 
 include("LimitCycles/Hopf.jl")
 include("LimitCycles/analysis.jl")

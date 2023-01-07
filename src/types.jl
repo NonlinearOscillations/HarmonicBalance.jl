@@ -1,4 +1,4 @@
-using Symbolics
+using HarmonicBalanceBase.Symbolics
 import HomotopyContinuation
 
 export Problem, Result

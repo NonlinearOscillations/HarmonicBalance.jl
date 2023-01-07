@@ -13,8 +13,6 @@ The resulting file contains a dictionary with a single entry.
 function save(filename, object)
     JLD2.save(_jld2_name(filename), Dict("object" => object))
 end
-
-
 function save(filename, x::Result)
     x_nofunc = deepcopy(x)
 
@@ -56,15 +54,12 @@ function _parse_loaded(x::Problem)
     x.system = system
     return x
 end
-
-
 function _parse_loaded(x::Result)
     # reconstruct System and the compiled Jacobian
     x.problem.system = HC_wrapper.System(x.problem.eom)
     x.jacobian = _compile_Jacobian(x.problem, x.swept_parameters, x.fixed_parameters)
     return x
 end
-
 _parse_loaded(x) = x
 
 
@@ -80,8 +75,6 @@ _parse_symbol_names(x) = nothing
 
 
 # Exporting to csv
-
-
 """
     $(SIGNATURES)
 

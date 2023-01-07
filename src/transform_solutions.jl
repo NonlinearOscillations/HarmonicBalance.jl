@@ -1,9 +1,6 @@
 export transform_solutions
 
 
-_parse_expression(exp) = exp isa String ? Num(eval(Meta.parse(exp))) : exp
-
-
 """
 $(TYPEDSIGNATURES)
 
@@ -26,7 +23,7 @@ function transform_solutions(res::Result, f::String; branches = 1:branch_count(r
     for idx in CartesianIndices(res.solutions)
         params_values = res.swept_parameters[Tuple(idx)...]
         vals[end-n_pars+1:end] .= params_values # param values are common to all branches
-        for (k, branch) in enumerate(branches)  
+        for (k, branch) in enumerate(branches)
             vals[1:n_vars] .= res.solutions[idx][branch]
             transformed[idx][k] = Base.invokelatest(func, vals)
         end
@@ -36,29 +33,13 @@ end
 
 transform_solutions(res::Result, fs::Vector{String}; kwargs...) = [transform_solutions(res, f; kwargs...) for f in fs]
 
-# a simplified version meant to work with arrays of solutions
-# cannot parse parameter values -- meant for time-dependent results
-function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
-
-    vars = _remove_brackets(get_variables(harm_eq))
-    transformed = Vector{ComplexF64}(undef, length(soln))
-
-    # parse the input with Symbolics
-    expr = HarmonicBalance._parse_expression(f)
-
-    rule(u) = Dict(zip(vars, u))
-
-    transformed = map( x -> substitute_all(expr, rule(x)), soln)
-    return convert(typeof(soln[1]), transformed)
-end
-
 
 """ Parse `expr` into a Symbolics.jl expression, substitute with `rules` and build a function taking free_symbols """
 function _build_substituted(expr::String, rules, free_symbols)
 
     subbed = substitute_all(_parse_expression(expr), rules)
     comp_func = build_function(subbed, free_symbols)
-    
+
     return eval(comp_func)
 end
 

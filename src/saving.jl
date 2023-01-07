@@ -54,12 +54,14 @@ function _parse_loaded(x::Problem)
     x.system = system
     return x
 end
+
 function _parse_loaded(x::Result)
     # reconstruct System and the compiled Jacobian
     x.problem.system = HC_wrapper.System(x.problem.eom)
     x.jacobian = _compile_Jacobian(x.problem, x.swept_parameters, x.fixed_parameters)
     return x
 end
+
 _parse_loaded(x) = x
 
 

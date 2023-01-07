@@ -25,7 +25,6 @@ function classify_solutions!(res::Result, condition::String, name::String; physi
     res.classes[name] = values
 end
 
-
 function classify_solutions(res::Result, condition::String; physical=true)
     expr = Num(eval(Meta.parse(condition)))
     function cond_func(s::OrderedDict, res)
@@ -36,14 +35,12 @@ function classify_solutions(res::Result, condition::String; physical=true)
     classify_solutions(res, cond_func)
 end
 
-
-#   Classify solutions where for `f` which is a function accepting a solution dictionary
-#   specifies all params and variables).
+"Classify solutions where for `f` which is a function accepting a solution dictionary
+specifies all params and variables)."
 function classify_solutions!(res::Result, f::Function, name::String)
     values = classify_solutions(res, f)
     res.classes[name] = values
 end
-
 
 "Return an array of booleans classifying the solution in `res`
 according to `f` (`f` takes a solution dictionary, return a boolean)"
@@ -144,4 +141,3 @@ function filter_result!(res::Result, class::String)
         res.classes[c] = [s[bools] for s in res.classes[c]]
     end
 end
-

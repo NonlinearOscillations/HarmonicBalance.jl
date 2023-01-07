@@ -9,8 +9,6 @@ const _set_Plots_default = Dict{Symbol, Any}([
     :linewidth => 2,
     :legend_position => :outerright])
 
-
-
 dim(res::Result) = length(size(res.solutions)) # give solution dimensionality
 
 

@@ -1,6 +1,5 @@
 export transform_solutions
 
-
 """
 $(TYPEDSIGNATURES)
 

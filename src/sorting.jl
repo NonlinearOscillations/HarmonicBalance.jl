@@ -26,7 +26,6 @@ function sort_solutions(solutions::Array; sorting="nearest", show_progress=true)
      error("do not know how to solve solution which are not 1D or 2D")
 end
 
-
 function sort_solutions!(solutions::Result; sorting="nearest", show_progress=true)
     solutions.solutions = sort_solutions(solutions.solutions, sorting=sorting, show_progress=show_progress)
 end
@@ -53,8 +52,6 @@ remove_rows_columns(M, pair::CartesianIndex{2}) = remove_rows_columns(M, pair[1]
 is_repetitive(array) = length(unique(array)) !== length(array)
 
 
-
-
 "Given two sets of [u1, u2, ... un] and [v1, v2, ... vn], return a matrix of norms
 such that M_ij = norm(ui - vj). NaNs (nonexistent solutions) are replaced by Inf"
 function get_distance_matrix(ref::Vector{SteadyState}, to_sort::Vector{SteadyState})
@@ -62,7 +59,6 @@ function get_distance_matrix(ref::Vector{SteadyState}, to_sort::Vector{SteadySta
     distances = Distances.pairwise(Distances.Euclidean(), ref, to_sort)
     replace!(distances, NaN => Inf) # findall does not work with NaN but works with Inf
 end
-
 
 "Match each solution from to_sort to a closest partner from refs"
 function get_distance_matrix(refs::Vector{Vector{SteadyState}}, to_sort::Vector{SteadyState})
@@ -73,7 +69,6 @@ function get_distance_matrix(refs::Vector{Vector{SteadyState}}, to_sort::Vector{
     end
     lowest_distances
 end
-
 
 
 """
@@ -125,6 +120,7 @@ function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
     sorted_solns
 end
 
+
 function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     """Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
     Lx,Ly = size(solns)
@@ -149,6 +145,7 @@ function naive_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     end
     idx_pairs
 end
+
 
 function get_nn_2D(idx::Vector{Int64},Nx::Int64,Ny::Int64)
     "returns all neighbors from a point, including diagonal ones"
@@ -191,4 +188,3 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest", s
     end
     sorted_solns
 end
-

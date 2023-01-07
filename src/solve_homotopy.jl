@@ -26,7 +26,6 @@ function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num
     return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
 end
 
-
 get_single_solution(res::Result, index) = [get_single_solution(res, index=index, branch = b) for b in 1:length(res.solutions[1])]
 
 

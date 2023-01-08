@@ -226,16 +226,6 @@ function _prepare_input_params(prob::Problem, sweeps::ParameterRange, fixed_para
 end
 
 
-"Remove occurrences of `sweeps` elements from `fixed_parameters`."
-function filter_duplicate_parameters(sweeps, fixed_parameters)
-    new_params = copy(fixed_parameters)
-    for par in keys(sweeps)
-        delete!(new_params, par)
-    end
-    return new_params
-end
-
-
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
 function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[], random_warmup=false, threading=false, show_progress=true)
     # HomotopyContinuation accepts 1D arrays of parameter sets

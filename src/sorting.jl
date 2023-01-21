@@ -82,7 +82,7 @@ Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
 reference[1] and to_sort[i1] belong to the same branch
 """
 function align_pair(reference, to_sort::Vector{SteadyState})
-    
+
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
     sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]
@@ -116,7 +116,7 @@ function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
     if show_progress
         bar = Progress(length(solns), dt=1, desc="Ordering solutions into branches ...", output=stdout)
     end
-    for (i, soln) in enumerate(solns[1:end-1])
+    for i in eachindex(solns[1:end-1])
         show_progress ? next!(bar) : nothing
         matched_indices = align_pair(sorted_solns[i], solns[i+1]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution

@@ -50,11 +50,9 @@ function get_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; damp
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
     stableidx = findall(stable)
     C = zeros(length(Ω_range), sum(stable));
-    print(sum(stable))
+
     for i in 1:sum(stable)
         s = get_single_solution(res, branch = branch , index = stableidx[i]);
-        print(i)
-        print("/n")
         jac  = res.jacobian(s) #numerical Jacobian
         λs, vs = eigen(jac)
         for j in λs
@@ -92,7 +90,7 @@ heatmap(X, Ω_range,  C; color=:viridis,
     xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
 end
 
-function plot_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; logscale=true, damping_mod::Float64 = 1.0, kwargs...)
+function plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod::Float64 = 1.0, kwargs...)
 
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
     stable = classify_branch(res, branch, "stable") # boolean array

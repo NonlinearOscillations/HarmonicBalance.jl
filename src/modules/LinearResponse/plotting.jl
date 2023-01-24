@@ -45,6 +45,28 @@ function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; o
     C
 end
 
+function get_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; damping_mod::Float64)
+    stable = classify_branch(res, branch, "stable")
+    !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
+    stableidx = findall(stable)
+    C = zeros(length(Ω_range), sum(stable));
+    print(sum(stable))
+    for i in 1:sum(stable)
+        s = get_single_solution(res, branch = branch , index = stableidx[i]);
+        print(i)
+        print("/n")
+        jac  = res.jacobian(s) #numerical Jacobian
+        λs, vs = eigen(jac)
+        for j in λs
+            for k in 1:(size(C)[1])
+                C[k,i] += 1/sqrt((imag(j)^2-Ω_range[k]^2)^2+Ω_range[k]^2*damping_mod^2*real(j)^2)
+            end
+        end
+        
+    end
+    C
+end
+
 
 """
     plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
@@ -70,6 +92,19 @@ heatmap(X, Ω_range,  C; color=:viridis,
     xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
 end
 
+function plot_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; logscale=true, damping_mod::Float64 = 1.0, kwargs...)
 
+    length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    stable = classify_branch(res, branch, "stable") # boolean array
 
+    Ω_range = vcat(Ω_range)
+    !isempty(findall(x->x==0, Ω_range)) && @warn("Probing with Ω=0 may lead to unexpected results")
 
+    X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
+    
+    C = get_rotframe_jacobian_response(res, Ω_range, branch, damping_mod=damping_mod)
+    C = logscale ? log.(C) : C
+    
+    heatmap(X, Ω_range,  C; color=:viridis,
+       xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
+end

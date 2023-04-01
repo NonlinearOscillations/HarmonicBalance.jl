@@ -1,5 +1,5 @@
 import Symbolics.SymbolicUtils: quick_cancel; export quick_cancel
-import Symbolics.SymbolicUtils: Postwalk
+import Symbolics.SymbolicUtils: Postwalk,# @compactified
 
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly
@@ -40,26 +40,31 @@ expand_all(x::Num) = Num(expand_all(x.val))
 
 
 "Apply a function f on every member of a sum or a product"
-_apply_termwise_add(f, x) = sum([f(arg) for arg in arguments(x)])
-_apply_termwise_mul(f, x) = prod([f(arg) for arg in arguments(x)])
-_apply_termwise_div(f, x) = _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
 _apply_termwise(f, x) = f(x)
-
 function _apply_termwise(f, x::BasicSymbolic)
     if isadd(x)
-        return _apply_termwise_add(f, x)
+        return sum([f(arg) for arg in arguments(x)])
     elseif ismul(x)
-        return _apply_termwise_mul(f, x)
+        return prod([f(arg) for arg in arguments(x)])
     elseif isdiv(x)
-        return _apply_termwise_div(f, x)
+        return _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
     else
         return  f(x)
     end
 end
+# We could use @compactified to do the achive thing wit a speed-up. Neverthless, it yields less readable code.
+# @compactified is what SymbolicUtils uses internally
+# function _apply_termwise(f, x::BasicSymbolic)
+#     @compactified x::BasicSymbolic begin
+#     Add  => sum([f(arg) for arg in arguments(x)])
+#     Mul  => prod([f(arg) for arg in arguments(x)])
+#     Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
+#     _    => f(x)
+#     end
+# end
 
 simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im*x.im
 simplify_complex(x) = x
-
 function simplify_complex(x::BasicSymbolic)
     if isadd(x) || ismul(x) ||  isdiv(x)
         return _apply_termwise(simplify_complex, x)

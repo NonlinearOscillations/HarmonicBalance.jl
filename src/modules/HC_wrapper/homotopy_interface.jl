@@ -1,10 +1,12 @@
 using LinearAlgebra
 import HomotopyContinuation: Variable
+#import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
+import Symbolics.SymbolicUtils: isterm#, ispow, isadd, isdiv, ismul, issym
 import HarmonicBalance: Problem; export Problem
 export Num_to_Variable
 
 "Conversion from Symbolics.jl types to HomotopyContinuation types."
-Variable(var::Num) = var.val isa SymbolicUtils.Term ? Variable(string(var.val.f)) : Variable(string(var_name(var)))
+Variable(var::Num) = isterm(var.val) ? Variable(string(var.val.f)) : Variable(string(var_name(var)))
 
 
 "Converts a Num into Variable in the active namespace."
@@ -77,6 +79,3 @@ function System(eom::HarmonicEquation)
     conv_para = Num_to_Variable.(eom.parameters)
     S = HomotopyContinuation.System(parse_equations(eqs),variables=conv_vars,parameters=conv_para)
 end
-
-
-

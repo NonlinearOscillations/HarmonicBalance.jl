@@ -33,7 +33,10 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
 
 
  "Return the name of a variable (excluding independent variables)"
- var_name(x::Num) = String(Symbolics._toexpr(x).args[1])
+function var_name(x::Num)
+    var = Symbolics._toexpr(x)
+    return var isa Expr ? String(var.args[1]) : String(var)
+end
 #  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
  var_name(x::Sym) = String(x.name)
 

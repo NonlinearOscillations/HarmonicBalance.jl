@@ -2,7 +2,7 @@ using HarmonicBalance, Plots
 default(show=false)
 #using Test #
 
-@variables γ, λ, x, η, α, ω0, ω
+@variables γ λ x η α ω0 ω
 @variables t x(t)
 
 natural_equation = d(d(x,t),t) + γ*d(x,t) + ω0^2*(1-λ*cos(2*ω*t))*x + α*x^3 + η*d(x,t)*x^2

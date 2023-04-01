@@ -2,7 +2,7 @@ import HarmonicBalance: fourier_cos_term, fourier_sin_term
 import HarmonicBalance.Symbolics.expand
 
 
-@variables f,t, θ, a, b
+@variables f t θ a b
 
 @test isequal(fourier_cos_term(cos(f*t)^2, f, t), 0)
 @test isequal(fourier_sin_term(sin(f*t)^2, f, t), 0)

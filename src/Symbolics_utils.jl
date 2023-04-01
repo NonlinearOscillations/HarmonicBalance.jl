@@ -112,13 +112,31 @@ flatten(a) = collect(Iterators.flatten(a))
 
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
 get_independent(x::Complex{Num}, t::Num) = get_independent(x.re, t) + im*get_independent(x.im, t)
-get_independent(x::Union{Term, Sym}, t::Num) = !is_function(x, t) ? x : 0
-get_independent(x::Add, t::Num) = sum([get_independent(arg, t) for arg in arguments(x)])
-get_independent(x::Pow, t::Num) = !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
-get_independent(x::Div, t::Num) = !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
-get_independent(x::Mul, t::Num) = prod([get_independent(arg, t) for arg in arguments(x)])
 get_independent(v::Vector{Num}, t::Num) = [get_independent(el, t) for el in v]
 get_independent(x, t::Num) = x
+
+function get_independent(x::BasicSymbolic, t::Num)
+    if isadd(x)
+        return sum([get_independent(arg, t) for arg in arguments(x)])
+    elseif ismul(x)
+        return prod([get_independent(arg, t) for arg in arguments(x)])
+    elseif ispow(x)
+        return !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
+    elseif isdiv(x)
+        return !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
+    elseif isterm(x) || issym(x)
+        return !is_function(x, t) ? x : 0
+    else
+        return x
+    end
+end
+
+# get_independent(x::Union{Term, Sym}, t::Num) = !is_function(x, t) ? x : 0
+# get_independent(x::Add, t::Num) = sum([get_independent(arg, t) for arg in arguments(x)])
+# get_independent(x::Pow, t::Num) = !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
+# get_independent(x::Div, t::Num) = !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
+# get_independent(x::Mul, t::Num) = prod([get_independent(arg, t) for arg in arguments(x)])
+
 
 
 #=
@@ -150,11 +168,11 @@ function _get_all_terms_add(x)::Vector{Num}
 end
 
 function _get_all_terms(x::BasicSymbolic)
-    if Symbolics.isadd(x)
+    if isadd(x)
         return _get_all_terms_add(x)
-    elseif Symbolics.ismul(x)
+    elseif ismul(x)
         return _get_all_terms_mul(x)
-    elseif Symbolics.isdiv(x)
+    elseif isdiv(x)
         return _get_all_terms_div(x)
     else
         return Num(x)
@@ -185,7 +203,7 @@ function trig_to_exp(x::Num)
 
     rules = []
     for trig in trigs
-        is_pow = trig.val isa Pow # trig is either a trig or a power of a trig
+        is_pow = ispow(trig.val) # trig is either a trig or a power of a trig
         power = is_pow ? trig.val.exp : 1
         arg = is_pow ? arguments(trig.val.base)[1] : arguments(trig.val)[1]
         type = is_pow ? operation(trig.val.base) : operation(trig.val)
@@ -193,11 +211,11 @@ function trig_to_exp(x::Num)
         if type == cos
             term = Complex{Num}((exp(im*arg) + exp(-im*arg))^power * (1//2)^power,0)
         elseif type == sin
-            term = (1*im^power)* Complex{Num}( ((exp(-im*arg) - exp(im*arg)))^power *(1//2)^power, 0)
+            term = (1*im^power)* Complex{Num}( ((exp(-im*arg) - exp(im*arg)))^power*(1//2)^power, 0)
         end
         # avoid Complex{Num} where possible as this causes bugs
         # instead, the Nums store SymbolicUtils Complex types
-        term = Num(term.re.val + im*term.im.val)
+        term = Num(Symbolics.expand(term.re.val + im*term.im.val))
         append!(rules, [trig => term])
     end
 
@@ -214,8 +232,8 @@ is_function(f, var) = any(isequal.(get_variables(f), var))
 
 "Return true if `f` is a sin or cos."
 function is_trig(f::Num)
-    f = f.val isa Pow ? f.val.base : f.val
-    f isa Term && SymbolicUtils.operation(f) ∈ [cos,sin] && return true
+    f = ispow(f.val) ? f.val.base : f.val
+    isterm(f) && SymbolicUtils.operation(f) ∈ [cos,sin] && return true
     return false
 end
 
@@ -262,7 +280,7 @@ function trig_reduce(x)
     x = Symbolics.expand(x) # open all brackets
     x = trig_to_exp(x)
     x = expand_all(x) # expand products of exponentials
-    x= simplify_exp_products(x) # simplify products of exps
+    x = simplify_exp_products(x) # simplify products of exps
     x = exp_to_trig(x)
     x
 end
@@ -281,7 +299,7 @@ max_power(x, t) = max_power(Num(x), Num(t))
 
 "Return the power of `y` in the term `x`"
 function power_of(x::Num, y::Num)
-    y.val isa Sym ? nothing : error("power of " * string(y) * " is ambiguous")
+    issym(y.val) ? nothing : error("power of " * string(y) * " is ambiguous")
     power_of(x.val, y.val)
 end
 

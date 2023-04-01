@@ -10,6 +10,7 @@ module HarmonicBalance
     using Symbolics
     using ProgressMeter
     import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
+    import Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
     using DocStringExtensions
     using SnoopPrecompile
 
@@ -62,8 +63,8 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-    precomp_path = (@__DIR__) * "/../test/"
-    @precompile_all_calls include(precomp_path * "parametron.jl")
-    @precompile_all_calls include(precomp_path * "plotting.jl")
+    # precomp_path = (@__DIR__) * "/../test/"
+    # @precompile_all_calls include(precomp_path * "parametron.jl")
+    # @precompile_all_calls include(precomp_path * "plotting.jl")
 
 end # module

@@ -1,4 +1,3 @@
-
 export rearrange
 export drop_powers
 export get_averaged_equations
@@ -133,26 +132,6 @@ function get_independent(x::BasicSymbolic, t::Num)
         return x
     end
 end
-
-# get_independent(x::Union{Term, Sym}, t::Num) = !is_function(x, t) ? x : 0
-# get_independent(x::Add, t::Num) = sum([get_independent(arg, t) for arg in arguments(x)])
-# get_independent(x::Pow, t::Num) = !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
-# get_independent(x::Div, t::Num) = !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
-# get_independent(x::Mul, t::Num) = prod([get_independent(arg, t) for arg in arguments(x)])
-
-
-
-#=
-function get_independent(expr::SymbolicUtils.Add, t::Num)
-    primitive_terms = keys(expr.dict)
-    total = expr.coeff
-    for term in primitive_terms
-        total += get_independent(term, t) * expr.dict[term]
-    end
-    return total
-end
-=#
-
 
 "Return all the terms contained in `x`"
 get_all_terms(x::Num) = unique(_get_all_terms(Symbolics.expand(x).val))
@@ -317,7 +296,4 @@ function power_of(x::BasicSymbolic, y::BasicSymbolic)
     end
 end
 
-# power_of(x::Pow, y::Sym) =
-# power_of(x::Sym, y::Sym) = isequal(x, y) ? 1 : 0
-# power_of(x::Term, y::Sym) = 0
 power_of(x, y) = 0

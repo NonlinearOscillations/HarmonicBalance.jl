@@ -79,9 +79,7 @@ function simplify_exp_products_mul(expr)
     SymbolicUtils.is_literal_number(total) ? (total == 0 && return rest) : return rest * exp(total)
 end
 
-#simplify_exp_products(expr::Add) = sum([simplify_exp_products(arg) for arg in arguments(expr)])
 simplify_exp_products(x::Complex{Num}) = Complex{Num}(simplify_exp_products(x.re.val), simplify_exp_products(x.im.val))
-# simplify_exp_products(x::Union{Add, Div}) = _apply_termwise(simplify_exp_products, x)
 simplify_exp_products(x::Num) = simplify_exp_products(x.val)
 simplify_exp_products(x) = x
 
@@ -95,53 +93,26 @@ function simplify_exp_products(expr::BasicSymbolic)
     end
 end
 
-# function exp_to_trig(x)
-# 	if isterm(x) && x.f == exp
-# 		arg = first(x.arguments)
-# 		trigarg = -im*arg # the argument of the to-be trig function
-# 		trigarg = simplify_complex(trigarg)
-
-# 		# put arguments of trigs into a standard form such that sin(x) = -sin(-x), cos(x) = cos(-x) are recognized
-
-# 		if isadd(trigarg)
-# 			first_symbol = minimum(cat(string.(arguments(trigarg)), string.(arguments(-trigarg)), dims=1))
-
-# 			# put trigarg => -trigarg the lowest alphabetic argument of trigarg is lower than that of -trigarg
-# 			# this is a meaningless key but gives unique signs to all sums
-# 			is_first = minimum(string.(arguments(trigarg))) == first_symbol
-# 			return is_first ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
-# 		end
-
-# 		ismul(trigarg) && trigarg.coeff < 0 ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
-
-# 	else
-# 		x
-# 	end
-# end
-
 function exp_to_trig(x::BasicSymbolic)
     if isadd(x) || isdiv(x) || ismul(x)
         return _apply_termwise(exp_to_trig, x)
-    else
-        if isterm(x) && x.f == exp
-            arg = first(x.arguments)
-            trigarg = Symbolics.expand(-im*arg) # the argument of the to-be trig function
-            trigarg = simplify_complex(trigarg)
+    elseif isterm(x) && x.f == exp
+        arg = first(x.arguments)
+        trigarg = Symbolics.expand(-im*arg) # the argument of the to-be trig function
+        trigarg = simplify_complex(trigarg)
 
-            # put arguments of trigs into a standard form such that sin(x) = -sin(-x), cos(x) = cos(-x) are recognized
+        # put arguments of trigs into a standard form such that sin(x) = -sin(-x), cos(x) = cos(-x) are recognized
+        if isadd(trigarg)
+            first_symbol = minimum(cat(string.(arguments(trigarg)), string.(arguments(-trigarg)), dims=1))
 
-            if isadd(trigarg)
-                first_symbol = minimum(cat(string.(arguments(trigarg)), string.(arguments(-trigarg)), dims=1))
-
-                # put trigarg => -trigarg the lowest alphabetic argument of trigarg is lower than that of -trigarg
-                # this is a meaningless key but gives unique signs to all sums
-                is_first = minimum(string.(arguments(trigarg))) == first_symbol
-                return is_first ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
-            end
-            return ismul(trigarg) && trigarg.coeff < 0 ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
-        else
-            return x
+            # put trigarg => -trigarg the lowest alphabetic argument of trigarg is lower than that of -trigarg
+            # this is a meaningless key but gives unique signs to all sums
+            is_first = minimum(string.(arguments(trigarg))) == first_symbol
+            return is_first ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
         end
+        return ismul(trigarg) && trigarg.coeff < 0 ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
+    else
+        return x
     end
 end
 

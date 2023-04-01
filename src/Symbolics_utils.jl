@@ -271,7 +271,8 @@ function _fourier_term(x, ω, t, f)
     term = trig_reduce(term)
     indep = get_independent(term, t)
     ft = Num(simplify_complex(Symbolics.expand(indep)))
-    !isequal(ω, 0) ? 2*ft : ft # extra factor in case ω = 0 !
+    ft = !isequal(ω, 0) ? 2*ft : ft # extra factor in case ω = 0 !
+    Symbolics.expand(ft)
 end
 
 
@@ -282,7 +283,7 @@ function trig_reduce(x)
     x = expand_all(x) # expand products of exponentials
     x = simplify_exp_products(x) # simplify products of exps
     x = exp_to_trig(x)
-    x
+    Symbolics.expand(x)
 end
 
 

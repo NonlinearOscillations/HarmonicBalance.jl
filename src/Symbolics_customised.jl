@@ -125,7 +125,7 @@ function exp_to_trig(x::BasicSymbolic)
     else
         if isterm(x) && x.f == exp
             arg = first(x.arguments)
-            trigarg = -im*arg # the argument of the to-be trig function
+            trigarg = Symbolics.expand(-im*arg) # the argument of the to-be trig function
             trigarg = simplify_complex(trigarg)
 
             # put arguments of trigs into a standard form such that sin(x) = -sin(-x), cos(x) = cos(-x) are recognized
@@ -138,13 +138,13 @@ function exp_to_trig(x::BasicSymbolic)
                 is_first = minimum(string.(arguments(trigarg))) == first_symbol
                 return is_first ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
             end
-
             return ismul(trigarg) && trigarg.coeff < 0 ? cos(-trigarg) -im*sin(-trigarg) : cos(trigarg)+im* sin(trigarg)
         else
             return x
         end
     end
 end
+
 exp_to_trig(x)=x
 exp_to_trig(x::Num) = exp_to_trig(x.val)
 exp_to_trig(x::Complex{Num}) = exp_to_trig(x.re)+im* exp_to_trig(x.im)

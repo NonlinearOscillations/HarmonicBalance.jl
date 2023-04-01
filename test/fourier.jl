@@ -1,5 +1,3 @@
-
-
 import HarmonicBalance: fourier_cos_term, fourier_sin_term
 import HarmonicBalance.Symbolics.expand
 
@@ -24,6 +22,7 @@ import HarmonicBalance.Symbolics.expand
 
 
 term = (a*sin(f*t) + b*cos(f*t)) * (a*sin(2*f*t) + b*cos(2*f*t))* (a*sin(3*f*t) + b*cos(3*f*t))
+fourier_cos_term(term, 2*f,t)
 @test isequal(fourier_cos_term(term, 2*f,t), expand(1//4*(a^2*b+b^3)))
 @test isequal(fourier_cos_term(term, 4*f,t), expand(1//4*(a^2*b+b^3)))
 @test isequal(fourier_cos_term(term, 6*f,t), expand(1//4*(-3*a^2*b+b^3)))
@@ -42,5 +41,3 @@ term = (a + b*cos(f*t+θ)^2 )^3 * sin(f*t)
 @test isequal(fourier_cos_term(cos(f*t)^3 + 1, 0, t), 1)
 @test isequal(fourier_cos_term(cos(f*t)^2 + 1, 0, t), 3//2)
 @test isequal(fourier_cos_term((cos(f*t)^2 + cos(f*t))^3, 0, t), 23//16)
-
-

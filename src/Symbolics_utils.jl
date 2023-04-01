@@ -137,11 +137,11 @@ end
 get_all_terms(x::Num) = unique(_get_all_terms(Symbolics.expand(x).val))
 get_all_terms(x::Equation) = unique(cat(get_all_terms(Num(x.lhs)), get_all_terms(Num(x.rhs)), dims=1))
 
-_get_all_terms(x::Mul) = Num.(SymbolicUtils.arguments(x))
-_get_all_terms(x::Div) = Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
+_get_all_terms_mul(x) = Num.(SymbolicUtils.arguments(x))
+_get_all_terms_div(x) = Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
 _get_all_terms(x) = Num(x)
 
-function _get_all_terms(x::Add)::Vector{Num}
+function _get_all_terms_add(x)::Vector{Num}
     list = []
     for term in keys(x.dict)
         list = cat(list, _get_all_terms(term), dims=1)
@@ -149,6 +149,17 @@ function _get_all_terms(x::Add)::Vector{Num}
     return list
 end
 
+function _get_all_terms(x::BasicSymbolic)
+    if Symbolics.isadd(x)
+        return _get_all_terms_add(x)
+    elseif Symbolics.ismul(x)
+        return _get_all_terms_mul(x)
+    elseif Symbolics.isdiv(x)
+        return _get_all_terms_div(x)
+    else
+        return Num(x)
+    end
+end
 
 function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)
@@ -219,7 +230,7 @@ $(TYPEDSIGNATURES)
 Returns the coefficient of cos(ωt) in `x`.
 """
 function fourier_cos_term(x, ω, t)
-    _fourier_term(x,ω, t, cos)
+    _fourier_term(x, ω, t, cos)
 end
 
 

@@ -303,7 +303,17 @@ function power_of(x::Num, y::Num)
     power_of(x.val, y.val)
 end
 
-power_of(x::Pow, y::Sym) = isequal(x.base, y) ? x.exp : 0
-power_of(x::Sym, y::Sym) = isequal(x, y) ? 1 : 0
-power_of(x::Term, y::Sym) = 0
+function power_of(x::BasicSymbolic, y::BasicSymbolic)
+    if ispow(x) && issym(y)
+        return isequal(x.base, y) ? x.exp : 0
+    elseif issym(x) && issym(y)
+        return isequal(x, y) ? 1 : 0
+    else
+        return 0
+    end
+end
+
+# power_of(x::Pow, y::Sym) =
+# power_of(x::Sym, y::Sym) = isequal(x, y) ? 1 : 0
+# power_of(x::Term, y::Sym) = 0
 power_of(x, y) = 0

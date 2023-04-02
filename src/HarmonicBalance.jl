@@ -63,6 +63,10 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
+    include("modules/KrylovBogoliubov.jl")
+    using .KrylovBogoliubov
+    export ode_order_lowering, var_from_nested_derivative, lower_varname, first_order_transform!
+
     # precomp_path = (@__DIR__) * "/../test/"
     # @precompile_all_calls include(precomp_path * "parametron.jl")
     # @precompile_all_calls include(precomp_path * "plotting.jl")

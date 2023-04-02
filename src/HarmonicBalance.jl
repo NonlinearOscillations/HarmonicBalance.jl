@@ -65,7 +65,7 @@ module HarmonicBalance
 
     include("modules/KrylovBogoliubov.jl")
     using .KrylovBogoliubov
-    export ode_order_lowering, var_from_nested_derivative, lower_varname, first_order_transform!
+    export first_order_transform!, is_rearranged_standard, rearrange_standard!
 
     # precomp_path = (@__DIR__) * "/../test/"
     # @precompile_all_calls include(precomp_path * "parametron.jl")

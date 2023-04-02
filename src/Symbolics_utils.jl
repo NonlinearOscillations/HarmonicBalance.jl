@@ -239,7 +239,7 @@ $(TYPEDSIGNATURES)
 Returns the coefficient of sin(ωt) in `x`.
 """
 function fourier_sin_term(x, ω, t)
-    _fourier_term(x,ω, t, sin)
+    _fourier_term(x, ω, t, sin)
 end
 
 

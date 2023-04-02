@@ -1,6 +1,6 @@
 using Symbolics: unwrap, istree, operation, arguments, issym, diff2term
-import HarmonicBalance: is_rearranged
-export first_order_transform!, is_rearranged_standard, rearrange_standard!
+using HarmonicBalance: is_rearranged, rearrange!, rearrange
+export first_order_transform!, is_rearranged_standard, rearrange_standard!, equations
 
 equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
@@ -15,16 +15,16 @@ function rearrange_standard!(eom::DifferentialEquation, degree=2)
     tvar = get_independent_variables(eom)[1]
     D = Differential(tvar)^degree
     dvars = D.(get_variables(eom))
-    rearrange(eom, dvars)
+    rearrange!(eom, dvars)
 end
 
-function rearrange!(eom::DifferentialEquation, new_lhs::Vector{Num})
+function HarmonicBalance.rearrange!(eom::DifferentialEquation, new_lhs::Vector{Num})
     soln = Symbolics.solve_for(equations(eom), new_lhs, simplify=false, check=true)
     eom.equations = OrderedDict(zip(get_variables(new_lhs), new_lhs .~ soln))
     return nothing
 end
 
-function rearrange(eom::DifferentialEquation, new_lhs::Vector{Num})
+function HarmonicBalance.rearrange(eom::DifferentialEquation, new_lhs::Vector{Num})
     new_eom = deepcopy(eom)
     rearrange!(new_eom, new_lhs)
     return new_eom

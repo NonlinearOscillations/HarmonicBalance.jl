@@ -1,48 +1,72 @@
-using HarmonicBalance: flatten
+using HarmonicBalance: flatten, is_harmonic, _create_harmonic_variable, HarmonicEquation
+using HarmonicBalance: trig_reduce, get_independent, simplify_complex
+export van_der_Pol, get_krylov_equations, average!
 
 #TODO Can KB have variables with zero harmonics?
-# function van_der_Pol(diff_eom::DifferentialEquation, time::Num)
-#     !is_harmonic(diff_eom, time) && error("The differential equation is not harmonic in ", time, " !")
-#     eqs = collect(values(diff_eom.equations))
-#     rules, vars = Dict(), []
+function van_der_Pol(eom::DifferentialEquation, t::Num)
+    !is_harmonic(eom, t) && error("The differential equation is not harmonic in ", t, " !")
+    eqs = equations(eom)
+    rules, vars = Dict(), []
 
-#     # keep count to label new variables
-#     uv_idx = 1;
+    # keep count to label new variables
+    uv_idx = 1;
+    ω = values(eom.harmonics) |> unique |> flatten |> first
+    nvars = get_variables(eom)
+    nvars = nvars[length(nvars)÷2+1:end]
 
-#     ω = values(diff_eom.harmonics) |> unique |> flatten |> first
+    for nvar in nvars # sum over natural variables
+        rule_u, hvar_u = _create_harmonic_variable(nvar, ω, t, "u", new_symbol="u"*string(uv_idx))
+        rule_v, hvar_v = _create_harmonic_variable(nvar, ω, t, "v", new_symbol="v"*string(uv_idx))
+        rule = rule_u - rule_v; rules[nvar] = rule;
 
-#     for nvar in get_variables(diff_eom) # sum over natural variables
-#         to_substitute = Num(0) # combine all the subtitution rules for var
+        D = Differential(t); nvar_t = diff2term(D(unwrap(nvar)));
+        vdP_rules = Dict(D(hvar_u.symbol) => 0, D(hvar_v.symbol) => 0)
+        rules[nvar_t] = substitute(expand_derivatives(D(rule)), vdP_rules)
 
-#         rule_u, hvar_u = _create_harmonic_variable(nvar, ω, time, "u", new_symbol="u"*string(uv_idx))
-#         rule_v, hvar_v = _create_harmonic_variable(nvar, ω, time, "v", new_symbol="v"*string(uv_idx))
-#         rule = rule_u - rule_v
-#         push!(vars, hvar_u, hvar_v)
+        uv_idx += 1
+        push!(vars, hvar_u, hvar_v)
+    end
+    eqs = expand_derivatives.(substitute_all(eqs, rules))
+    HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), eom)
+end
 
-#         to_substitute += rule
+function average!(eom::HarmonicEquation, t)
+    eqs = similar(eom.equations)
+    for (i,eq) in pairs(eom.equations)
+        lhs = average(Num(eq.lhs),t); rhs = average(Num(eq.rhs),t);
+        eqs[i] = lhs ~ rhs
+    end
+    eom.equations = eqs
+end
 
-
-#         rules[nvar] = to_substitute # total sub rule for nvar
-#     end
-#     eqs = substitute_all(eqs, rules)
-#     HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), diff_eom)
-# end
-
-
+function average(x, t)
+    term = trig_reduce(x)
+    indep = get_independent(term, t)
+    ft = Num(simplify_complex(Symbolics.expand(indep)))
+    Symbolics.expand(ft)
+end
 
 function get_krylov_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
 
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
 
-    harmonics = values(sys.harmonics)
+    harmonics = values(diff_eom.harmonics)
     all(isempty.(harmonics)) && error("No harmonics specified!")
     any(isempty.(harmonics)) && error("Krylov-Bogoliubov method needs all vairables to have a single harmonic!")
     any(length.(harmonics) .> 1) && error("Krylov-Bogoliubov method only supports a single harmonic!")
 
-    # eom = harmonic_ansatz(diff_eom, fast_time); # substitute trig functions into the differential equation
-    # eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=2); # drop 2nd order time derivatives
-    # fourier_transform!(eom, fast_time); # perform averaging over the frequencies originally specified in dEOM
-    # ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2); # drop higher powers of the first-order derivatives
-    # return ft_eom_simplified
+    !is_rearranged_standard(diff_eom) ? rearrange_standard!(diff_eom) : nothing
+    first_order_transform!(diff_eom, fast_time)
+    eom = van_der_Pol(diff_eom, fast_time)
+
+    eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=2)
+
+    rearrange!(eom, d(get_variables(eom),T))
+    eom.equations = expand.(simplify.(eom.equations))
+    eom.equations = expand.(simplify.(eom.equations))
+
+    average!(eom, fast_time)
+
+    return eom
 end

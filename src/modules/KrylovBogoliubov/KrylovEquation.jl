@@ -31,12 +31,16 @@ function van_der_Pol(eom::DifferentialEquation, t::Num)
 end
 
 function average!(eom::HarmonicEquation, t)
+    eom.equations = average(eom, t)
+end
+
+function average(eom::HarmonicEquation, t)
     eqs = similar(eom.equations)
     for (i,eq) in pairs(eom.equations)
         lhs = average(Num(eq.lhs),t); rhs = average(Num(eq.rhs),t);
         eqs[i] = lhs ~ rhs
     end
-    eom.equations = eqs
+    return eqs
 end
 
 function average(x, t)
@@ -46,7 +50,28 @@ function average(x, t)
     Symbolics.expand(ft)
 end
 
-function get_krylov_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+function get_Jacobian(eom::HarmonicEquation)
+    rearr = !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
+    lhs = _remove_brackets(rearr)
+    vars = _remove_brackets.(eom.variables)
+
+    get_Jacobian(lhs, vars)
+end
+function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
+    length(eqs) == length(vars) || error("Jacobians are only defined for square systems!")
+    M = Matrix{Num}(undef, length(vars), length(vars))
+
+    for idx in CartesianIndices(M)
+        M[idx] = expand_derivatives(d(eqs[idx[1]], vars[idx[2]]))
+    end
+    M
+end
+
+
+function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=nothing, slow_time=nothing)
+
+    order < 1  && error("The order of the Krylov-Bogoliubov method must be at least 1!")
+    order > 2  && error("Krylov-Bogoliubov implemetation only supports up to second order!")
 
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
@@ -66,7 +91,15 @@ function get_krylov_equations(diff_eom::DifferentialEquation; fast_time=nothing,
     eom.equations = expand.(simplify.(eom.equations))
     eom.equations = expand.(simplify.(eom.equations))
 
-    average!(eom, fast_time)
+
+    if order == 1
+        average!(eom, fast_time)
+        return eom
+    elseif order == 2
+        Fₜ = eom.equations
+        F₀ = average(eom, t)
+        Fₜ′ = get_Jacobian(eom)
+    end
 
     return eom
 end

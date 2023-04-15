@@ -26,7 +26,7 @@ function transform_solutions(res::Result, f::String; branches = 1:branch_count(r
     for idx in CartesianIndices(res.solutions)
         params_values = res.swept_parameters[Tuple(idx)...]
         vals[end-n_pars+1:end] .= params_values # param values are common to all branches
-        for (k, branch) in enumerate(branches)  
+        for (k, branch) in enumerate(branches)
             vals[1:n_vars] .= res.solutions[idx][branch]
             transformed[idx][k] = Base.invokelatest(func, vals)
         end
@@ -58,7 +58,7 @@ function _build_substituted(expr::String, rules, free_symbols)
 
     subbed = substitute_all(_parse_expression(expr), rules)
     comp_func = build_function(subbed, free_symbols)
-    
+
     return eval(comp_func)
 end
 

@@ -1,5 +1,5 @@
 import Symbolics.SymbolicUtils: quick_cancel; export quick_cancel
-import Symbolics.SymbolicUtils: Postwalk #, @compactified
+import Symbolics.SymbolicUtils: Postwalk
 
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly
@@ -52,16 +52,6 @@ function _apply_termwise(f, x::BasicSymbolic)
         return  f(x)
     end
 end
-# We could use @compactified to do the achive thing wit a speed-up. Neverthless, it yields less readable code.
-# @compactified is what SymbolicUtils uses internally
-# function _apply_termwise(f, x::BasicSymbolic)
-#     @compactified x::BasicSymbolic begin
-#     Add  => sum([f(arg) for arg in arguments(x)])
-#     Mul  => prod([f(arg) for arg in arguments(x)])
-#     Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
-#     _    => f(x)
-#     end
-# end
 
 simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im*x.im
 simplify_complex(x) = x

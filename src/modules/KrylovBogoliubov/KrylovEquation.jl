@@ -1,5 +1,3 @@
-using HarmonicBalance: flatten, is_harmonic, _create_harmonic_variable, HarmonicEquation
-using HarmonicBalance: trig_reduce, get_independent, simplify_complex
 export van_der_Pol, get_krylov_equations, average!
 
 #TODO Can KB have variables with zero harmonics?
@@ -33,7 +31,6 @@ end
 function average!(eom::HarmonicEquation, t)
     eom.equations = average(eom, t)
 end
-
 function average(eom::HarmonicEquation, t)
     eqs = similar(eom.equations)
     for (i,eq) in pairs(eom.equations)
@@ -42,7 +39,6 @@ function average(eom::HarmonicEquation, t)
     end
     return eqs
 end
-
 function average(x, t)
     term = trig_reduce(x)
     indep = get_independent(term, t)
@@ -50,22 +46,34 @@ function average(x, t)
     Symbolics.expand(ft)
 end
 
-function get_Jacobian(eom::HarmonicEquation)
-    rearr = !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
-    lhs = _remove_brackets(rearr)
-    vars = _remove_brackets.(eom.variables)
-
-    get_Jacobian(lhs, vars)
+function reduce(x::Num)
+    x = simplify_fractions.(x)
+    x = trig_reduce.(Num.(x))
+    x = Num.(simplify_complex.(expand.(x)))
 end
-function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
-    length(eqs) == length(vars) || error("Jacobians are only defined for square systems!")
-    M = Matrix{Num}(undef, length(vars), length(vars))
 
-    for idx in CartesianIndices(M)
-        M[idx] = expand_derivatives(d(eqs[idx[1]], vars[idx[2]]))
+function take_trig_integral(x::BasicSymbolic, ω, t)
+    if isdiv(x)
+        arg_num = arguments(x.num)
+        return simplify(expand(sum(take_trig_integral.(arg_num, ω, t))*ω)) / (x.den*ω)
+    else
+        all_terms = get_all_terms(Num(x))
+        trigs = filter(z -> is_trig(z), all_terms)
+        D = Differential(t)
+
+        rules = []
+        for trig in trigs
+            arg = arguments(trig.val) |> first
+            type = operation(trig.val)
+
+            term = (type == cos ? sin(arg) : -cos(arg)) / expand_derivatives(D(arg)) |> Num
+            append!(rules, [trig => term])
+        end
+
+        return Symbolics.substitute(x, Dict(rules))
     end
-    M
 end
+take_trig_integral(x::Num, ω, t) =  take_trig_integral(Symbolics.expand(unwrap(x)), ω, t)
 
 
 function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=nothing, slow_time=nothing)
@@ -80,25 +88,35 @@ function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=n
     all(isempty.(harmonics)) && error("No harmonics specified!")
     any(isempty.(harmonics)) && error("Krylov-Bogoliubov method needs all vairables to have a single harmonic!")
     any(length.(harmonics) .> 1) && error("Krylov-Bogoliubov method only supports a single harmonic!")
+    harmonics = first.(harmonics)
 
-    !is_rearranged_standard(diff_eom) ? rearrange_standard!(diff_eom) : nothing
-    first_order_transform!(diff_eom, fast_time)
-    eom = van_der_Pol(diff_eom, fast_time)
+    deom = deepcopy(diff_eom)
+    !is_rearranged_standard(deom) ? rearrange_standard!(deom) : nothing
+    first_order_transform!(deom, fast_time)
+    eom = van_der_Pol(deom, fast_time)
 
     eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=2)
 
     rearrange!(eom, d(get_variables(eom),T))
     eom.equations = expand.(simplify.(eom.equations))
-    eom.equations = expand.(simplify.(eom.equations))
-
+    eom.equations = expand.(simplify.(eom.equations)) # need it two times to get it completely simplified
 
     if order == 1
         average!(eom, fast_time)
         return eom
     elseif order == 2
-        Fₜ = eom.equations
-        F₀ = average(eom, t)
-        Fₜ′ = get_Jacobian(eom)
+        vars_symb = get_variables(eom)
+        Fₜ = Num.(getfield.(eom.equations, :lhs))
+        F₀ = Num.(getfield.(average(eom, fast_time), :lhs))
+        Fₜ′ = substitute(get_Jacobian(eom), Dict(zip(_remove_brackets.(vars_symb), vars_symb)))
+
+        Ḋ₁ = reduce.(Fₜ - F₀)
+        D₁ = take_trig_integral.(Ḋ₁, harmonics, fast_time)
+        D₁ =  D₁ - average.(D₁, fast_time)
+
+        Gₜ = reduce.(Fₜ′*D₁)
+        G₀ = average.(Gₜ, fast_time)
+        eom.equations = F₀ + G₀ .~ getfield.(eom.equations, :rhs)
     end
 
     return eom

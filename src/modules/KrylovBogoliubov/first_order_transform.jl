@@ -1,5 +1,3 @@
-using Symbolics: unwrap, istree, operation, arguments, issym, diff2term
-using HarmonicBalance: is_rearranged, rearrange!, rearrange
 export first_order_transform!, is_rearranged_standard, rearrange_standard!, equations
 
 equations(eom::DifferentialEquation) = collect(values(eom.equations))

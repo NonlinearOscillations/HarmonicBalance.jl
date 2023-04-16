@@ -1,4 +1,3 @@
-
 export rearrange
 export drop_powers
 export get_averaged_equations
@@ -33,8 +32,11 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
 
 
  "Return the name of a variable (excluding independent variables)"
- var_name(x::Num) = var_name(x.val)
- var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
+function var_name(x::Num)
+    var = Symbolics._toexpr(x)
+    return var isa Expr ? String(var.args[1]) : String(var)
+end
+#  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
  var_name(x::Sym) = String(x.name)
 
 
@@ -112,36 +114,34 @@ flatten(a) = collect(Iterators.flatten(a))
 
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
 get_independent(x::Complex{Num}, t::Num) = get_independent(x.re, t) + im*get_independent(x.im, t)
-get_independent(x::Union{Term, Sym}, t::Num) = !is_function(x, t) ? x : 0
-get_independent(x::Add, t::Num) = sum([get_independent(arg, t) for arg in arguments(x)])
-get_independent(x::Pow, t::Num) = !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
-get_independent(x::Div, t::Num) = !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
-get_independent(x::Mul, t::Num) = prod([get_independent(arg, t) for arg in arguments(x)])
 get_independent(v::Vector{Num}, t::Num) = [get_independent(el, t) for el in v]
 get_independent(x, t::Num) = x
 
-
-#=
-function get_independent(expr::SymbolicUtils.Add, t::Num)
-    primitive_terms = keys(expr.dict)
-    total = expr.coeff
-    for term in primitive_terms
-        total += get_independent(term, t) * expr.dict[term]
+function get_independent(x::BasicSymbolic, t::Num)
+    if isadd(x)
+        return sum([get_independent(arg, t) for arg in arguments(x)])
+    elseif ismul(x)
+        return prod([get_independent(arg, t) for arg in arguments(x)])
+    elseif ispow(x)
+        return !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
+    elseif isdiv(x)
+        return !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
+    elseif isterm(x) || issym(x)
+        return !is_function(x, t) ? x : 0
+    else
+        return x
     end
-    return total
 end
-=#
-
 
 "Return all the terms contained in `x`"
 get_all_terms(x::Num) = unique(_get_all_terms(Symbolics.expand(x).val))
 get_all_terms(x::Equation) = unique(cat(get_all_terms(Num(x.lhs)), get_all_terms(Num(x.rhs)), dims=1))
 
-_get_all_terms(x::Mul) = Num.(SymbolicUtils.arguments(x))
-_get_all_terms(x::Div) = Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
+_get_all_terms_mul(x) = Num.(SymbolicUtils.arguments(x))
+_get_all_terms_div(x) = Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
 _get_all_terms(x) = Num(x)
 
-function _get_all_terms(x::Add)::Vector{Num}
+function _get_all_terms_add(x)::Vector{Num}
     list = []
     for term in keys(x.dict)
         list = cat(list, _get_all_terms(term), dims=1)
@@ -149,6 +149,17 @@ function _get_all_terms(x::Add)::Vector{Num}
     return list
 end
 
+function _get_all_terms(x::BasicSymbolic)
+    if isadd(x)
+        return _get_all_terms_add(x)
+    elseif ismul(x)
+        return _get_all_terms_mul(x)
+    elseif isdiv(x)
+        return _get_all_terms_div(x)
+    else
+        return Num(x)
+    end
+end
 
 function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)
@@ -174,7 +185,7 @@ function trig_to_exp(x::Num)
 
     rules = []
     for trig in trigs
-        is_pow = trig.val isa Pow # trig is either a trig or a power of a trig
+        is_pow = ispow(trig.val) # trig is either a trig or a power of a trig
         power = is_pow ? trig.val.exp : 1
         arg = is_pow ? arguments(trig.val.base)[1] : arguments(trig.val)[1]
         type = is_pow ? operation(trig.val.base) : operation(trig.val)
@@ -182,11 +193,11 @@ function trig_to_exp(x::Num)
         if type == cos
             term = Complex{Num}((exp(im*arg) + exp(-im*arg))^power * (1//2)^power,0)
         elseif type == sin
-            term = (1*im^power)* Complex{Num}( ((exp(-im*arg) - exp(im*arg)))^power *(1//2)^power, 0)
+            term = (1*im^power)* Complex{Num}( ((exp(-im*arg) - exp(im*arg)))^power*(1//2)^power, 0)
         end
         # avoid Complex{Num} where possible as this causes bugs
         # instead, the Nums store SymbolicUtils Complex types
-        term = Num(term.re.val + im*term.im.val)
+        term = Num(Symbolics.expand(term.re.val + im*term.im.val))
         append!(rules, [trig => term])
     end
 
@@ -203,8 +214,8 @@ is_function(f, var) = any(isequal.(get_variables(f), var))
 
 "Return true if `f` is a sin or cos."
 function is_trig(f::Num)
-    f = f.val isa Pow ? f.val.base : f.val
-    f isa Term && SymbolicUtils.operation(f) ∈ [cos,sin] && return true
+    f = ispow(f.val) ? f.val.base : f.val
+    isterm(f) && SymbolicUtils.operation(f) ∈ [cos,sin] && return true
     return false
 end
 
@@ -219,7 +230,7 @@ $(TYPEDSIGNATURES)
 Returns the coefficient of cos(ωt) in `x`.
 """
 function fourier_cos_term(x, ω, t)
-    _fourier_term(x,ω, t, cos)
+    _fourier_term(x, ω, t, cos)
 end
 
 
@@ -242,7 +253,8 @@ function _fourier_term(x, ω, t, f)
     term = trig_reduce(term)
     indep = get_independent(term, t)
     ft = Num(simplify_complex(Symbolics.expand(indep)))
-    !isequal(ω, 0) ? 2*ft : ft # extra factor in case ω = 0 !
+    ft = !isequal(ω, 0) ? 2*ft : ft # extra factor in case ω = 0 !
+    Symbolics.expand(ft)
 end
 
 
@@ -251,9 +263,9 @@ function trig_reduce(x)
     x = Symbolics.expand(x) # open all brackets
     x = trig_to_exp(x)
     x = expand_all(x) # expand products of exponentials
-    x= simplify_exp_products(x) # simplify products of exps
+    x = simplify_exp_products(x) # simplify products of exps
     x = exp_to_trig(x)
-    x
+    Symbolics.expand(x)
 end
 
 
@@ -270,11 +282,18 @@ max_power(x, t) = max_power(Num(x), Num(t))
 
 "Return the power of `y` in the term `x`"
 function power_of(x::Num, y::Num)
-    y.val isa Sym ? nothing : error("power of " * string(y) * " is ambiguous")
+    issym(y.val) ? nothing : error("power of " * string(y) * " is ambiguous")
     power_of(x.val, y.val)
 end
 
-power_of(x::Pow, y::Sym) = isequal(x.base, y) ? x.exp : 0
-power_of(x::Sym, y::Sym) = isequal(x, y) ? 1 : 0
-power_of(x::Term, y::Sym) = 0
+function power_of(x::BasicSymbolic, y::BasicSymbolic)
+    if ispow(x) && issym(y)
+        return isequal(x.base, y) ? x.exp : 0
+    elseif issym(x) && issym(y)
+        return isequal(x, y) ? 1 : 0
+    else
+        return 0
+    end
+end
+
 power_of(x, y) = 0

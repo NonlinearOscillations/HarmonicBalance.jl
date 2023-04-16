@@ -9,7 +9,8 @@ module HarmonicBalance
     export plot
     using Symbolics
     using ProgressMeter
-    import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym
+    import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
+    import Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
     using DocStringExtensions
     using SnoopPrecompile
 

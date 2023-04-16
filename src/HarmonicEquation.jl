@@ -207,8 +207,8 @@ function fourier_transform!(eom::HarmonicEquation, time::Num)
             avg_eqs[i] = fourier_cos_term(eq, 0, time) # pick out the constants
         end
     end
-
     eom.equations = avg_eqs
+    return nothing
 end
 
 

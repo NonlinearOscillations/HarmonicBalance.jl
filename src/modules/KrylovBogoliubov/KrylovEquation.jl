@@ -1,5 +1,8 @@
 export van_der_Pol, get_krylov_equations, average!
 
+get_harmonic(var::HarmonicVariable) = var.ω
+get_harmonics(eom::HarmonicEquation) = get_harmonic.(eom.variables)
+
 #TODO Can KB have variables with zero harmonics?
 function van_der_Pol(eom::DifferentialEquation, t::Num)
     !is_harmonic(eom, t) && error("The differential equation is not harmonic in ", t, " !")
@@ -88,7 +91,6 @@ function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=n
     all(isempty.(harmonics)) && error("No harmonics specified!")
     any(isempty.(harmonics)) && error("Krylov-Bogoliubov method needs all vairables to have a single harmonic!")
     any(length.(harmonics) .> 1) && error("Krylov-Bogoliubov method only supports a single harmonic!")
-    harmonics = first.(harmonics)
 
     deom = deepcopy(diff_eom)
     !is_rearranged_standard(deom) ? rearrange_standard!(deom) : nothing
@@ -111,7 +113,7 @@ function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=n
         Fₜ′ = substitute(get_Jacobian(eom), Dict(zip(_remove_brackets.(vars_symb), vars_symb)))
 
         Ḋ₁ = reduce.(Fₜ - F₀)
-        D₁ = take_trig_integral.(Ḋ₁, harmonics, fast_time)
+        D₁ = take_trig_integral.(Ḋ₁, get_harmonics(eom), fast_time)
         D₁ =  D₁ - average.(D₁, fast_time)
 
         Gₜ = reduce.(Fₜ′*D₁)

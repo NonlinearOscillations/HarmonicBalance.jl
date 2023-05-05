@@ -45,6 +45,31 @@ function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; o
     C
 end
 
+function get_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; show_progress=show_progress, damping_mod::Float64)
+    stable = classify_branch(res, branch, "stable")
+    !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
+    stableidx = findall(stable)
+    C = zeros(length(Ω_range), sum(stable));
+
+    if show_progress
+        bar = Progress(length(C), 1, "Solving the linear response ODE for each solution and input frequency ... ", 50)
+    end
+
+    for i in 1:sum(stable)
+        s = get_single_solution(res, branch = branch , index = stableidx[i]);
+        jac  = res.jacobian(s) #numerical Jacobian
+        λs, vs = eigen(jac)
+        for j in λs
+            for k in 1:(size(C)[1])
+                C[k,i] += 1/sqrt((imag(j)^2-Ω_range[k]^2)^2+Ω_range[k]^2*damping_mod^2*real(j)^2)
+            end
+        end
+        show_progress ? next!(bar) : nothing
+        
+    end
+    C
+end
+
 
 """
     plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
@@ -70,6 +95,29 @@ heatmap(X, Ω_range,  C; color=:viridis,
     xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
 end
 
+"""
+    plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod::Float64 = 1.0, show_progress=true, kwargs...)
 
+Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency seperately identifiable.
 
+Any kwargs are fed to Plots' gr().
 
+Solutions not belonging to the `physical` class are ignored.
+"""
+
+function plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod::Float64 = 1.0, show_progress=true, kwargs...)
+
+    length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    stable = classify_branch(res, branch, "stable") # boolean array
+
+    Ω_range = vcat(Ω_range)
+    !isempty(findall(x->x==0, Ω_range)) && @warn("Probing with Ω=0 may lead to unexpected results")
+
+    X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
+    
+    C = get_rotframe_jacobian_response(res, Ω_range, branch, show_progress=show_progress, damping_mod=damping_mod)
+    C = logscale ? log.(C) : C
+    
+    heatmap(X, Ω_range,  C; color=:viridis,
+       xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
+end

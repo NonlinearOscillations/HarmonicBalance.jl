@@ -239,7 +239,7 @@ end
 
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values::Array{ParameterVector}; sweep=[], random_warmup=false, threading=false, show_progress=true)
+function _get_raw_solution(problem::Problem, parameter_values; sweep=[], random_warmup=false, threading=false, show_progress=true)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
@@ -311,4 +311,3 @@ function _convert_or_zero(x, t=ComplexF64)
         return 0
     end
 end
-

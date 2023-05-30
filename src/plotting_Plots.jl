@@ -169,7 +169,7 @@ function plot2D(res::Result; z::String, branch::Int64, class="physical", not_cla
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
-    p = plot!(map(_realify, [Y, X, Z])...;
+    p = plot!(map(_realify, [Float64.(Y), Float64.(X), Z])...;
     st=:surface, color=:blue, opacity=0.5, xlabel=xlab, ylabel=ylab, zlabel=latexify(z), colorbar=false, kwargs...)
 end
 
@@ -208,7 +208,7 @@ function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_clas
     # colouring is matched to branch index - matched across plots
     for k in findall(branch -> !all(isnan.(branch)), branch_data) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(X, _realify(getindex.(branches, k)); color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
+        Plots.plot!(Float64.(X), _realify(getindex.(branches, k)); color=k, label=l, xlabel=latexify(string(x)), ylabel=latexify(y), kwargs...)
     end
 
     return p
@@ -255,14 +255,14 @@ function plot_phase_diagram_2D(res::Result; class="physical", not_class=[], kwar
     xlab, ylab = latexify.(string.(keys(res.swept_parameters)))
 
     # cannot set heatmap ticks (Plots issue #3560)
-    heatmap(X, Y, transpose(Z); xlabel=xlab, ylabel=ylab, color=:viridis, kwargs...)
+    heatmap(Float64.(X), Float64.(Y), transpose(Z); xlabel=xlab, ylabel=ylab, color=:viridis, kwargs...)
 end
 
 
 function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
     X = values(res.swept_parameters)
     Y = sum.(_get_mask(res, class, not_class))
-    plot(X..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
+    plot(Float64.(X)..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
 end
 
 ###
@@ -320,7 +320,7 @@ function plot_spaghetti(res::Result; x::String, y::String, z::String, class="def
     # colouring is matched to branch index - matched across plots
     for k in findall(x -> !all(isnan.(x)), branch_data) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
-        Plots.plot!(_realify(getindex.(X, k)), _realify(getindex.(Y, k)), Z; _set_Plots_default...,
+        Plots.plot!(_realify(getindex.(X, k)), _realify(getindex.(Y, k)), Float64.(Z); _set_Plots_default...,
          color=k, label=l, xlabel=latexify(x), ylabel=latexify(y), zlabel=latexify(z), xlim=:symmetric, ylim=:symmetric, kwargs...)
     end
     return p
@@ -384,10 +384,3 @@ Transform a solution's velocity into the lab frame (i.e., invert the harmonic an
 Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
 """
 to_lab_frame_velocity(res::Result, times; index, branch) = to_lab_frame_velocity(res[index][branch], res, times)
-
-
-
-
-
-
-

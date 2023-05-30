@@ -4,7 +4,7 @@ import HomotopyContinuation
 
 export DifferentialEquation, HarmonicVariable, HarmonicEquation,Problem, Result
 
-const ParameterRange = OrderedDict{Num, Vector{Float64}}; export ParameterRange
+const ParameterRange = OrderedDict{Num, Vector{Union{Float64,ComplexF64}}}; export ParameterRange
 const ParameterList = OrderedDict{Num, Float64}; export ParameterList;
 const StateDict = OrderedDict{Num, ComplexF64}; export StateDict
 const SteadyState = Vector{ComplexF64}; export SteadyState;

@@ -1,5 +1,8 @@
 import Symbolics.SymbolicUtils: quick_cancel; export quick_cancel
 import Symbolics.SymbolicUtils: Postwalk #, @compactified
+import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
+import Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
+import Symbolics: wrap
 
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly

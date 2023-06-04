@@ -1,3 +1,5 @@
+import Symbolics.SymbolicUtils: add_with_div, frac_similarterm
+
 export rearrange
 export drop_powers
 export get_averaged_equations
@@ -257,15 +259,19 @@ function _fourier_term(x, ω, t, f)
     Symbolics.expand(ft)
 end
 
+"Simplify fraction a/b + c/d = (ad + bc)/bd"
+add_div(x) =  Num(Postwalk(add_with_div, similarterm=frac_similarterm)(unwrap(x)))
 
 "Expand all sin/cos powers in `x`."
 function trig_reduce(x)
-    x = Symbolics.expand(x) # open all brackets
+    x = add_div(x) # a/b + c/d = (ad + bc)/bd
+    x = expand(x) # open all brackets
     x = trig_to_exp(x)
     x = expand_all(x) # expand products of exponentials
     x = simplify_exp_products(x) # simplify products of exps
     x = exp_to_trig(x)
-    Symbolics.expand(x)
+    x = Num(simplify_complex(expand(x)))
+    simplify_fractions(x) # (a*c^2 + b*c)/c^2 = (a*c + b)/c
 end
 
 

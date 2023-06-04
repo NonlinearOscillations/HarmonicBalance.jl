@@ -1,9 +1,8 @@
-export van_der_Pol, get_krylov_equations, average!
+export van_der_Pol, get_krylov_equations
 
 get_harmonic(var::HarmonicVariable) = var.ω
 get_harmonics(eom::HarmonicEquation) = get_harmonic.(eom.variables)
 
-#TODO Can KB have variables with zero harmonics?
 function van_der_Pol(eom::DifferentialEquation, t::Num)
     !is_harmonic(eom, t) && error("The differential equation is not harmonic in ", t, " !")
     eqs = equations(eom)
@@ -49,11 +48,6 @@ function average(x, t)
     Symbolics.expand(ft)
 end
 
-function reduce(x::Num)
-    x = simplify_fractions.(x)
-    x = trig_reduce.(Num.(x))
-    x = Num.(simplify_complex.(expand.(x)))
-end
 
 function take_trig_integral(x::BasicSymbolic, ω, t)
     if isdiv(x)
@@ -99,9 +93,10 @@ function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=n
 
     eom = slow_flow(eom, fast_time=fast_time, slow_time=slow_time; degree=2)
 
-    rearrange!(eom, d(get_variables(eom),T))
+    rearrange!(eom, d(get_variables(eom), slow_time))
     eom.equations = expand.(simplify.(eom.equations))
-    eom.equations = expand.(simplify.(eom.equations)) # need it two times to get it completely simplified
+    eom.equations = expand.(simplify.(eom.equations))
+    #^ need it two times to get it completely simplified due to some weird bug in Symbolics.jl
 
     if order == 1
         average!(eom, fast_time)
@@ -112,11 +107,11 @@ function get_krylov_equations(diff_eom::DifferentialEquation; order, fast_time=n
         F₀ = Num.(getfield.(average(eom, fast_time), :lhs))
         Fₜ′ = substitute(get_Jacobian(eom), Dict(zip(_remove_brackets.(vars_symb), vars_symb)))
 
-        Ḋ₁ = reduce.(Fₜ - F₀)
+        Ḋ₁ = trig_reduce.(Fₜ - F₀)
         D₁ = take_trig_integral.(Ḋ₁, get_harmonics(eom), fast_time)
         D₁ =  D₁ - average.(D₁, fast_time)
 
-        Gₜ = reduce.(Fₜ′*D₁)
+        Gₜ = trig_reduce.(Fₜ′*D₁)
         G₀ = average.(Gₜ, fast_time)
         eom.equations = F₀ + G₀ .~ getfield.(eom.equations, :rhs)
     end

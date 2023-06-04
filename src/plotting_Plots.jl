@@ -267,7 +267,7 @@ end
 ###
 
 """
-$(TYPEDSIGNATURES)
+    plot_spaghetti(res::Result; x, y, z, kwargs...)
 
 Plot a three dimension line plot of a `Result` object as a function of the parameters.
 Works with 1D and 2D datasets.

@@ -1,5 +1,6 @@
 # Extracting harmonic equations
 
+## Harmonic Balance method
 Once a `DifferentialEquation` is defined and its harmonics specified, one can extract the harmonic equations using `get_harmonic_equations`, which itself is composed of the subroutines `harmonic_ansatz`, `slow_flow`, `fourier_transform!` and `drop_powers`. 
 
 The harmonic equations use an additional time variable specified as `slow_time` in `get_harmonic_equations`. This is essentially a label distinguishing the time dependence of the harmonic variables (expected to be slow)
@@ -11,6 +12,13 @@ HarmonicBalance.harmonic_ansatz
 HarmonicBalance.slow_flow
 HarmonicBalance.fourier_transform
 HarmonicBalance.drop_powers
+```
+
+##  Krylov-Bogoliubov averaging method
+As laid out in the background section, `get_harmonic_equations` computes the slow-flow equation with the help of the Harmoninc Balance method. However, another well-known would be the Krylov-Bogoliubov averaging method. The advantage of the method is that it can computed higher orders in $1/\omega$ which thereby capture the faster dynamics. Nevertheless, the method cannot work with mutliple harmonic in one variable. The Krylov-Bogoliubov can be computed with the function `get_krylov_equations`.
+
+```@docs
+get_krylov_equations
 ```
 
 ## HarmonicVariable and HarmonicEquation types

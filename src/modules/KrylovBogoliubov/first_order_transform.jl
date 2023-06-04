@@ -1,6 +1,6 @@
-export first_order_transform!, is_rearranged_standard, rearrange_standard!, equations
+export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
 
-equations(eom::DifferentialEquation) = collect(values(eom.equations))
+get_equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
 # TODO: check the degree of the eom
 function is_rearranged_standard(eom::DifferentialEquation, degree=2)
@@ -17,7 +17,7 @@ function rearrange_standard!(eom::DifferentialEquation, degree=2)
 end
 
 function HarmonicBalance.rearrange!(eom::DifferentialEquation, new_lhs::Vector{Num})
-    soln = Symbolics.solve_for(equations(eom), new_lhs, simplify=false, check=true)
+    soln = Symbolics.solve_for(get_equations(eom), new_lhs, simplify=false, check=true)
     eom.equations = OrderedDict(zip(get_variables(new_lhs), new_lhs .~ soln))
     return nothing
 end

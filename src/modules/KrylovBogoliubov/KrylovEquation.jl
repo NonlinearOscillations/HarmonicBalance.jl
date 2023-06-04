@@ -5,7 +5,7 @@ get_harmonics(eom::HarmonicEquation) = get_harmonic.(eom.variables)
 
 function van_der_Pol(eom::DifferentialEquation, t::Num)
     !is_harmonic(eom, t) && error("The differential equation is not harmonic in ", t, " !")
-    eqs = equations(eom)
+    eqs = get_equations(eom)
     rules, vars = Dict(), []
 
     # keep count to label new variables

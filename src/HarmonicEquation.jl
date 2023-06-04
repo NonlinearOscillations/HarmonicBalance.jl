@@ -88,7 +88,7 @@ end
 
 "Rearrange an equation system such that the field equations is equal to the vector specified in new_lhs"
 function rearrange!(eom::HarmonicEquation, new_rhs::Vector{Num})
-    soln = Symbolics.solve_for(eom.equations, new_rhs, simplify=false,check=true)
+    soln = Symbolics.solve_for(eom.equations, new_rhs, simplify=false, check=true)
     eom.equations = soln .~ new_rhs
     return nothing
 end

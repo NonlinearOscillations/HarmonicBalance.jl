@@ -1,4 +1,4 @@
-export van_der_Pol, get_krylov_equations
+export get_krylov_equations
 
 get_harmonic(var::HarmonicVariable) = var.ω
 get_harmonics(eom::HarmonicEquation) = get_harmonic.(eom.variables)

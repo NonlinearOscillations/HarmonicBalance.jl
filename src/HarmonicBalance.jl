@@ -2,15 +2,22 @@ module HarmonicBalance
 
     using Printf
     using OrderedCollections
+    using Symbolics
+    using ProgressMeter
+    using DocStringExtensions
+    using SnoopPrecompile
+    using BijectiveHilbert
+    using LinearAlgebra
+    using Plots, Latexify
+    import HomotopyContinuation
+    import Distances
+
     import Base: show, display; export show
     export *
     export @variables
     export d
     export plot
-    using Symbolics
-    using ProgressMeter
-    using DocStringExtensions
-    using SnoopPrecompile
+
 
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))

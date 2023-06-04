@@ -1,9 +1,8 @@
 using LinearAlgebra
+using Symbolics.SymbolicUtils: isterm
 import HomotopyContinuation: Variable
-#import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
-import Symbolics.SymbolicUtils: isterm#, ispow, isadd, isdiv, ismul, issym
-import HarmonicBalance: Problem; export Problem
-export Num_to_Variable
+import HarmonicBalance: Problem
+export Problem, Num_to_Variable
 
 "Conversion from Symbolics.jl types to HomotopyContinuation types."
 Variable(var::Num) = isterm(var.val) ? Variable(string(var.val.f)) : Variable(string(var_name(var)))

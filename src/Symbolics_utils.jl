@@ -1,4 +1,4 @@
-import Symbolics.SymbolicUtils: add_with_div, frac_similarterm
+using Symbolics.SymbolicUtils: add_with_div, frac_similarterm
 
 export rearrange
 export drop_powers

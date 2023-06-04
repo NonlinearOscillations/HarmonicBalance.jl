@@ -1,7 +1,3 @@
-using Symbolics
-using OrderedCollections
-import HomotopyContinuation
-
 export DifferentialEquation, HarmonicVariable, HarmonicEquation,Problem, Result
 
 const ParameterRange = OrderedDict{Num, Vector{Union{Float64,ComplexF64}}}; export ParameterRange

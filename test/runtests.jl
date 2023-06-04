@@ -11,7 +11,8 @@ files = [
     "load.jl",
     "parametron.jl",
     "plotting.jl",
-    "time_evolution.jl"
+    "time_evolution.jl",
+    "krylov.jl"
     ]
 
 for file in files

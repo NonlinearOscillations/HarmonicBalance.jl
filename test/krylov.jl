@@ -1,4 +1,4 @@
-using HarmonicBalance, Symbolics
+using HarmonicBalance; HB = HarmonicBalance;
 
 @variables t T x(t) y(t) # symbolic variables
 @variables ω ω0 γ F α λ ψ θ η
@@ -13,8 +13,7 @@ harmonic_eq1 = get_krylov_equations(diff_eom, order=1)
 harmonic_eq2 = get_krylov_equations(diff_eom, order=2)
 
 fixed = (ω0 => 1.0, γ => 0.005, α => 1.0, η => 0, F=> 0.0, ψ => 0.0, θ => 0.0)
-varied = (ω => range(0.99, 1.01, 100), λ => range(1e-6, 0.05, 100))
-res = get_steady_states(harmonic_eq, varied, fixed, threading =true)
+varied = (ω => range(0.99, 1.01, 20), λ => range(1e-6, 0.05, 20))
 
-# plot 2D result
-plot_phase_diagram(res, class="stable")
+res1 = get_steady_states(harmonic_eq1, varied, fixed, show_progress=false);
+res2 = get_steady_states(harmonic_eq2, varied, fixed, show_progress=false);

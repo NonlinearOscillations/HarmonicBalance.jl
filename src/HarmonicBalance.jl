@@ -5,18 +5,17 @@ module HarmonicBalance
     using Symbolics
     using ProgressMeter
     using DocStringExtensions
-    using SnoopPrecompile
     using BijectiveHilbert
     using LinearAlgebra
     using Plots, Latexify
     import HomotopyContinuation
     import Distances
+    # using SnoopPrecompile
 
     import Base: show, display; export show
     export *
     export @variables
     export d
-    export plot
 
 
     import Base: ComplexF64, Float64; export ComplexF64, Float64

@@ -17,6 +17,7 @@ res = get_steady_states(harmonic_eq, varied, fixed)
 # plot 1D result
 plot(res, x="ω", y="u1");
 plot_spaghetti(res, x="v1", y="u1", z="ω");
+plot_phase_diagram(res);
 
 fixed = (ω0 => 1.0, γ => 1e-2, α => 1.0, η => 0.3)
 varied = (ω => range(0.9, 1.1, 10), λ => range(0.01, 0.05, 10))

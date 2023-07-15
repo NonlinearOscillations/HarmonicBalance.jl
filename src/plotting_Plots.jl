@@ -257,7 +257,7 @@ end
 
 
 function plot_phase_diagram_1D(res::Result; class="physical", not_class=[], kwargs...)::Plots.Plot
-    X = values(res.swept_parameters)
+    X = values(res.swept_parameters) |> first
     Y = sum.(_get_mask(res, class, not_class))
     plot(Float64.(X)..., Y; xlabel=latexify(string(keys(res.swept_parameters)...)), ylabel="#", legend=false, yticks=1:maximum(Y), kwargs...)
 end

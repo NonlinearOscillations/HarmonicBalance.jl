@@ -10,6 +10,7 @@ files = [
     "fourier.jl",
     "load.jl",
     "parametron.jl",
+    "transform_solutions.jl",
     "plotting.jl",
     "time_evolution.jl",
     "krylov.jl"

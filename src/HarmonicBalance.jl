@@ -2,17 +2,21 @@ module HarmonicBalance
 
     using Printf
     using OrderedCollections
+    using Symbolics
+    using ProgressMeter
+    using DocStringExtensions
+    using BijectiveHilbert
+    using LinearAlgebra
+    using Plots, Latexify
+    import HomotopyContinuation
+    import Distances
+    # using SnoopPrecompile
+
     import Base: show, display; export show
     export *
     export @variables
     export d
-    export plot
-    using Symbolics
-    using ProgressMeter
-    import Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
-    import Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
-    using DocStringExtensions
-    using SnoopPrecompile
+
 
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
@@ -63,8 +67,13 @@ module HarmonicBalance
     include("modules/LimitCycles.jl")
     using .LimitCycles
 
-    precomp_path = (@__DIR__) * "/../test/"
-    @precompile_all_calls include(precomp_path * "parametron.jl")
-    @precompile_all_calls include(precomp_path * "plotting.jl")
+    include("modules/KrylovBogoliubov.jl")
+    using .KrylovBogoliubov
+    export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
+    export get_krylov_equations
+
+    # precomp_path = (@__DIR__) * "/../test/"
+    # @precompile_all_calls include(precomp_path * "parametron.jl")
+    # @precompile_all_calls include(precomp_path * "plotting.jl")
 
 end # module

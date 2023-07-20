@@ -24,3 +24,11 @@ In many problems, rather than in any property of the solutions themselves, we ar
 ```@docs
 HarmonicBalance.plot_phase_diagram
 ```
+
+## Plot spaghetti plot
+
+Sometimes, it is useful to plot the quadratures of the steady states (u, v) in function of a swept parameter. This is done with `plot_spaghetti`.
+
+```@docs
+HarmonicBalance.plot_spaghetti
+```

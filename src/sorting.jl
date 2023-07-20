@@ -1,8 +1,3 @@
-using BijectiveHilbert
-using LinearAlgebra
-import Distances
-
-
 """
     $(TYPEDSIGNATURES)
 
@@ -191,4 +186,3 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest", s
     end
     sorted_solns
 end
-

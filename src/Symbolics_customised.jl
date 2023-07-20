@@ -1,5 +1,8 @@
 import Symbolics.SymbolicUtils: quick_cancel; export quick_cancel
-import Symbolics.SymbolicUtils: Postwalk
+using Symbolics.SymbolicUtils: Postwalk #, @compactified
+using Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
+using Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
+using Symbolics: unwrap
 
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly
@@ -52,6 +55,16 @@ function _apply_termwise(f, x::BasicSymbolic)
         return  f(x)
     end
 end
+# We could use @compactified to do the achive thing wit a speed-up. Neverthless, it yields less readable code.
+# @compactified is what SymbolicUtils uses internally
+# function _apply_termwise(f, x::BasicSymbolic)
+#     @compactified x::BasicSymbolic begin
+#     Add  => sum([f(arg) for arg in arguments(x)])
+#     Mul  => prod([f(arg) for arg in arguments(x)])
+#     Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
+#     _    => f(x)
+#     end
+# end
 
 simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im*x.im
 simplify_complex(x) = x
@@ -118,7 +131,13 @@ exp_to_trig(x::Complex{Num}) = exp_to_trig(x.re)+im* exp_to_trig(x.im)
 
 # sometimes, expressions get stored as Complex{Num} with no way to decode what real(x) and imag(x)
 # this overloads the Num constructor to return a Num if x.re and x.im have similar arguments
-Num(x::Complex{Num})::Num = isequal(x.re.val.arguments, x.im.val.arguments) ? Num(first(x.re.val.arguments)) : error("Cannot convert Complex{Num} " * string(x) * " to Num")
+function Num(x::Complex{Num})::Num
+    if x.re.val isa Float64 && x.im.val isa Float64
+        return Num(x.re.val)
+    else
+     isequal(x.re.val.arguments, x.im.val.arguments) ? Num(first(x.re.val.arguments)) : error("Cannot convert Complex{Num} " * string(x) * " to Num")
+    end
+end
 
 
 #=

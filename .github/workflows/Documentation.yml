@@ -1,5 +1,5 @@
-
 name: Documenter
+
 on:
   push:
     branches: master

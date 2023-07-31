@@ -1,7 +1,6 @@
-module TimeEvolution
-
-    using HarmonicBalance; HB = HarmonicBalance
-    using OrdinaryDiffEq
+# module TimeEvolution
+    # using .OrdinaryDiffEq
+    # using ..HarmonicBalance; HB = HarmonicBalance
     using Symbolics
     using DSP
     using FFTW
@@ -13,4 +12,4 @@ module TimeEvolution
     include("TimeEvolution/FFT_analysis.jl")
     include("TimeEvolution/sweeps.jl")
     include("TimeEvolution/hysteresis_sweep.jl")
-end
+# end

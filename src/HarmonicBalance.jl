@@ -71,10 +71,10 @@ module HarmonicBalance
     function __init__()
         @require OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed" begin
             include("modules/TimeEvolution.jl")
-            using .TimeEvolution
+            # using .TimeEvolution
         end
     end
-    export ParameterSweep, ODEProblem, solve, follow_branch
+    # export ParameterSweep, ODEProblem, solve, follow_branch
 
     # precomp_path = (@__DIR__) * "/../test/"
     # @precompile_all_calls include(precomp_path * "parametron.jl")

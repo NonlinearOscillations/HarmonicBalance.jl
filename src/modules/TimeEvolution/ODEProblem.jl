@@ -1,6 +1,6 @@
 using LinearAlgebra, Latexify
 import HarmonicBalance: transform_solutions, plot, plot!
-import OrdinaryDiffEq: ODEProblem, solve
+# import OrdinaryDiffEq: ODEProblem, solve
 export transform_solutions, plot, plot!
 export ODEProblem, solve
 
@@ -18,7 +18,7 @@ Creates an ODEProblem object used by OrdinaryDiffEq.jl from the equations in `eo
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
 If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
-function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector=[], timespan::Tuple, perturb_initial=0.0, kwargs...)
+function OrdinaryDiffEq.ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSweep=ParameterSweep(), x0::Vector=[], timespan::Tuple, perturb_initial=0.0, kwargs...)
 
     if !is_rearranged(eom) # check if time-derivatives of the variable are on the right hand side
         eom = HarmonicBalance.rearrange_standard(eom)

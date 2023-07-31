@@ -4,7 +4,7 @@ export plot_1D_solutions_branch, follow_branch
 """Calculate distance between a given state and a stable branch"""
 function _closest_branch_index(res::Result, state::Vector{Float64}, index::Int64)
     #search only among stable solutions
-    stable = HB._apply_mask(res.solutions, HB._get_mask(res, ["physical", "stable"], []))
+    stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
 
     steadystates = reduce(hcat, stable[index])
     distances    = vec(sum(abs2.(steadystates .- state), dims=1))
@@ -26,7 +26,7 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
 
     # get stable solutions
     Y  = transform_solutions(res, y)
-    Ys = HB._apply_mask(Y, HB._get_mask(res, ["physical", "stable"], []))
+    Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
     Ys = sweep == "left" ? reverse(Ys) : Ys
 
     followed_branch    = zeros(Int64,length(Y))  # followed branch indexes
@@ -49,8 +49,8 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
             values_noise = real.(values(sol_dict)) .+ 0.0im .+ ϵ*rand(length(values(sol_dict)))
             sol_dict_noise  = Dict(zip(keys(sol_dict), values_noise))
 
-            problem_t = TimeEvolution.ODEProblem(res.problem.eom, sol_dict_noise, timespan=(0, tf))
-            res_t     = solve(problem_t, OrdinaryDiffEq.Tsit5(), saveat=tf)
+            problem_t = OrdinaryDiffEq.ODEProblem(res.problem.eom, sol_dict_noise, timespan=(0, tf))
+            res_t     = OrdinaryDiffEq.solve(problem_t, OrdinaryDiffEq.Tsit5(), saveat=tf)
 
             followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index) # closest branch to final state
 

@@ -8,9 +8,36 @@ module HarmonicBalance
     using BijectiveHilbert
     using LinearAlgebra
     using Plots, Latexify
+    using Requires
     import HomotopyContinuation
     import Distances
     # using SnoopPrecompile
+
+    import Base: show, display; export show
+    export *
+    export @variables
+    export d
+
+    import Base: ComplexF64, Float64; export ComplexF64, Float64
+    ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
+    Float64(x::Complex{Num}) = Float64(ComplexF64(x))
+    Float64(x::Num) = Float64(x.val)
+
+    # default global settings
+    export IM_TOL
+    IM_TOL::Float64 = 1E-6
+    function set_imaginary_tolerance(x::Float64)
+        @eval(IM_TOL::Float64 = $x)
+    end
+
+    export is_real
+    is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL::Float64 || abs(x) < 1e-70
+    is_real(x::Array) = is_real.(x)
+
+    # Symbolics does not natively support complex exponentials of variables
+    import Base: exp
+    exp(x::Complex{Num}) = x.re.val == 0 ? exp(im*x.im.val) : exp(x.re.val + im*x.im.val)
+
 
     include("types.jl")
 
@@ -41,9 +68,11 @@ module HarmonicBalance
     export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
     export get_krylov_equations
 
-    using PackageExtensionCompat
     function __init__()
-        @require_extensions
+        @require OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed" begin
+            include("modules/TimeEvolution.jl")
+            using .TimeEvolution
+        end
     end
     export ParameterSweep, ODEProblem, solve, follow_branch
 

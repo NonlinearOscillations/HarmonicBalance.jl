@@ -4,7 +4,7 @@ export plot_1D_solutions_branch, follow_branch
 """Calculate distance between a given state and a stable branch"""
 function _closest_branch_index(res::Result, state::Vector{Float64}, index::Int64)
     #search only among stable solutions
-    stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
+    stable = HB._apply_mask(res.solutions, HB._get_mask(res, ["physical", "stable"], []))
 
     steadystates = reduce(hcat, stable[index])
     distances    = vec(sum(abs2.(steadystates .- state), dims=1))
@@ -20,13 +20,13 @@ Keyword arguments
 - `tf`: time to reach steady
 - `ϵ`: small random perturbation applied to quenched solution, in a bifurcation in order to favour convergence in cases where multiple solutions are identically accessible (e.g. symmetry breaking into two equal amplitude states)
 """
-function follow_branch(starting_branch::Int64, res::Result; y="sqrt(u1^2+v1^2)", sweep="right", tf=10000, ϵ=1e-4)
+function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep="right", tf=10000, ϵ=1e-4)
     sweep_directions = ["left", "right"]
     sweep ∈ sweep_directions  || error("Only the following (1D) sweeping directions are allowed:  ", sweep_directions)
 
     # get stable solutions
     Y  = transform_solutions(res, y)
-    Ys =  _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
+    Ys = HB._apply_mask(Y, HB._get_mask(res, ["physical", "stable"], []))
     Ys = sweep == "left" ? reverse(Ys) : Ys
 
     followed_branch    = zeros(Int64,length(Y))  # followed branch indexes

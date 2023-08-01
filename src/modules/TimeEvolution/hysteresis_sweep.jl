@@ -1,12 +1,9 @@
-using OrdinaryDiffEq
-
 export plot_1D_solutions_branch, follow_branch
-
 
 """Calculate distance between a given state and a stable branch"""
 function _closest_branch_index(res::Result, state::Vector{Float64}, index::Int64)
     #search only among stable solutions
-    stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
+    stable = HarmonicBalance._apply_mask(res.solutions, HarmonicBalance._get_mask(res, ["physical", "stable"], []))
 
     steadystates = reduce(hcat, stable[index])
     distances    = vec(sum(abs2.(steadystates .- state), dims=1))
@@ -27,7 +24,7 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
 
     # get stable solutions
     Y  = transform_solutions(res, y)
-    Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
+    Ys = HarmonicBalance._apply_mask(Y, HarmonicBalance._get_mask(res, ["physical", "stable"], []))
     Ys = sweep == "left" ? reverse(Ys) : Ys
 
     followed_branch    = zeros(Int64,length(Y))  # followed branch indexes

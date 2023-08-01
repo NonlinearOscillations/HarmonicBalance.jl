@@ -12,5 +12,6 @@ module TimeEvolution
     include("TimeEvolution/ODEProblem.jl")
     include("TimeEvolution/FFT_analysis.jl")
     include("TimeEvolution/sweeps.jl")
+    include("TimeEvolution/hysteresis_sweep.jl")
 
 end

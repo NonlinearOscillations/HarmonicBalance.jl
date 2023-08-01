@@ -57,6 +57,7 @@ module HarmonicBalance
 
     include("modules/LinearResponse.jl")
     using .LinearResponse
+    export plot_linear_response, plot_rotframe_jacobian_response
 
     include("modules/TimeEvolution.jl")
     using .TimeEvolution

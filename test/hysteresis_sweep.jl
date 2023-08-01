@@ -11,8 +11,10 @@ fixed = (α => 1, ω0 => 1.0, γ => 0.005, F => 0.005, η => 0.2)   # fixed para
 varied = ω => range(0.95, 1.1, 10)           # range of parameter values
 result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false)
 
-followed_branch, _ = follow_branch(1, result)
+followed_branches, _ = follow_branch(1, result)
 
-@test first(followed_branch) ≠ last(followed_branch)
+@test first(followed_branches) ≠ last(followed_branches)
 
 plot_1D_solutions_branch(1, result, x="ω", y="√(u1^2+v1^2)", show=false);
+
+plot_linear_response(result, x, followed_branches, Ω_range=range(0.9,1.1,10), show=false);

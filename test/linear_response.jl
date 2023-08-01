@@ -1,6 +1,4 @@
 using HarmonicBalance
-import HarmonicBalance.LinearResponse.plot_linear_response
-import HarmonicBalance.LinearResponse.plot_rotframe_jacobian_response
 
 @variables α, ω, ω0, F, γ, t, x(t);
 
@@ -14,4 +12,4 @@ result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false)
 
 plot_linear_response(result, x, branch=1, Ω_range=range(0.9,1.1,10), order=1, logscale=true)
 
-plot_rotframe_jacobian_response(result, Ω_range=range(0.01,1,10), branch=1, logscale=true)
+plot_rotframe_jacobian_response(result, Ω_range=range(0.01,1.1,10), branch=1, logscale=true)

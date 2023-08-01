@@ -71,8 +71,8 @@ function plot_1D_solutions_branch(starting_branch::Int64, res::Result;
 
     followed_branch, Ys = follow_branch(starting_branch, res, y=y, sweep=sweep, tf=tf, ϵ=ϵ)
     Y_followed = [Ys[param_idx][branch] for (param_idx,branch) in enumerate(followed_branch)]
-    X = res.swept_parameters[_parse_expression(x)]
+    X = real.(res.swept_parameters[HarmonicBalance._parse_expression(x)])
 
-    plot!(p, X, real.(Y_followed); linestyle=:dash, c=:gray, label = sweep*" sweep", _set_Plots_default..., kwargs...)
+    Plots.plot!(p, X, real.(Y_followed); linestyle=:dash, c=:gray, label = sweep*" sweep", HarmonicBalance._set_Plots_default..., kwargs...)
     return p
 end

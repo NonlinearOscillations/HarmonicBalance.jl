@@ -14,3 +14,5 @@ result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false)
 followed_branch, _ = follow_branch(1, result)
 
 @test first(followed_branch) ≠ last(followed_branch)
+
+plot_1D_solutions_branch(1, result, x="ω", y="√(u1^2+v1^2)", show=false);

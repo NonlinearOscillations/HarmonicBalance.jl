@@ -42,7 +42,6 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
             # create a synthetic starting point out of an unphysical solution: quench and time evolve
             # the actual solution is complex there, i.e. non physical. Take real part for the quench.
             sol_dict  = get_single_solution(res, branch=followed_branch[i-1], index=next_index)
-            print("bifurcation @ ", p1 ," = ", real(sol_dict[p1])," ")
 
             values_noise = real.(values(sol_dict)) .+ 0.0im .+ ϵ*rand(length(values(sol_dict)))
             sol_dict_noise  = Dict(zip(keys(sol_dict), values_noise))
@@ -52,7 +51,7 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
 
             followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index) # closest branch to final state
 
-            print("switched branch ", followed_branch[i-1] ," -> ", followed_branch[i],"\n")
+            @info "bifurcation @ $p1 = $(real(sol_dict[p1])): switched branch $(followed_branch[i-1]) ➡ $(followed_branch[i])"
         end
     end
     if sweep == "left"

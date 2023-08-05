@@ -4,6 +4,7 @@ module TimeEvolution
     using Symbolics
     using Plots
     using OrdinaryDiffEq
+    using OrderedCollections
     using DSP
     using FFTW
     using Peaks

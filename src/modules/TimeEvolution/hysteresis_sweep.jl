@@ -43,10 +43,13 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
             # the actual solution is complex there, i.e. non physical. Take real part for the quench.
             sol_dict  = get_single_solution(res, branch=followed_branch[i-1], index=next_index)
 
-            values_noise = real.(values(sol_dict)) .+ 0.0im .+ ϵ*rand(length(values(sol_dict)))
-            sol_dict_noise  = OrderedDict(zip(keys(sol_dict), values_noise))
+            var = res.problem.variables
+            var_values_noise = real.(getindex.(Ref(sol_dict), var)) .+ 0.0im .+ ϵ*rand(length(var))
+            for (i, v) in enumerate(var)
+                sol_dict[v] = var_values_noise[i]
+            end
 
-            problem_t = OrdinaryDiffEq.ODEProblem(res.problem.eom, sol_dict_noise, timespan=(0, tf))
+            problem_t = OrdinaryDiffEq.ODEProblem(res.problem.eom, sol_dict, timespan=(0, tf))
             res_t     = OrdinaryDiffEq.solve(problem_t, OrdinaryDiffEq.Tsit5(), saveat=tf)
 
             followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index) # closest branch to final state

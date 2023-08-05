@@ -1,6 +1,6 @@
 using Plots, Latexify, ProgressMeter
 using HarmonicBalance: _set_Plots_default
-export plot_linear_response
+export plot_linear_response, plot_rotframe_jacobian_response
 
 
 function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true)

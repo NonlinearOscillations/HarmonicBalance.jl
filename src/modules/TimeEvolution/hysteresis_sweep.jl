@@ -37,14 +37,14 @@ function follow_branch(starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep
         if !isnan(s) # the solution is not unstable or unphysical
             followed_branch[i] = followed_branch[i-1]
         else # bifurcation found
-            next_index = sweep == "right" ? i : length(Y)-i+1
+            next_index = sweep == "right" ? i : length(Ys)-i+1
 
             # create a synthetic starting point out of an unphysical solution: quench and time evolve
             # the actual solution is complex there, i.e. non physical. Take real part for the quench.
             sol_dict  = get_single_solution(res, branch=followed_branch[i-1], index=next_index)
 
             values_noise = real.(values(sol_dict)) .+ 0.0im .+ ϵ*rand(length(values(sol_dict)))
-            sol_dict_noise  = Dict(zip(keys(sol_dict), values_noise))
+            sol_dict_noise  = OrderedDict(zip(keys(sol_dict), values_noise))
 
             problem_t = OrdinaryDiffEq.ODEProblem(res.problem.eom, sol_dict_noise, timespan=(0, tf))
             res_t     = OrdinaryDiffEq.solve(problem_t, OrdinaryDiffEq.Tsit5(), saveat=tf)

@@ -15,6 +15,9 @@ followed_branches, _ = follow_branch(1, result)
 
 @test first(followed_branches) ≠ last(followed_branches)
 
-plot_1D_solutions_branch(1, result, x="ω", y="√(u1^2+v1^2)", show=false);
+plot_1D_solutions_branch(1, result, x="ω", y="√(u1^2+v1^2)")'
 
 plot_linear_response(result, x, followed_branches, Ω_range=range(0.9,1.1,10), show=false);
+
+followed_branches[6] = 3
+plot_linear_response(result, x, followed_branches, Ω_range=range(0.9,1.1,10), show=false, force=true);

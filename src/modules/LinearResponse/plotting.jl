@@ -20,9 +20,9 @@ function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int;
     end
     C
 end
-function get_jacobian_response(res::Result, nat_var::Num, Ω_range, followed_branches::Vector{Int}; show_progress=true)
+function get_jacobian_response(res::Result, nat_var::Num, Ω_range, followed_branches::Vector{Int}; show_progress=true, force=false)
 
-    spectra = [JacobianSpectrum(res, branch=branch, index = i) for (i, branch) in pairs(followed_branches)]
+    spectra = [JacobianSpectrum(res, branch=branch, index = i, force=force) for (i, branch) in pairs(followed_branches)]
     C = Array{Float64, 2}(undef,  length(Ω_range), length(spectra))
 
     if show_progress
@@ -110,12 +110,12 @@ C = logscale ? log.(C) : C
 xlabel = latexify(string(first(keys(res.swept_parameters)))); ylabel = latexify("Ω");
 heatmap(X, Ω_range,  C; color=:viridis, xlabel=xlabel, ylabel=ylabel, _set_Plots_default..., kwargs...)
 end
-function plot_linear_response(res::Result, nat_var::Num, followed_branches::Vector{Int}; Ω_range, logscale=false, show_progress=true, switch_axis = false, kwargs...)
+function plot_linear_response(res::Result, nat_var::Num, followed_branches::Vector{Int}; Ω_range, logscale=false, show_progress=true, switch_axis = false, force=true, kwargs...)
     length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
 
     X = Vector{Float64}(collect(first(values(res.swept_parameters))))
 
-    C = get_jacobian_response(res, nat_var, Ω_range, followed_branches)
+    C = get_jacobian_response(res, nat_var, Ω_range, followed_branches; force=force)
     C = logscale ? log.(C) : C
 
     xlabel = latexify(string(first(keys(res.swept_parameters)))); ylabel = latexify("Ω");

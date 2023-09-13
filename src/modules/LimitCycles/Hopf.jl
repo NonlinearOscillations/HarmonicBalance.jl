@@ -83,6 +83,7 @@ function get_steady_states(eom::HarmonicEquation, swept, fixed, Δω; explicit_J
     result = HarmonicBalance.get_steady_states(prob, swept, fixed; random_warmup=true, threading=true, classify_default=true, kwargs...)
 
     _classify_limit_cycles!(result, Δω)
+    explicit_Jacobian || (result.jacobian = result.problem.jacobian)
 
     result
 end
@@ -124,5 +125,3 @@ function _fix_gauge!(eom::HarmonicEquation, Δω::Num, fixed_var::HarmonicVariab
     fixed_var.symbol = new_symbol
     fixed_var.name = var_name(new_symbol)
 end
-
-

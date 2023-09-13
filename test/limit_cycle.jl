@@ -1,5 +1,6 @@
 
 using HarmonicBalance
+import HarmonicBalance.LinearResponse.plot_linear_response
 @variables Δω, t, ω0, x(t), μ
 
 natural_equation =  d(d(x,t),t) - μ*(1-x^2) * d(x,t) + x

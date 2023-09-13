@@ -15,7 +15,12 @@ files = [
     "time_evolution.jl",
     "krylov.jl",
     "hysteresis_sweep.jl",
+<<<<<<< Updated upstream
     "linear_response.jl"
+=======
+    "linear_response.jl",
+    "limit_cycle.jl"
+>>>>>>> Stashed changes
     ]
 
 for file in files

@@ -3,4 +3,5 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 HarmonicBalance = "e13b9ff6-59c3-11ec-14b1-f3d2cc6c135e"
 
 [compat]
-Documenter = "0.27.23"
+Documenter = "1"
+julia = "1"

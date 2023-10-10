@@ -5,11 +5,11 @@ using HarmonicBalance
 
 makedocs(
 	sitename="HarmonicBalance.jl",
-    # modules = [HarmonicBalance],
-    # warnonly = true,
+    modules = [HarmonicBalance],
+    warnonly = true,
 	format = Documenter.HTML(
 		mathengine=MathJax(),
-        # canonical="https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/",
+        canonical="https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/",
 		assets = ["assets/favicon.ico", "assets/docs.css"]
         # size_threshold = nothing
 	),

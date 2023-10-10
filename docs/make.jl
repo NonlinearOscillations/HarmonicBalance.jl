@@ -5,9 +5,13 @@ using HarmonicBalance
 
 makedocs(
 	sitename="HarmonicBalance.jl",
+    # modules = [HarmonicBalance],
+    # warnonly = true,
 	format = Documenter.HTML(
 		mathengine=MathJax(),
-		assets = ["assets/favicon.ico"]
+        # canonical="https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/",
+		assets = ["assets/favicon.ico", "assets/docs.css"]
+        # size_threshold = nothing
 	),
 	pages = [
 		"Background" => Any[
@@ -19,7 +23,7 @@ makedocs(
 			"examples/linear_response.md"
 			"examples/time_dependent.md"
 			"examples/parametron.md"
-			],
+		],
 		"Manual" => Any[
 			"manual/entering_eom.md"
 			"manual/extracting_harmonics.md"
@@ -28,8 +32,8 @@ makedocs(
 			"manual/time_dependent.md"
 			"manual/linear_response.md"
 			"manual/saving.md"
-			]
 		]
+	]
 )
 
 deploydocs(

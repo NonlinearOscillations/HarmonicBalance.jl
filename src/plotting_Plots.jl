@@ -94,6 +94,14 @@ function _apply_mask(solns::Array{Vector{ComplexF64}},  booleans)
     factors = replace.(booleans, 0 => NaN)
     map(.*, solns, factors)
 end
+function _apply_mask(solns::Vector{Vector{Vector{ComplexF64}}}, booleans)
+    Nan_vector = NaN.*similar(solns[1][1])
+    new_solns = [
+        [booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])]
+        for i in eachindex(solns)
+    ]
+    return new_solns
+end
 
 
 """ Project the array `a` into the real axis, warning if its contents are complex. """

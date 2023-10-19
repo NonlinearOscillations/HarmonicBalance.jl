@@ -112,6 +112,7 @@ mutable struct HarmonicEquation
 
     # use a self-referential constructor with _parameters
     HarmonicEquation(equations, variables, nat_eq) = (x = new(equations, variables, Vector{Num}([]), nat_eq); x.parameters=_parameters(x); x)
+    HarmonicEquation(equations, variables, parameters, natural_equation) = new(equations, variables, parameters, natural_equation)
 end
 
 

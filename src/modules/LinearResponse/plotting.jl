@@ -152,3 +152,42 @@ function plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, log
     heatmap(X, Ω_range,  C; color=:viridis,
        xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), _set_Plots_default..., kwargs...)
 end
+
+function plot_eigenvalues(res; branch, type=:imag, projection= v -> 1, cscheme = :default, kwargs...)
+    filter = HarmonicBalance._get_mask(res, ["physical"]);
+    filter_branch = map( x -> getindex(x, branch), replace.(filter, 0 => NaN))
+
+    dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    x = res.swept_parameters |> keys |> first |> string
+    varied = Vector{Float64}(res.swept_parameters |> values |> first |> collect)
+
+    eigenvalues = [
+        eigvals(res.jacobian(get_single_solution(res, branch=branch, index=i)))
+        for i in eachindex(varied)];
+    eigenvalues_filtered = map(.*, eigenvalues, filter_branch);
+
+    eigenvectors = [
+        eigvecs(res.jacobian(get_single_solution(res, branch=branch, index=i)))
+        for i in eachindex(varied)];
+    eigvecs_filtered = map(.*, eigenvectors, filter_branch);
+
+    norm = reduce(hcat,[[projection(vec) for vec in eachcol(vecs)] for vecs in eigvecs_filtered])
+
+    if type == :imag
+        eigval = reduce(hcat,imag.(eigenvalues_filtered))'
+        ylab = L"\Im\{\epsilon\}"
+    else
+        eigval = reduce(hcat,real.(eigenvalues_filtered))'
+        ylab = L"\Re\{\epsilon\}"
+    end
+
+    if cscheme == :default
+        colors = theme_palette(cscheme)
+        myscheme = cgrad([RGB(1.0, 1.0, 1.0), colors[branch]])
+    else
+        myscheme = cscheme
+    end
+
+    scatter(varied, eigval; legend=false, ms=2, markerstrokewidth=0, xlab=latexify(x), ylab=ylab,
+        zcolor=norm', c=myscheme, colorbar=false, kwargs...)
+end

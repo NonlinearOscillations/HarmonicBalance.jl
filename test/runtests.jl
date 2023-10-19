@@ -13,8 +13,7 @@ files = [
     "transform_solutions.jl",
     "plotting.jl",
     "time_evolution.jl",
-    "krylov.jl",
-    "hysteresis_sweep.jl"
+    "krylov.jl"
     ]
 
 for file in files

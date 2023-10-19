@@ -1,4 +1,7 @@
 export get_response
+export plot_response
+
+
 
 """
     get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)
@@ -92,3 +95,8 @@ end
 # rotating frame into the lab frame
 _plusamp(uv) = norm(uv)^2 - 2*(imag(uv[1])*real(uv[2]) - real(uv[1])*imag(uv[2]))
 _minusamp(uv) = norm(uv)^2 + 2*(imag(uv[1])*real(uv[2]) - real(uv[1])*imag(uv[2]))
+
+
+
+
+

@@ -1,5 +1,7 @@
 using Plots, Latexify, ProgressMeter
+using Latexify.LaTeXStrings
 using HarmonicBalance: _set_Plots_default
+import ..HarmonicBalance: dim, _get_mask
 export plot_linear_response, plot_rotframe_jacobian_response
 
 

@@ -13,7 +13,9 @@ files = [
     "transform_solutions.jl",
     "plotting.jl",
     "time_evolution.jl",
-    "krylov.jl"
+    "krylov.jl",
+    "hysteresis_sweep.jl",
+    "linear_response.jl"
     ]
 
 for file in files

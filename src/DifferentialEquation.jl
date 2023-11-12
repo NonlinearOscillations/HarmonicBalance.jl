@@ -1,4 +1,4 @@
-export add_harmonic!, add_Hopf!
+export add_harmonic!
 import Symbolics.get_variables
 
 

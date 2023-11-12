@@ -1,6 +1,7 @@
-
 using HarmonicBalance
 import HarmonicBalance.LinearResponse.plot_linear_response
+import HarmonicBalance.LimitCycles.get_limit_cycles
+
 @variables Δω, t, ω0, x(t), μ
 
 natural_equation =  d(d(x,t),t) - μ*(1-x^2) * d(x,t) + x
@@ -14,7 +15,7 @@ harmonic_eq = get_harmonic_equations(dEOM)
 fixed = ();
 varied = μ => range(1,10,2)
 
-result = HarmonicBalance.LimitCycles.get_steady_states(harmonic_eq, varied, fixed, Δω)
+result = get_limit_cycles(harmonic_eq, varied, fixed, Δω)
 
 plot(result, y="Δω")
 

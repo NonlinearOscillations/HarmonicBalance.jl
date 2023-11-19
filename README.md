@@ -34,9 +34,9 @@ add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(
 # implement ansatz to get harmonic equations
 harmonic_eq = get_harmonic_equations(diff_eq)
 
-fixed = (α => 1., ω0 => 1.0, F => 0.01, η=>0.1)   # fixed parameters
-varied = ω => LinRange(0.9, 1.2, 100)           # range of parameter values
-result = get_steady_states(harmonic_eq, varied, fixed)
+# solve for a range of ω
+result = get_steady_states(harmonic_eq, (ω => LinRange(0.9, 1.2, 100),
+                                          α => 1., ω0 => 1.0, F => 0.01, η=>0.1))
 ```
 ```
 A steady state result for 100 parameter points

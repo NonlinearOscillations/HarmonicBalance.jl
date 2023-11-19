@@ -129,7 +129,7 @@ end
 
 get_steady_states(p::Problem, swept, fixed; kwargs...) = get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...) = get_steady_states(Problem(eom), swept, fixed; kwargs...)
-get_steady_states(p::Union{Problem, HarmonicEquation}, fixed; kwargs...) = get_steady_states(p, [], fixed; kwargs...)
+get_steady_states(p, pairs; kwargs...) = get_steady_states(p, filter( x->length(x[2]) > 1, pairs), filter(x -> length(x[2]) == 1, pairs); kwargs...)
 
 
 """ Compile the Jacobian from `prob`, inserting `fixed_parameters`.

@@ -1,6 +1,6 @@
 import HarmonicBalance.classify_solutions
 
-function classify_unique!(res::Result, Δω; class_name="unique")
+function classify_unique!(res::Result, Δω; class_name="unique_cycle")
 
     # 1st degeneracy: arbitrary sign of Δω
     c1 = classify_solutions(res, string(Δω) * ">= 0")

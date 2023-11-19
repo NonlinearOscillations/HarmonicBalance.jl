@@ -28,7 +28,10 @@ $(TYPEDSIGNATURES)
 
 Return the harmonic variables which participate in the limit cycle labelled by `ω_lc`.
 """
-get_cycle_variables(eom::HarmonicEquation, ω_lc::Num) = filter(x -> any(isequal.(ω_lc, get_all_terms(x.ω))), eom.variables)
+function get_cycle_variables(eom::HarmonicEquation, ω_lc::Num; sorted=false)
+    vars = filter(x -> any(isequal.(ω_lc, get_all_terms(x.ω))), eom.variables)
+    sorted ? sort(vars, by = x -> x.ω / ω_lc) : vars
+end
 
 
 """
@@ -58,7 +61,7 @@ function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num; explicit_Jacobian=fal
     !any(isequal.(eom.parameters, ω_lc)) ? error(ω_lc, " is not a parameter of the harmonic equation!") : nothing
 
     # eliminate one of the u,v variables (gauge fixing)
-    fixed_var = get_cycle_variables(eom, ω_lc)[1]
+    fixed_var = get_cycle_variables(eom, ω_lc, sorted=true)[1] # remove the HV of the lowest subharmonic
 
     # get the Hopf Jacobian before altering anything - this is the usual Jacobian but the entries corresponding
     # to the fixed variable are removed

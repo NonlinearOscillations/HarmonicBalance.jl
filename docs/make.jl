@@ -28,6 +28,7 @@ makedocs(
 			"manual/entering_eom.md"
 			"manual/extracting_harmonics.md"
 			"manual/solving_harmonics.md"
+            "manual/Krylov-Bogoliubov_method.md"
 			"manual/plotting.md"
 			"manual/time_dependent.md"
 			"manual/linear_response.md"

@@ -1,6 +1,6 @@
 # [Krylov-Bogoliubov Averaging Method](@id Krylov-Bogoliubov)
 
-The Krylov-Bogoliubov averaging method is an alternative high-frequency expansion technique used to analyze dynamical systems. Unlike the [Harmonic Balance method](https://en.wikipedia.org/wiki/Harmonic_balance), which is detailed in the background section, the Krylov-Bogoliubov method excels in computing higher orders in $1/\omega$, enabling the capture of faster dynamics within a system.
+The Krylov-Bogoliubov averaging method is an alternative high-frequency expansion technique used to analyze dynamical systems. Unlike the [Harmonic Balance method](https://en.wikipedia.org/wiki/Harmonic_balance), which is detailed in the [background section](@ref intro_hb), the Krylov-Bogoliubov method excels in computing higher orders in $1/\omega$, enabling the capture of faster dynamics within a system.
 
 ## Purpose and Advantages
 

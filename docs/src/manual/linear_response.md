@@ -2,7 +2,7 @@
 
 This module currently has two goals. One is calculating the first-order Jacobian, used to obtain stability and approximate (but inexpensive) the linear response of steady states. The other is calculating the full response matrix as a function of frequency; this is more accurate but more expensive. 
 
-The methodology used is explained in Jan's thesis.
+The methodology used is explained in [Jan Kosata phd thesis](https://www.doi.org/10.3929/ethz-b-000589190).
 
 ## Stability
 

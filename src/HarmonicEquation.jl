@@ -106,12 +106,16 @@ $(TYPEDSIGNATURES)
 Check if `eom` is rearranged to the standard form, such that the derivatives of the variables are on one side.
 """
 function is_rearranged(eom::HarmonicEquation)
-    tvar = get_independent_variables(eom)[1]
+    tvar = get_independent_variables(eom)[1]; dvar = d(get_variables(eom), tvar);
+    lhs = getfield.(eom.equations, :lhs); rhs = getfield.(eom.equations, :rhs);
 
-    # Hopf-containing equations are arranged by construstion (impossible to check)
-    isequal(getfield.(eom.equations, :rhs), d(get_variables(eom), tvar)) || in("Hopf", getfield.(eom.variables, :type))
+    HB_bool = isequal(rhs, dvar)
+    hopf_bool = in("Hopf", getfield.(eom.variables, :type))
+    MF_bool = !any([occursin(str1,str2) for str1 in string.(dvar) for str2 in string.(lhs)])
+
+    # Hopf-containing equations or MF equation are arranged by construstion
+    HB_bool || hopf_bool || MF_bool
 end
-
 
 """
 $(TYPEDSIGNATURES)

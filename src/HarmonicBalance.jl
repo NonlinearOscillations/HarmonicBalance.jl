@@ -17,7 +17,6 @@ module HarmonicBalance
     export @variables
     export d
 
-
     import Base: ComplexF64, Float64; export ComplexF64, Float64
     ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im*Float64(x.im))
     Float64(x::Complex{Num}) = Float64(ComplexF64(x))
@@ -52,17 +51,18 @@ module HarmonicBalance
     include("saving.jl")
     include("transform_solutions.jl")
     include("plotting_Plots.jl")
-    include("hysteresis_sweep.jl")
 
     include("modules/HC_wrapper.jl")
     using .HC_wrapper
 
     include("modules/LinearResponse.jl")
     using .LinearResponse
+    export plot_linear_response, plot_rotframe_jacobian_response
 
     include("modules/TimeEvolution.jl")
     using .TimeEvolution
     export ParameterSweep, ODEProblem, solve
+    export plot_1D_solutions_branch, follow_branch
 
     include("modules/LimitCycles.jl")
     using .LimitCycles

@@ -1,7 +1,7 @@
 name = "HarmonicBalance"
 uuid = "e13b9ff6-59c3-11ec-14b1-f3d2cc6c135e"
 authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>"]
-version = "0.6.4"
+version = "0.7.1"
 
 [deps]
 BijectiveHilbert = "91e7fc40-53cd-4118-bd19-d7fcd1de2a54"
@@ -25,11 +25,13 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 [compat]
 BijectiveHilbert = "0.3.0"
 DSP = "0.7.4"
+DelimitedFiles = "1"
 Distances = "0.10.7"
+DocStringExtensions = "0.9"
 FFTW = "1.5.0"
 HomotopyContinuation = "2.6.4"
 JLD2 = "0.4.24"
-Latexify = "0.15.16"
+Latexify = "0.15.16, 0.16"
 OrderedCollections = "1.4.1"
 OrdinaryDiffEq = "v6.33.1"
 Peaks = "0.4.0"

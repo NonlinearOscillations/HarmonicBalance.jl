@@ -67,20 +67,22 @@ _get_as(hvars::Vector{HarmonicVariable}) = findall(x -> isequal(x.type, "a"), hv
 
 
 #   Returns the spectra of all variables in `res` for `index` of `branch`.
-function JacobianSpectrum(res::Result; index::Int, branch::Int)
+function JacobianSpectrum(res::Result; index::Int, branch::Int, force=false)
+    hvars = res.problem.eom.variables # fetch the vector of HarmonicVariable
+    # blank JacobianSpectrum for each variable
+    all_spectra = Dict{Num, JacobianSpectrum}([[nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)])
 
-    res.classes["stable"][index][branch] || error("\nThe solution is unstable - it has no JacobianSpectrum!\n")
+    if force
+        res.classes["stable"][index][branch] || return all_spectra # if the solution is unstable, return empty spectra
+    else
+        res.classes["stable"][index][branch] || error("\nThe solution is unstable - it has no JacobianSpectrum!\n")
+    end
 
     solution_dict = get_single_solution(res, branch=branch, index=index)
-
-    hvars = res.problem.eom.variables # fetch the vector of HarmonicVariable
     λs, vs = eigen(res.jacobian(solution_dict))
 
     # convert OrderedDict to Dict - see Symbolics issue #601
     solution_dict = Dict(get_single_solution(res, index=index, branch=branch))
-
-    # blank JacobianSpectrum for each variable
-    all_spectra = Dict{Num, JacobianSpectrum}([[nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)])
 
     for (j, λ) in enumerate(λs)
         eigvec = vs[:, j] # the eigenvector
@@ -89,7 +91,7 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int)
         for pair in _get_uv_pairs(hvars)
             u,v  = hvars[pair]
             eigvec_2d = eigvec[pair] # fetch the relevant part of the Jacobian eigenvector
-            ωnum = Float64(substitute(u.ω, solution_dict)) # the harmonic (numerical now) associated to this harmonic variable
+            ωnum = substitute(u.ω, solution_dict) |> ComplexF64 |> real # the harmonic (numerical now) associated to this harmonic variable
 
             # eigvec_2d is associated to a natural variable -> this variable gets Lorentzian peaks
             peaks =  norm(eigvec_2d) * _pair_to_peaks(λ, eigvec_2d, ω=ωnum)
@@ -130,4 +132,3 @@ function _simplify_spectra!(spectra::Dict{Num, JacobianSpectrum})
         spectra[var] = _simplify_spectrum(spectra[var])
     end
 end
-

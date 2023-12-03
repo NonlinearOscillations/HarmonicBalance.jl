@@ -1,5 +1,8 @@
 using Plots, Latexify, ProgressMeter
-export plot_linear_response
+using Latexify.LaTeXStrings
+using HarmonicBalance: _set_Plots_default
+import ..HarmonicBalance: dim, _get_mask
+export plot_linear_response, plot_rotframe_jacobian_response
 
 
 function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true)
@@ -7,6 +10,21 @@ function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int;
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
     spectra = [JacobianSpectrum(res, branch=branch, index = i) for i in findall(stable)]
+    C = Array{Float64, 2}(undef,  length(Ω_range), length(spectra))
+
+    if show_progress
+        bar = Progress(length(CartesianIndices(C)), 1, "Diagonalizing the Jacobian for each solution ... ", 50)
+    end
+    # evaluate the Jacobians for the different values of noise frequency Ω
+    for ij in CartesianIndices(C)
+        C[ij] = abs(evaluate(spectra[ij[2]][nat_var], Ω_range[ij[1]]))
+        show_progress ? next!(bar) : nothing
+    end
+    C
+end
+function get_jacobian_response(res::Result, nat_var::Num, Ω_range, followed_branches::Vector{Int}; show_progress=true, force=false)
+
+    spectra = [JacobianSpectrum(res, branch=branch, index = i, force=force) for (i, branch) in pairs(followed_branches)]
     C = Array{Float64, 2}(undef,  length(Ω_range), length(spectra))
 
     if show_progress
@@ -65,7 +83,7 @@ function get_rotframe_jacobian_response(res::Result, Ω_range, branch::Int; show
             end
         end
         show_progress ? next!(bar) : nothing
-        
+
     end
     C
 end
@@ -91,8 +109,23 @@ X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
 C = order == 1 ? get_jacobian_response(res, nat_var, Ω_range, branch, show_progress=show_progress) : get_linear_response(res, nat_var, Ω_range, branch; order=order, show_progress=show_progress)
 C = logscale ? log.(C) : C
 
-heatmap(X, Ω_range,  C; color=:viridis,
-    xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
+xlabel = latexify(string(first(keys(res.swept_parameters)))); ylabel = latexify("Ω");
+heatmap(X, Ω_range,  C; color=:viridis, xlabel=xlabel, ylabel=ylabel, _set_Plots_default..., kwargs...)
+end
+function plot_linear_response(res::Result, nat_var::Num, followed_branches::Vector{Int}; Ω_range, logscale=false, show_progress=true, switch_axis = false, force=true, kwargs...)
+    length(size(res.solutions)) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+
+    X = Vector{Float64}(collect(first(values(res.swept_parameters))))
+
+    C = get_jacobian_response(res, nat_var, Ω_range, followed_branches; force=force)
+    C = logscale ? log.(C) : C
+
+    xlabel = latexify(string(first(keys(res.swept_parameters)))); ylabel = latexify("Ω");
+    if switch_axis
+        heatmap(Ω_range, X, C'; color=:viridis, xlabel=ylabel, ylabel=xlabel, _set_Plots_default..., kwargs...)
+    else
+        heatmap(X, Ω_range, C; color=:viridis, xlabel=xlabel, ylabel=ylabel, _set_Plots_default..., kwargs...)
+    end
 end
 
 """
@@ -114,10 +147,49 @@ function plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, log
     !isempty(findall(x->x==0, Ω_range)) && @warn("Probing with Ω=0 may lead to unexpected results")
 
     X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
-    
+
     C = get_rotframe_jacobian_response(res, Ω_range, branch, show_progress=show_progress, damping_mod=damping_mod)
     C = logscale ? log.(C) : C
-    
+
     heatmap(X, Ω_range,  C; color=:viridis,
-       xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), HarmonicBalance._set_Plots_default..., kwargs...)
+       xlabel=latexify(string(first(keys(res.swept_parameters)))), ylabel=latexify("Ω"), _set_Plots_default..., kwargs...)
+end
+
+function plot_eigenvalues(res; branch, type=:imag, projection= v -> 1, cscheme = :default, kwargs...)
+    filter = HarmonicBalance._get_mask(res, ["physical"]);
+    filter_branch = map( x -> getindex(x, branch), replace.(filter, 0 => NaN))
+
+    dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    x = res.swept_parameters |> keys |> first |> string
+    varied = Vector{Float64}(res.swept_parameters |> values |> first |> collect)
+
+    eigenvalues = [
+        eigvals(res.jacobian(get_single_solution(res, branch=branch, index=i)))
+        for i in eachindex(varied)];
+    eigenvalues_filtered = map(.*, eigenvalues, filter_branch);
+
+    eigenvectors = [
+        eigvecs(res.jacobian(get_single_solution(res, branch=branch, index=i)))
+        for i in eachindex(varied)];
+    eigvecs_filtered = map(.*, eigenvectors, filter_branch);
+
+    norm = reduce(hcat,[[projection(vec) for vec in eachcol(vecs)] for vecs in eigvecs_filtered])
+
+    if type == :imag
+        eigval = reduce(hcat,imag.(eigenvalues_filtered))'
+        ylab = L"\Im\{\epsilon\}"
+    else
+        eigval = reduce(hcat,real.(eigenvalues_filtered))'
+        ylab = L"\Re\{\epsilon\}"
+    end
+
+    if cscheme == :default
+        colors = theme_palette(cscheme)
+        myscheme = cgrad([RGB(1.0, 1.0, 1.0), colors[branch]])
+    else
+        myscheme = cscheme
+    end
+
+    scatter(varied, eigval; legend=false, ms=2, markerstrokewidth=0, xlab=latexify(x), ylab=ylab,
+        zcolor=norm', c=myscheme, colorbar=false, kwargs...)
 end

@@ -14,13 +14,6 @@ HarmonicBalance.fourier_transform
 HarmonicBalance.drop_powers
 ```
 
-##  Krylov-Bogoliubov averaging method
-As laid out in the background section, `get_harmonic_equations` computes the slow-flow equation with the help of the Harmoninc Balance method. However, another well-known would be the Krylov-Bogoliubov averaging method. The advantage of the method is that it can computed higher orders in $1/\omega$ which thereby capture the faster dynamics. Nevertheless, the method cannot work with mutliple harmonic in one variable. The Krylov-Bogoliubov can be computed with the function `get_krylov_equations`.
-
-```@docs
-get_krylov_equations
-```
-
 ## HarmonicVariable and HarmonicEquation types
 
 The equations governing the harmonics are stored using the two following structs. When going from the original to the harmonic equations, the harmonic ansatz $x_i(t) = \sum_{j=1}^M u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j}(T) \sin(\omega_{i,j} t)$ is used. Internally, each pair $(u_{i,j}, v_{i,j})$ is stored as a `HarmonicVariable`. This includes the identification of $\omega_{i,j}$ and $x_i(t)$, which is needed to later reconstruct $x_i(t)$.

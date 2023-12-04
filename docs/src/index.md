@@ -62,8 +62,6 @@ Classes: stable, physical, Hopf, binary_labels
 ```julia
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
-
-<img src="../../assets/simple_Duffing/response_single.png">
 ```@raw html
 <img style="display: block; margin: 0 auto;" src="../../assets/simple_Duffing/response_single.png" alignment="center" \>
 ``` ⠀

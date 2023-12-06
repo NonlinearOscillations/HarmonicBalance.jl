@@ -49,7 +49,7 @@ end
 according to `f` (`f` takes a solution dictionary, return a boolean)"
 function classify_solutions(res::Result, f::Function)
     values = similar(res.solutions, BitVector)
-    @maybethread for (idx, soln) in enumerate(res.solutions)
+    @maybethread for (idx, soln) in collect(enumerate(res.solutions))
         values[idx] = [f(get_single_solution(res, index=idx, branch=b), res) for b in 1:length(soln)]
     end
     values

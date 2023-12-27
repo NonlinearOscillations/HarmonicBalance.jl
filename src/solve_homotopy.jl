@@ -256,7 +256,7 @@ function _get_raw_solution(problem::Problem, parameter_values; sweep=[], random_
         for i in 1:length(parameter_values) # do NOT thread this
             p = parameter_values[i]
             show_progress ? next!(bar) : nothing
-            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=show_progress), p]
+            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=false), p]
         end
     end
 

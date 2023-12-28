@@ -11,11 +11,7 @@ Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
 Returns an array with the values of `f` evaluated for the respective solutions.
 Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
 """
-function transform_solutions(res::Result, f::String; branches = 1:branch_count(res), rules=Dict(), target_type=ComplexF64)
-    # a string is used as input - a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
-    transformed = [Vector{target_type}(undef, length(branches)) for k in res.solutions] # preallocate
-
-    func = _build_substituted(res, f; rules=rules)
+function transform_solutions(res::Result, func; branches = 1:branch_count(res), rules=Dict())
 
     # preallocate an array for the numerical values, rewrite parts of it
     # when looping through the solutions
@@ -23,15 +19,26 @@ function transform_solutions(res::Result, f::String; branches = 1:branch_count(r
     n_pars = length(res.swept_parameters)
     vals = Vector{ComplexF64}(undef, n_vars + n_pars)
 
-    for idx in CartesianIndices(res.solutions)
-        params_values = res.swept_parameters[Tuple(idx)...]
-        vals[end-n_pars+1:end] .= params_values # param values are common to all branches
+    vtype = isa(Base.invokelatest(func, zeros(ComplexF64, n_vars)), Bool) ? BitVector : Vector{ComplexF64}
+    transformed = _similar(vtype, res; branches=branches)
+
+    @maybethread for idx in CartesianIndices(res.solutions)
+        for i in 1:length(idx) # param values are common to all branches
+            vals[end-n_pars+i] = res.swept_parameters[idx[i]][i]
+        end
         for (k, branch) in enumerate(branches)
             vals[1:n_vars] .= res.solutions[idx][branch]
             transformed[idx][k] = Base.invokelatest(func, vals)
         end
     end
     return transformed
+end
+
+function transform_solutions(res::Result, f::String; kwargs...)
+    # a string is used as input
+    # a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
+    func = _build_substituted(f, res; rules=rules)
+    transform_solutions(res, func; kwargs...)
 end
 
 transform_solutions(res::Result, fs::Vector{String}; kwargs...) = [transform_solutions(res, f; kwargs...) for f in fs]
@@ -64,7 +71,7 @@ end
 
 """ Parse `expr` into a Symbolics.jl expression, substituting the fixed parameters of `res`
 The resulting function takes in the values of the variables and swept parameters. """
-function _build_substituted(res::Result, expr; rules=Dict())
+function _build_substituted(expr, res::Result; rules=Dict())
 
    # define variables in rules in this namespace
    new_keys = declare_variable.(string.(keys(Dict(rules))))
@@ -75,6 +82,9 @@ function _build_substituted(res::Result, expr; rules=Dict())
 
 end
 
+function _similar(type, res::Result; branches=1:branch_count(res))
+    [type(undef, length(branches)) for k in res.solutions]
+end
 
 ## move masks here
 

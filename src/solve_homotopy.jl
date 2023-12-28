@@ -152,12 +152,10 @@ Substitute the values according to `fixed_parameters` and compile into a functio
 """
 function compile_matrix(matrix, variables, fixed_parameters)
     J = substitute_all(matrix, fixed_parameters)
-    matrix = [build_function(el, variables) for el in J]
-    matrix = eval.(matrix)
-    function m(s::OrderedDict)
-        vals = [s[var] for var in variables]
-        return [ComplexF64(Base.invokelatest(el, vals)) for el in matrix]
-    end
+    matrix = build_function(J, variables)
+    matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
+    m(vals::Vector) = matrix(vals)
+    m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI
     return m
 end
 

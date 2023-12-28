@@ -119,9 +119,9 @@ end
 
 
 function _classify_default!(result)
-    classify_solutions!(result, is_physical, "physical")
-    classify_solutions!(result, is_stable, "stable")
-    classify_solutions!(result, is_Hopf_unstable, "Hopf")
+    classify_solutions!(result, _is_physical, "physical")
+    classify_solutions!(result, _is_stable(result), "stable")
+    classify_solutions!(result, _is_Hopf_unstable(result), "Hopf")
     order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant ones first
     classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
 end

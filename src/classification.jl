@@ -20,39 +20,19 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1.0" , "large_amplitude")
 ```
 
 """
-function classify_solutions!(res::Result, condition::String, name::String; physical=true)
-    values = classify_solutions(res, condition; physical=physical)
+function classify_solutions!(res::Result, func::Union{String, Function}, name::String; physical=true)
+    values = classify_solutions(res, func; physical=physical)
     res.classes[name] = values
 end
 
 
-function classify_solutions(res::Result, condition::String; physical=true)
-    expr = Num(eval(Meta.parse(condition)))
-    function cond_func(s::OrderedDict, res)
-        physical && !is_physical(s, res) && return false
-        s = [key => real(s[key]) for key in keys(s)] # make values real
-        Bool(substitute_all(expr, s).val)
+function classify_solutions(res::Result, func; physical=true)
+    if physical
+        transform_solutions(res, func)
+    else
+        f_comp(soln) = func(soln) * _is_physical(soln)
+        transform_solutions(res, f_comp)
     end
-    classify_solutions(res, cond_func)
-end
-
-
-#   Classify solutions where for `f` which is a function accepting a solution dictionary
-#   specifies all params and variables).
-function classify_solutions!(res::Result, f::Function, name::String)
-    values = classify_solutions(res, f)
-    res.classes[name] = values
-end
-
-
-"Return an array of booleans classifying the solution in `res`
-according to `f` (`f` takes a solution dictionary, return a boolean)"
-function classify_solutions(res::Result, f::Function)
-    values = similar(res.solutions, BitVector)
-    @maybethread for (idx, soln) in collect(enumerate(res.solutions))
-        values[idx] = [f(get_single_solution(res, index=idx, branch=b), res) for b in 1:length(soln)]
-    end
-    values
 end
 
 
@@ -73,10 +53,13 @@ $(TYPEDSIGNATURES)
 Returns true if the solution `soln` of the Result `res` is physical (= real number).
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
-function is_physical(soln::StateDict, res::Result; im_tol=IM_TOL)
+function is_physical(soln::StateDict, res::Result)
     var_values = [getindex(soln, v) for v in res.problem.variables]
-    return all(abs.(imag.(var_values)).<im_tol) && any(isnan.(var_values).==false)
+    return _is_physical(var_values)
 end
+
+_is_physical(soln::SteadyState; im_tol=IM_TOL) = all(abs.(imag.(soln)).<im_tol) && any(isnan.(soln).==false)
+_is_physical(res::Result) = classify_solutions(res, _is_physical)
 
 
 """
@@ -86,12 +69,19 @@ Stable solutions are real and have all Jacobian eigenvalues Re[λ] <= 0.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 `rel_tol`: Re(λ) considered <=0 if real.(λ) < rel_tol*abs(λmax)
 """
-function is_stable(soln::StateDict, res::Result; im_tol=IM_TOL, rel_tol=1E-10)
-    is_physical(soln, res ,im_tol=im_tol) || return false  # the solution is unphysical anyway
-    λs = eigvals(real.(res.jacobian(soln)))
-    return all([real.(λs) .< rel_tol*maximum(abs.(λs))]...)
+function is_stable(soln::StateDict, res::Result; kwargs...)
+    _is_stable(values(soln) |> collect, res.jacobian; kwargs...)
 end
 
+function _is_stable(res::Result; kwargs...)
+    _isit(soln) = _is_stable(soln, res.jacobian; kwargs...)
+end
+
+function _is_stable(soln, J; rel_tol=1E-10)
+    λs = eigvals(real.(J(soln)))
+    scale = maximum(Iterators.map(abs, λs))
+    _is_physical(soln) && all(x -> real(x) < rel_tol*scale, λs)
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -100,12 +90,20 @@ Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with 
 are complex conjugates of each other.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
-function is_Hopf_unstable(soln::StateDict, res::Result; im_tol=IM_TOL)
-    is_physical(soln, res, im_tol=im_tol) || return false  # the solution is unphysical anyway
-    J = res.jacobian(soln)
-    unstable = filter(x -> real(x) > 0, eigvals(J))
+function is_Hopf_unstable(soln::StateDict, res::Result)
+    _is_Hopf_unstable(values(soln) |> collect, res.jacobian)
+end
+
+function _is_Hopf_unstable(res::Result)
+    _isit(soln) = _is_Hopf_unstable(soln, res.jacobian)
+end
+
+function _is_Hopf_unstable(soln, J)
+    _is_physical(soln) || return false  # the solution is unphysical anyway
+    λs = eigvals(J(soln))
+    unstable = filter(x -> real(x) > 0, λs)
     (length(unstable) == 2 && abs(conj(unstable[1]) - unstable[2]) < im_tol && return true) || return false
-    return all([ real.(eigvals(J)) .< 0]...)
+    return all(x -> real(x) < 0, λs)
 end
 
 

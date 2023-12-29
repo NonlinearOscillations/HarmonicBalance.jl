@@ -78,9 +78,10 @@ function _is_stable(res::Result; kwargs...)
 end
 
 function _is_stable(soln, J; rel_tol=1E-10)
+    _is_physical(soln) || return false
     λs = eigvals(real.(J(soln)))
     scale = maximum(Iterators.map(abs, λs))
-    _is_physical(soln) && all(x -> real(x) < rel_tol*scale, λs)
+    all(x -> real(x) < rel_tol*scale, λs)
 end
 
 """

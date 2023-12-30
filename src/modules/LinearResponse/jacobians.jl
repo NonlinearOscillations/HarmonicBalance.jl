@@ -1,3 +1,4 @@
+import HarmonicBalance.compile_matrix
 export get_Jacobian
 
 """
@@ -62,7 +63,7 @@ function _get_J_matrix(eom::HarmonicEquation; order=0)
     T = get_independent_variables(eom)[1]
     J = get_Jacobian(eom.equations, d(get_variables(eom), T, order))
 
-    expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp))
+    expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp)) # a symbolic matrix to be compiled
 end
 
 
@@ -86,3 +87,9 @@ function get_implicit_Jacobian(eom::HarmonicEquation, rules=Dict())::Function
     J
 end
 
+function get_implicit_Jacobian(p::Problem, swept, fixed)
+    J0 =_get_J_matrix(p.eom, order=0)
+    J1 = _get_J_matrix(p.eom, order=1)
+    to_inv = J1 * J0
+    compile_matrix(to_inv, _free_symbols(p, swept), rules=fixed, postproc = x -> -inv(x))
+end

@@ -77,8 +77,7 @@ function _build_substituted(expr, res::Result; rules=Dict())
    new_keys = declare_variable.(string.(keys(Dict(rules))))
    fixed_subs = merge(res.fixed_parameters, Dict(zip(new_keys, values(Dict(rules)))))
 
-   free_symbols = vcat(res.problem.variables, collect(keys(res.swept_parameters)))
-   return _build_substituted(expr, fixed_subs, free_symbols)
+   return _build_substituted(expr, fixed_subs, _free_symbols(res))
 
 end
 

@@ -19,10 +19,10 @@ function transform_solutions(res::Result, func; branches = 1:branch_count(res))
     n_pars = length(res.swept_parameters)
     vals = Vector{ComplexF64}(undef, n_vars + n_pars)
 
-    vtype = isa(Base.invokelatest(func, zeros(ComplexF64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
+    vtype = isa(Base.invokelatest(func, rand(ComplexF64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
     transformed = _similar(vtype, res; branches=branches)
 
-    @maybethread for idx in CartesianIndices(res.solutions)
+    for idx in CartesianIndices(res.solutions)
         for i in 1:length(idx) # param values are common to all branches
             vals[end-n_pars+i] = res.swept_parameters[idx[i]][i]
         end

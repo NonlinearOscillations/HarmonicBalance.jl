@@ -1,13 +1,15 @@
-import HarmonicBalance.classify_solutions
+import HarmonicBalance: classify_solutions, _free_symbols, _symidx, _is_physical
 
 function classify_unique!(res::Result, Δω; class_name="unique_cycle")
 
     # 1st degeneracy: arbitrary sign of Δω
-    c1 = classify_solutions(res, string(Δω) * ">= 0")
+    i1 = _symidx(Δω, res)
+    c1 = classify_solutions(res, soln -> _is_physical(soln) && real(soln[i1]) >= 0)
 
     # 2nd degeneracy: ambiguity in the fixed phase, manifests as the sign of var
     var = HarmonicBalance._remove_brackets(get_cycle_variables(res.problem.eom, Δω)[1])
-    c2 = classify_solutions(res, string(var) * ">= 0") 
+    i2 = _symidx(var, res)
+    c2 = classify_solutions(res, soln -> _is_physical(soln) && real(soln[i2]) >= 0)
 
     res.classes[class_name] = map(.*, c1, c2)
 end

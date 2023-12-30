@@ -103,7 +103,7 @@ function _is_Hopf_unstable(soln, J)
     _is_physical(soln) || return false  # the solution is unphysical anyway
     λs = eigvals(J(soln))
     unstable = filter(x -> real(x) > 0, λs)
-    (length(unstable) == 2 && abs(conj(unstable[1]) - unstable[2]) < im_tol && return true) || return false
+    (length(unstable) == 2 && abs(conj(unstable[1]) - unstable[2]) < IM_TOL && return true) || return false
     return all(x -> real(x) < 0, λs)
 end
 

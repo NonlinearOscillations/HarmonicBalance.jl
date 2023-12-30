@@ -37,7 +37,7 @@ function ResponseMatrix(res::Result; rules=Dict())
     @variables Δ
     M = get_response_matrix(res.problem.eom.natural_equation, Δ, order=2)
     M = substitute_all(M, merge(res.fixed_parameters, rules))
-    symbols = cat(res.problem.variables, collect(keys(res.swept_parameters)), dims=1)
+    symbols = _free_symbols(res)
     compiled_M = [build_function(el, cat(symbols, [Δ], dims=1)) for el in M]
 
     ResponseMatrix(eval.(compiled_M), symbols, res.problem.eom.variables)

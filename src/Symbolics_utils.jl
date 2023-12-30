@@ -66,6 +66,7 @@ substitute_all(v::Union{Array{Num}, Array{Equation}}, rules::Union{Dict, Pair, V
 substitute_all(x::Union{Num, Equation}, rules::Union{Pair, Vector, Dict}) = substitute_all(x, Dict(rules))
 substitute_all(x, rules::OrderedDict) = substitute_all(x, Dict(rules))
 substitute_all(x::Complex{Num}, rules) = substitute_all(Num(x.re.val.arguments[1]), rules)
+substitute_all(x::Symbolics.Arr, args...) = [substitute_all[r] for i in x]
 substitute_all(x, rules) = substitute_all(Num(x), rules)
 
 

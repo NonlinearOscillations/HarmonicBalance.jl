@@ -45,9 +45,6 @@ function Problem(eom::HarmonicEquation; Jacobian=true)
     # this possibly has variables in the denominator and cannot be used for solving
     if Jacobian == true || Jacobian == "explicit"
         J = HarmonicBalance.get_Jacobian(eom)
-    elseif Jacobian == "implicit"
-        # compute the Jacobian implicitly
-        J = HarmonicBalance.LinearResponse.get_implicit_Jacobian(eom)
     elseif Jacobian == "false" || Jacobian == false
         dummy_J(arg) = I(1)
         J = dummy_J

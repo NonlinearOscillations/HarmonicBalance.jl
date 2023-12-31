@@ -17,18 +17,21 @@ function transform_solutions(res::Result, func; branches = 1:branch_count(res))
     # when looping through the solutions
     n_vars = length(get_variables(res))
     n_pars = length(res.swept_parameters)
-    vals = Vector{ComplexF64}(undef, n_vars + n_pars)
 
     vtype = isa(Base.invokelatest(func, rand(ComplexF64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
     transformed = _similar(vtype, res; branches=branches)
 
-    for idx in CartesianIndices(res.solutions)
-        for i in 1:length(idx) # param values are common to all branches
-            vals[end-n_pars+i] = res.swept_parameters[idx[i]][i]
-        end
-        for (k, branch) in enumerate(branches)
-            vals[1:n_vars] .= res.solutions[idx][branch]
-            transformed[idx][k] = Base.invokelatest(func, vals)
+    batches = Iterators.partition(CartesianIndices(res.solutions), ceil(Int, length(res.solutions)/Threads.nthreads()))
+    Threads.@threads for batch in batches |> collect
+        _vals = Vector{ComplexF64}(undef, n_vars + n_pars)
+        for idx in batch
+            for i in 1:length(idx) # param values are common to all branches
+                _vals[end-n_pars+i] = res.swept_parameters[idx[i]][i]
+            end
+            for (k, branch) in enumerate(branches)
+                _vals[1:n_vars] .= res.solutions[idx][branch]
+                transformed[idx][k] = Base.invokelatest(func, _vals)
+            end
         end
     end
     return transformed

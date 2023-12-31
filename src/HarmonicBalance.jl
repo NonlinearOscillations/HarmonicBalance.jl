@@ -39,7 +39,6 @@ module HarmonicBalance
 
     include("types.jl")
 
-    include("utils.jl")
     include("Symbolics_customised.jl")
     include("Symbolics_utils.jl")
     include("DifferentialEquation.jl")

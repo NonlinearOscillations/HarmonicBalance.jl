@@ -71,25 +71,17 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Construct a function for the Jacobian of `eon` using `rules=Dict()`.
+Construct a function for the Jacobian of `eom` using `rules=Dict()`.
 
 Necessary matrix inversions are only performed AFTER substituting numerical values at each call, avoiding huge symbolic operations.
 
 Returns a function `f(soln::OrderedDict)::Matrix{ComplexF64}`.
 """
-function get_implicit_Jacobian(eom::HarmonicEquation, rules=Dict())::Function
-    J0 = substitute_all(_get_J_matrix(eom, order=0), rules)
-    J1 = substitute_all(_get_J_matrix(eom, order=1), rules)
-
-    function J(soln::OrderedDict)
-        -inv(ComplexF64.(substitute_all(J1, soln))) * ComplexF64.(substitute_all(J0, soln))
-    end
-    J
+function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
+    J0c = compile_matrix(_get_J_matrix(eom, order=0), sym_order, rules=rules)
+    J1c = compile_matrix(_get_J_matrix(eom, order=1), sym_order, rules=rules)
+    m(vals::Vector) = -inv(J1c(vals)) * J0c(vals)
+    m(s::OrderedDict) = m([s[var] for var in sym_order])
 end
 
-function get_implicit_Jacobian(p::Problem, swept, fixed)
-    J0 =_get_J_matrix(p.eom, order=0)
-    J1 = _get_J_matrix(p.eom, order=1)
-    to_inv = J1 * J0
-    compile_matrix(to_inv, _free_symbols(p, swept), rules=fixed, postproc = x -> -inv(x))
-end
+get_implicit_Jacobian(p::Problem, swept, fixed) = get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p, swept), rules=fixed)

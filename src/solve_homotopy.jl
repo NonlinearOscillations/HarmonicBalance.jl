@@ -1,12 +1,10 @@
-#import HarmonicBalance.LinearResponse.get_implicit_Jacobian
-
 export get_steady_states
 export get_single_solution
 export _free_symbols
 
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)
 _free_symbols(res::Result) = cat(res.problem.variables, collect(keys(res.swept_parameters)), dims=1)
-_free_symbols(p::Problem, varied::ParameterRange) = cat(p.variables, collect(keys(varied)), dims=1)
+_free_symbols(p::Problem, varied) = cat(p.variables, collect(keys(varied|>OrderedDict)), dims=1)
 _symidx(sym::Num, args...) = findfirst( x -> isequal(x, sym), _free_symbols(args...))
 
 """
@@ -144,8 +142,10 @@ get_steady_states(p, pairs; kwargs...) = get_steady_states(p, filter( x->length(
 function _compile_Jacobian(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList)
     if prob.jacobian isa Matrix
         compiled_J = compile_matrix(prob.jacobian, _free_symbols(prob, swept_parameters), rules=fixed_parameters)
+    elseif prob.jacobian == "implicit"
+        compiled_J = LinearResponse.get_implicit_Jacobian(prob, swept_parameters, fixed_parameters) # leave implicit Jacobian as is
     else
-        compiled_J = prob.jacobian # leave implicit Jacobian as is
+        return prob.jacobian
     end
     compiled_J
 end
@@ -156,7 +156,7 @@ Substitute the values according to `fixed_parameters` and compile into a functio
     in the order set in `variables`.
 """
 function compile_matrix(mat, variables; rules=Dict(), postproc = x -> x)
-    J = substitute(mat, rules)
+    J = substitute_all.(mat, Ref(rules))
     matrix = build_function(J, variables)
     matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
     m(vals::Vector) = postproc(matrix(vals))

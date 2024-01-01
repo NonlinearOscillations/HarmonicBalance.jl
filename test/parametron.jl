@@ -20,6 +20,8 @@ res = get_steady_states(p, varied, fixed, show_progress=false);
 p = HarmonicBalance.Problem(harmonic_eq, Jacobian="implicit");
 res = get_steady_states(p, varied, fixed, show_progress=false);
 
+classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1E-10", "nonzero")
+
 # save the result, try and load in the next step
 # current_path = @__DIR__
 # HarmonicBalance.save(current_path * "/parametron_result.jld2", res)

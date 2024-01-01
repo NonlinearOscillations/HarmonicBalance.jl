@@ -27,11 +27,13 @@ end
 
 
 function classify_solutions(res::Result, func; physical=true)
+    func = isa(func, Function) ? func : _build_substituted(func, res)
     if physical
-        transform_solutions(res, func)
-    else
-        f_comp(soln) = func(soln) * _is_physical(soln)
+        f_comp(soln) = _is_physical(soln) && func(real.(soln))
         transform_solutions(res, f_comp)
+
+    else
+        transform_solutions(res, func)
     end
 end
 

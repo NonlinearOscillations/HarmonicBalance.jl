@@ -30,7 +30,7 @@ function transform_solutions(res::Result, func; branches = 1:branch_count(res))
             end
             for (k, branch) in enumerate(branches)
                 _vals[1:n_vars] .= res.solutions[idx][branch]
-                transformed[idx][k] = Base.invokelatest(func, _vals)
+                transformed[idx][k] = Base.invokelatest(func, _vals) # beware, func may be mutating
             end
         end
     end

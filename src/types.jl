@@ -170,7 +170,7 @@ mutable struct Problem
     "All symbols which are not the harmonic variables."
     parameters::Vector{Num}
     "The input object for HomotopyContinuation.jl solver methods."
-    system::HomotopyContinuation.System
+    system::HC.System
     "The Jacobian matrix (possibly symbolic).
     If `false`, the Jacobian is ignored (may be calculated implicitly after solving)."
     jacobian

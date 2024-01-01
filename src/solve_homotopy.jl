@@ -107,7 +107,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
-    rounded_solutions = HomotopyContinuation.solutions.(getindex.(raw, 1));
+    rounded_solutions = HC.solutions.(getindex.(raw, 1));
     all(isempty.(rounded_solutions)) ? error("No solutions found!") : nothing
     solutions = pad_solutions(rounded_solutions)
 
@@ -248,7 +248,7 @@ function _solve_warmup(problem::Problem, params_1D, sweep; threading, show_progr
     warmup_parameters = params_1D[end÷2] .* (real_pert + complex_pert)
 
     warmup_solution =
-        HomotopyContinuation.solve(problem.system;
+        HC.solve(problem.system;
         target_parameters=warmup_parameters, threading=threading, show_progress=show_progress
         )
     return warmup_parameters, warmup_solution
@@ -265,8 +265,8 @@ function _get_raw_solution(problem::Problem, parameter_values;
             _solve_warmup(problem, params_1D, sweep;
                 threading=threading, show_progress=show_progress)
         result_full =
-            HomotopyContinuation.solve(
-                problem.system, HomotopyContinuation.solutions(warmup_solution);
+            HC.solve(
+                problem.system, HC.solutions(warmup_solution);
                 start_parameters=warmup_parameters, target_parameters=parameter_values,
                 threading=threading, show_progress=show_progress
             )
@@ -279,7 +279,7 @@ function _get_raw_solution(problem::Problem, parameter_values;
             p = parameter_values[i]
             show_progress ? next!(bar) : nothing
             result_full[i] = [
-                HomotopyContinuation.solve(problem.system; start_system=:total_degree,
+                HC.solve(problem.system; start_system=:total_degree,
                 target_parameters=p, threading=threading, show_progress=false), p]
         end
     end
@@ -312,7 +312,7 @@ function newton(prob::Problem, soln::OrderedDict)
     vars = _convert_or_zero.(substitute_all(prob.variables, soln))
     pars = _convert_or_zero.(substitute_all(prob.parameters, soln))
 
-    HomotopyContinuation.newton(prob.system, vars, pars)
+    HC.newton(prob.system, vars, pars)
 end
 
 

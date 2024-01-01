@@ -255,7 +255,8 @@ function _solve_warmup(problem::Problem, params_1D, sweep; threading, show_progr
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
-function _get_raw_solution(problem::Problem, parameter_values; sweep=[], random_warmup=false, threading=false, show_progress=true)
+function _get_raw_solution(problem::Problem, parameter_values;
+    sweep=ParameterRange(), random_warmup=false, threading=false, show_progress=true)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
@@ -264,7 +265,8 @@ function _get_raw_solution(problem::Problem, parameter_values; sweep=[], random_
             _solve_warmup(problem, params_1D, sweep;
                 threading=threading, show_progress=show_progress)
         result_full =
-            HomotopyContinuation.solve(problem.system, HomotopyContinuation.solutions(warmup_solution);
+            HomotopyContinuation.solve(
+                problem.system, HomotopyContinuation.solutions(warmup_solution);
                 start_parameters=warmup_parameters, target_parameters=parameter_values,
                 threading=threading, show_progress=show_progress
             )
@@ -273,10 +275,12 @@ function _get_raw_solution(problem::Problem, parameter_values; sweep=[], random_
         if show_progress
             bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
         end
-        for i in 1:length(parameter_values) # do NOT thread this
+        for i in eachindex(parameter_values) # do NOT thread this
             p = parameter_values[i]
             show_progress ? next!(bar) : nothing
-            result_full[i] = [HomotopyContinuation.solve(problem.system, start_system=:total_degree, target_parameters=p, threading=threading, show_progress=false), p]
+            result_full[i] = [
+                HomotopyContinuation.solve(problem.system; start_system=:total_degree,
+                target_parameters=p, threading=threading, show_progress=false), p]
         end
     end
 
@@ -292,7 +296,7 @@ function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_val
     max_N = maximum(Ls) # length to be fixed
     padded_solutions = deepcopy(solutions)
     for (i,s) in enumerate(solutions)
-        if Ls[i]<max_N
+        if Ls[i] < max_N
             padded_solutions[i] = vcat(solutions[i],[padding_value*ones(nvars) for k in 1:(max_N-length(s))])
         end
     end

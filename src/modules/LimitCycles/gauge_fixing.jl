@@ -90,7 +90,7 @@ Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assu
 function get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; explicit_Jacobian=false, kwargs...)
     prob = _cycle_Problem(eom, ω_lc, explicit_Jacobian=explicit_Jacobian);
     prob.jacobian = _gaugefixed_Jacobian(eom, _choose_fixed(eom, ω_lc), explicit=explicit_Jacobian, sym_order=_free_symbols(prob, swept), rules=fixed)
-    result = get_steady_states(prob, swept, fixed; random_warmup=true, threading=true, classify_default=true, kwargs...)
+    result = get_steady_states(prob, swept, fixed; method=:warmup, threading=true, classify_default=true, kwargs...)
 
     _classify_limit_cycles!(result, ω_lc)
 

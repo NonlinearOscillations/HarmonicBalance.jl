@@ -4,6 +4,7 @@ module HC_wrapper
     using Base: get_uuid_name
     using Symbolics
     using HomotopyContinuation
+    const HC = HomotopyContinuation
     using DocStringExtensions
     using ..HarmonicBalance
 

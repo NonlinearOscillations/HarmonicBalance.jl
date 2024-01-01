@@ -8,8 +8,7 @@ natural_equation =  d(d(x,t),t) - μ*(1-x^2) * d(x,t) + x
 dEOM = DifferentialEquation(natural_equation, x)
 
 # order should NOT matter if correct gauge is fixed (that corresponding to 1*ω_lc)
-add_harmonic!(dEOM, x, 3*ω_lc)
-add_harmonic!(dEOM, x, ω_lc)
+add_harmonic!(dEOM, x, [ω_lc, 3*ω_lc])
 
 harmonic_eq = get_harmonic_equations(dEOM)
 

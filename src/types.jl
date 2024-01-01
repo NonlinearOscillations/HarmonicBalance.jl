@@ -38,15 +38,15 @@ mutable struct DifferentialEquation
     """Assigns to each variable an equation of motion."""
     equations::OrderedDict{Num, Equation}
     """Assigns to each variable a set of harmonics."""
-    harmonics::OrderedDict{Num, Vector{Num}}
+    harmonics::OrderedDict{Num, OrderedSet{Num}}
 
-    DifferentialEquation(eqs) = new(eqs, OrderedDict([[var, []] for var in keys(eqs)]))
+    DifferentialEquation(eqs) = new(eqs, OrderedDict(var => OrderedSet() for var in keys(eqs)))
 
     # uses the above constructor if no harmonics defined
     DifferentialEquation(eqs::Vector{Equation}, vars::Vector{Num}) = DifferentialEquation(OrderedDict(zip(vars, eqs)))
 
     # if expressions are entered instead of equations, automatically set them = 0
-    DifferentialEquation(exprs::Vector{Num}, vars::Vector{Num}) = DifferentialEquation(OrderedDict(zip(vars, exprs .~ zeros(Int, length(exprs)))))
+    DifferentialEquation(exprs::Vector{Num}, vars::Vector{Num}) = DifferentialEquation(exprs .~ Int(0), vars)
 
     DifferentialEquation(arg1, arg2) = DifferentialEquation(arg1 isa Vector ? arg1 : [arg1], arg2 isa Vector ? arg2 : [arg2])
 end

@@ -119,7 +119,7 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
 
-    result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J) # a "raw" solution struct
+    result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed) # a "raw" solution struct
 
     sort_solutions!(result, sorting=sorting, show_progress=show_progress) # sort into branches
     classify_default ? _classify_default!(result) : nothing
@@ -140,7 +140,7 @@ end
 
 get_steady_states(p::Problem, swept, fixed; kwargs...) = get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...) = get_steady_states(Problem(eom), swept, fixed; kwargs...)
-get_steady_states(p, pairs; kwargs...) = get_steady_states(p, filter( x->length(x[2]) > 1, pairs), filter(x -> length(x[2]) == 1, pairs); kwargs...)
+get_steady_states(p, pairs; kwargs...) = get_steady_states(p, filter( x-> length(x[2]) > 1, pairs), filter(x -> length(x[2]) == 1, pairs); kwargs...)
 
 
 """ Compile the Jacobian from `prob`, inserting `fixed_parameters`.

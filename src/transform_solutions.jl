@@ -12,11 +12,11 @@ Returns an array with the values of `f` evaluated for the respective solutions.
 Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
 """
 function transform_solutions(res::Result, func; branches = 1:branch_count(res))
-
     # preallocate an array for the numerical values, rewrite parts of it
     # when looping through the solutions
+    pars = res.swept_parameters |> values |> collect
     n_vars = length(get_variables(res))
-    n_pars = length(res.swept_parameters)
+    n_pars = length(pars)
 
     vtype = isa(Base.invokelatest(func, rand(ComplexF64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
     transformed = _similar(vtype, res; branches=branches)
@@ -26,7 +26,7 @@ function transform_solutions(res::Result, func; branches = 1:branch_count(res))
         _vals = Vector{ComplexF64}(undef, n_vars + n_pars)
         for idx in batch
             for i in 1:length(idx) # param values are common to all branches
-                _vals[end-n_pars+i] = res.swept_parameters[idx[i]][i]
+                _vals[end-n_pars+i] = pars[i][idx[i]]
             end
             for (k, branch) in enumerate(branches)
                 _vals[1:n_vars] .= res.solutions[idx][branch]

@@ -8,6 +8,7 @@ module HarmonicBalance
     using BijectiveHilbert
     using LinearAlgebra
     using Plots, Latexify
+    using Random
     import HomotopyContinuation;
     const HC = HomotopyContinuation
     import Distances

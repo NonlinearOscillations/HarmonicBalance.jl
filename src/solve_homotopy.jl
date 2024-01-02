@@ -91,7 +91,12 @@ A steady state result for 1000 parameter points
 ```
 
 """
-function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList; method=:warmup, threading = Threads.nthreads() > 1, show_progress=true, sorting="nearest", classify_default=true)
+function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList;
+    method=:warmup, threading = Threads.nthreads() > 1, show_progress=true,
+    sorting="nearest", classify_default=true, seed=nothing)
+
+    # set seed if provided
+    !isnothing(seed) && Random.seed!(seed)
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables, dims=1)))
 
@@ -103,7 +108,8 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
-    raw = _get_raw_solution(prob, input_array, sweep=swept_parameters, method=method, threading=threading, show_progress=show_progress)
+    raw = _get_raw_solution(prob, input_array;
+    sweep=swept_parameters, method=method, threading=threading, show_progress=show_progress, seed=seed)
 
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
@@ -256,7 +262,7 @@ end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
 function _get_raw_solution(problem::Problem, parameter_values;
-    sweep=ParameterRange(), method=:warmup, threading=false, show_progress=true)
+    sweep=ParameterRange(), method=:warmup, threading=false, show_progress=true, seed=nothing)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
@@ -268,7 +274,7 @@ function _get_raw_solution(problem::Problem, parameter_values;
             HC.solve(
                 problem.system, HC.solutions(warmup_solution);
                 start_parameters=warmup_parameters, target_parameters=parameter_values,
-                threading=threading, show_progress=show_progress
+                threading=threading, show_progress=show_progress, seed=seed
             )
     elseif method==:total_degree
         result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
@@ -280,7 +286,7 @@ function _get_raw_solution(problem::Problem, parameter_values;
             show_progress ? next!(bar) : nothing
             result_full[i] = [
                 HC.solve(problem.system; start_system=:total_degree,
-                target_parameters=p, threading=threading, show_progress=false), p]
+                target_parameters=p, threading=threading, show_progress=false, seed=seed), p]
         end
     else
         error("Unknown method: ", string(method))

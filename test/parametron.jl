@@ -13,8 +13,8 @@ harmonic_eq = get_harmonic_equations(dEOM, slow_time=T, fast_time=t);
 p = HarmonicBalance.Problem(harmonic_eq);
 
 
-fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1.,  η=>0.3, θ => 0, ψ => 0)
-varied = ω => LinRange(0.9, 1.1, 100)
+fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3, α => 1.0, η => 0.3, θ => 0, ψ => 0)
+varied = ω => range(0.9, 1.1, 100)
 res = get_steady_states(p, varied, fixed, show_progress=false);
 
 p = HarmonicBalance.Problem(harmonic_eq, Jacobian="implicit");
@@ -27,8 +27,8 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1E-10", "nonzero")
 # HarmonicBalance.save(current_path * "/parametron_result.jld2", res)
 
 # try to run a 2D calculation
-fixed = (Ω => 1.0,γ => 1e-2, F => 1e-3, α => 1.0, η=>0.3, θ => 0, ψ => 0)
-varied = (ω => LinRange(0.9, 1.1, 10), λ => LinRange(0.01, 0.05, 10))
+fixed = (Ω => 1.0, γ => 1e-2, F => 1e-3, α => 1.0, η => 0.3, θ => 0, ψ => 0)
+varied = (ω => range(0.9, 1.1, 10), λ => range(0.01, 0.05, 10))
 res = get_steady_states(p, varied, fixed, show_progress=false);
 
 

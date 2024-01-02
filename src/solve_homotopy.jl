@@ -250,7 +250,7 @@ end
 "A random warmup solution is computed to use as `start_parameters` in the homotopy."
 function _solve_warmup(problem::Problem, params_1D, sweep; threading, show_progress)
     # complex perturbation of the warmup parameters
-    complex_pert = [1e-5 * issubset(p, keys(sweep))* randn(ComplexF64) for p in problem.parameters]
+    complex_pert = [1e-5 * randn(ComplexF64) for p in problem.parameters]
     real_pert = ones(length(params_1D[1]))
     warmup_parameters = params_1D[end÷2] .* (real_pert + complex_pert)
 

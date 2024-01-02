@@ -15,7 +15,7 @@ harmonic_eq = get_harmonic_equations(dEOM)
 fixed = ();
 varied = μ => range(1, 5, 5)
 
-result = get_limit_cycles(harmonic_eq, varied, fixed, cycle_harmonic=ω_lc, show_progress=false)
+result = get_limit_cycles(harmonic_eq, varied, fixed, cycle_harmonic=ω_lc, show_progress=false, seed=SEED)
 
 @test sum(any.(classify_branch(result, "stable"))) == 4
 @test sum(any.(classify_branch(result, "unique_cycle"))) == 1

@@ -16,5 +16,5 @@ harmonic_eq2 = get_krylov_equations(diff_eom, order=2)
 fixed = (ω0 => 1.0, γ => 0.005, α => 1.0, η => 0, F => 0.0, ψ => 0.0, θ => 0.0)
 varied = (ω => range(0.99, 1.01, 5), λ => range(1e-6, 0.05, 5))
 
-res1 = get_steady_states(harmonic_eq1, varied, fixed, show_progress=false);
-res2 = get_steady_states(harmonic_eq2, varied, fixed, show_progress=false);
+res1 = get_steady_states(harmonic_eq1, varied, fixed, show_progress=false, seed=SEED);
+res2 = get_steady_states(harmonic_eq2, varied, fixed, show_progress=false, seed=SEED);

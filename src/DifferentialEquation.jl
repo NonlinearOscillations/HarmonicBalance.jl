@@ -22,8 +22,7 @@ Harmonic ansatz: x(t) => ω;
 ```
 """
 function add_harmonic!(diff_eom::DifferentialEquation, var::Num, ω)
-    push!(diff_eom.harmonics[var], ω)
-    diff_eom.harmonics[var] = unique(diff_eom.harmonics[var])
+    push!.(Ref(diff_eom.harmonics[var]), ω)
     diff_eom
 end
 

@@ -21,11 +21,11 @@ files = [
     "hysteresis_sweep.jl",
     "linear_response.jl",
     "limit_cycle.jl"
-    ]
+]
 
 for file in files
     include(file)
-    printstyled(file * ":    OK\n"; color = :green)
+    printstyled(file * ":    OK\n"; color=:green)
 end
 
-printstyled("\nALL TESTS PASSED!\n"; color = :green)
+printstyled("\nALL TESTS PASSED!\n"; color=:green)

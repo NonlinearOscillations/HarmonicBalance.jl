@@ -14,7 +14,7 @@ p = HarmonicBalance.Problem(harmonic_eq);
 
 fixed = (Ω => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1.,  η=>0.3, θ => 0, ψ => 0)
 varied = ω => range(0.9, 1.1, 100)
-res = get_steady_states(p, varied, fixed)
+res = get_steady_states(p, varied, fixed, seed=SEED)
 
 sweep = ParameterSweep(ω => (0.9, 1.1), (0.0, 2e4)) # linearly interpolate between two values at two times
 ode_problem = ODEProblem(harmonic_eq, fixed, sweep = sweep, x0 =[0.01; 0.0], timespan=(0.0, 2e4))

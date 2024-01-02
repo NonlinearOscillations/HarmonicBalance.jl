@@ -12,7 +12,7 @@ harmonic_eq = get_harmonic_equations(dEOM, slow_time=T, fast_time=t);
 
 fixed = (Ω => 1.0, γ => 1E-2, F => 1E-3,  α => 1.)
 varied = ω => range(0.9, 1.1, 10)
-res = get_steady_states(harmonic_eq, varied, fixed, show_progress=false);
+res = get_steady_states(harmonic_eq, varied, fixed, show_progress=false, seed=SEED);
 
 transform_solutions(res, "u1^2+v1^2")
 

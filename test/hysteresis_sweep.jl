@@ -9,7 +9,7 @@ harmonic_eq = get_harmonic_equations(diff_eq) # implement ansatz to get harmonic
 
 fixed = (α => 1, ω0 => 1.0, γ => 0.005, F => 0.005, η => 0.2)   # fixed parameters
 varied = ω => range(0.95, 1.1, 10)           # range of parameter values
-result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false)
+result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false, seed=SEED)
 
 followed_branches, _ = follow_branch(1, result)
 

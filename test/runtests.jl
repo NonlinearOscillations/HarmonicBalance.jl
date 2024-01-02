@@ -4,6 +4,10 @@ Pkg.activate(current_path * "/../.");
 using HarmonicBalance
 using Test
 
+using Random
+const SEED = 0xd8e5d8df
+Random.seed!(SEED)
+
 files = [
     "powers.jl",
     "harmonics.jl",

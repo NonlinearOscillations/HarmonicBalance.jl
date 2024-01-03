@@ -80,19 +80,19 @@ function align_pair(reference, to_sort::Vector{SteadyState})
 
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
+    sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]
 
-    matched = Set{Int}()
-    matched_ref = Set{Int}()
+    matched = falses(n)
+    matched_ref = falses(n)
 
     sorted = Vector{CartesianIndex}(undef, n)
 
-    for j in 1:n
-        # Find the index of the minimum distance that hasn't been matched yet
-        min_k = argmin([distances[j, k] for k in 1:n if !(k in matched)])
-        if !(j in matched_ref)
-            push!(matched, min_k)
-            push!(matched_ref, j)
-            sorted[j] = CartesianIndex(j, min_k)
+    for idx in sorted_cartesians
+        j,k = idx[1], idx[2]
+        if !matched[k] && !matched_ref[j]
+            matched[k] = true
+            matched_ref[j] = true
+            sorted[j] = idx
         end
     end
 

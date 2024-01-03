@@ -277,9 +277,9 @@ function _get_raw_solution(problem::Problem, parameter_values;
                 threading=threading, show_progress=show_progress, seed=seed
             )
     elseif method==:total_degree
-        result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
+        result_full = Array{Vector{Any}, 1}(undef, length(params_1D))
         if show_progress
-            bar = Progress(length(parameter_values), 1, "Solving via total degree homotopy ...", 50)
+            bar = Progress(length(params_1D), dt=1, desc="Solving via total degree homotopy ...", barlen=50)
         end
         for i in eachindex(parameter_values) # do NOT thread this
             p = parameter_values[i]

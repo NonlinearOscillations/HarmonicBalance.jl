@@ -109,7 +109,7 @@ function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
     sorted_solns[1] = sort(solns[1], by= x->abs.(imag(x))) # prefer real solution at first position
 
     if show_progress
-        bar = Progress(length(solns), dt=1, desc="Ordering solutions into branches ...", output=stdout)
+        bar = Progress(length(solns), dt=1, desc="Ordering solutions into branches ...", barlen=50)
     end
     for i in eachindex(solns[1:end-1])
         show_progress ? next!(bar) : nothing
@@ -174,7 +174,7 @@ function sort_2D(solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest", s
     sorted_solns[1,1] = sort(solns[1,1], by= x->abs.(imag(x))) # prefer real solution at first position
 
     if show_progress
-        bar = Progress(length(idx_pairs), dt=1, desc="Ordering solutions into branches ...", output=stdout)
+        bar = Progress(length(idx_pairs), dt=1, desc="Ordering solutions into branches ...", barlen=50)
     end
     for i in 1:length(idx_pairs)-1
         show_progress ? next!(bar) : nothing

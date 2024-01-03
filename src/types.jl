@@ -6,12 +6,6 @@ const StateDict = OrderedDict{Num, ComplexF64}; export StateDict
 const SteadyState = Vector{ComplexF64}; export SteadyState;
 const ParameterVector = Vector{Float64}; export ParameterVector;
 
-function Base.getindex(p::ParameterRange, idx::Int...)
-   lengths = [length(a) for a in values(p)]
-   indices = CartesianIndices(Tuple(lengths))[idx...]
-   return [val[indices[j]] for (j,val) in enumerate(values(p))]
-end
-
 """
 $(TYPEDEF)
 

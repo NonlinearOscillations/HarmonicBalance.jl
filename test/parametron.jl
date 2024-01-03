@@ -19,7 +19,7 @@ res = get_steady_states(p, varied, fixed, show_progress=false, seed=SEED);
 p = HarmonicBalance.Problem(harmonic_eq, Jacobian="implicit");
 res = get_steady_states(p, varied, fixed, show_progress=false, seed=SEED);
 
-classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1E-10", "nonzero")
+classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1e-10", "nonzero")
 
 # save the result, try and load in the next step
 # current_path = @__DIR__

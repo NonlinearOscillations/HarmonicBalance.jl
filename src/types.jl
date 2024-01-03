@@ -215,10 +215,12 @@ mutable struct Result
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
     jacobian::Union{Function, Int64}
+    "Seed used for the solver"
+    seed::Union{Nothing, UInt32}
 
-    Result(sol,swept, fixed, problem, classes, J) = new(sol, swept, fixed, problem, classes, J)
-    Result(sol,swept, fixed, problem, classes) = new(sol, swept, fixed, problem, classes)
-    Result(sol,swept, fixed, problem) = new(sol, swept, fixed, problem, Dict([]))
+    Result(sol, swept, fixed, problem, classes, J, seed) = new(sol, swept, fixed, problem, classes, J, seed)
+    Result(sol, swept, fixed, problem, classes) = new(sol, swept, fixed, problem, classes)
+    Result(sol, swept, fixed, problem) = new(sol, swept, fixed, problem, Dict([]))
 end
 
 

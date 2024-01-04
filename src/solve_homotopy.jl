@@ -93,7 +93,7 @@ A steady state result for 1000 parameter points
 """
 function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList;
     method=:warmup, threading = Threads.nthreads() > 1, show_progress=true,
-    sorting="nearest", classify_default=true, seed=nothing)
+    sorting="nearest", classify_default=true, seed=nothing, kwargs...)
 
     # set seed if provided
     !isnothing(seed) && Random.seed!(seed)
@@ -108,8 +108,9 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
-    raw = _get_raw_solution(prob, input_array;
-    sweep=swept_parameters, method=method, threading=threading, show_progress=show_progress, seed=seed)
+    raw = _get_raw_solution(
+        prob, input_array; sweep=swept_parameters, method=method, threading=threading,
+        show_progress=show_progress, seed=seed, kwargs...)
 
     # extract all the information we need from results
     #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
@@ -249,12 +250,12 @@ end
 "A random warmup solution is computed to use as `start_parameters` in the homotopy."
 function _solve_warmup(problem::Problem, params_1D, sweep; threading, show_progress)
     # complex perturbation of the warmup parameters
-    complex_pert = [1e-2 * issubset(p, keys(sweep)) * randn(ComplexF64) for p in problem.parameters]
+    complex_pert = [1e-5 * randn(ComplexF64) for p in problem.parameters]
     real_pert = ones(length(params_1D[1]))
     warmup_parameters = params_1D[end÷2] .* (real_pert + complex_pert)
 
     warmup_solution =
-        HC.solve(problem.system;
+        HC.solve(problem.system; start_system=:total_degree,
         target_parameters=warmup_parameters, threading=threading, show_progress=show_progress
         )
     return warmup_parameters, warmup_solution
@@ -262,7 +263,7 @@ end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
 function _get_raw_solution(problem::Problem, parameter_values;
-    sweep=ParameterRange(), method=:warmup, threading=false, show_progress=true, seed=nothing)
+    sweep=ParameterRange(), method=:warmup, threading=false, show_progress=true, seed=nothing, kwargs...)
     # HomotopyContinuation accepts 1D arrays of parameter sets
     params_1D = reshape(parameter_values, :, 1)
 
@@ -274,18 +275,18 @@ function _get_raw_solution(problem::Problem, parameter_values;
             HC.solve(
                 problem.system, HC.solutions(warmup_solution);
                 start_parameters=warmup_parameters, target_parameters=parameter_values,
-                threading=threading, show_progress=show_progress, seed=seed
+                threading=threading, show_progress=show_progress, seed=seed, kwargs...
             )
-    elseif method==:total_degree
-        result_full = Array{Vector{Any}, 1}(undef, length(params_1D))
+    elseif method==:total_degree || method==:polyhedral
+        result_full = Array{Vector{Any}, 1}(undef, length(parameter_values))
         if show_progress
-            bar = Progress(length(params_1D), dt=1, desc="Solving via total degree homotopy ...", barlen=50)
+            bar = Progress(length(parameter_values), 1, "Solving via $method homotopy ...", 50)
         end
         for i in eachindex(parameter_values) # do NOT thread this
             p = parameter_values[i]
             show_progress ? next!(bar) : nothing
             result_full[i] = [
-                HC.solve(problem.system; start_system=:total_degree,
+                HC.solve(problem.system; start_system=method,
                 target_parameters=p, threading=threading, show_progress=false, seed=seed), p]
         end
     else

@@ -60,8 +60,10 @@ function is_physical(soln::StateDict, res::Result)
     return _is_physical(var_values)
 end
 
+function _is_physical(res::Result; kwargs...)
+    _isit(soln) = _is_physical(soln; kwargs...)
+end
 _is_physical(soln; im_tol=IM_TOL) = all( x -> !isnan(x) && abs(imag(x)) < im_tol, soln)
-_is_physical(res::Result) = classify_solutions(res, _is_physical)
 
 
 """

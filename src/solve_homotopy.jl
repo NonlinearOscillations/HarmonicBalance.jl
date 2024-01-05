@@ -104,7 +104,8 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
     # an n-dimensional sweep uses an n-dimensional array
     unique_fixed = filter_duplicate_parameters(swept_parameters, fixed_parameters)
 
-    any([in(var_name(var), var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])) for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
+    variable_names = var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])
+    any([var_name(var) ∈ variable_names for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
 
     input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
     # feed the array into HomotopyContinuation, get back an similar array of solutions
@@ -120,9 +121,11 @@ function get_steady_states(prob::Problem, swept_parameters::ParameterRange, fixe
 
     compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
 
-    result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed) # a "raw" solution struct
+    # a "raw" solution struct
+    result = Result(solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed)
 
-    sort_solutions!(result, sorting=sorting, show_progress=show_progress) # sort into branches
+    # sort into branches
+    sorting != "no_sorting" ? sort_solutions!(result, sorting=sorting, show_progress=show_progress) : nothing
     classify_default ? _classify_default!(result) : nothing
 
     return result

@@ -20,20 +20,20 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1.0" , "large_amplitude")
 ```
 
 """
-function classify_solutions!(res::Result, func::Union{String, Function}, name::String; physical=true)
-    values = classify_solutions(res, func; physical=physical)
+function classify_solutions!(res::Result, func::Union{String, Function}, name::String; physical=true, kwargs...)
+    values = classify_solutions(res, func; physical=physical, kwargs...)
     res.classes[name] = values
 end
 
 
-function classify_solutions(res::Result, func; physical=true)
+function classify_solutions(res::Result, func; physical=true, kwargs...)
     func = isa(func, Function) ? func : _build_substituted(func, res)
     if physical
         f_comp(soln) = _is_physical(soln) && func(real.(soln))
-        transform_solutions(res, f_comp)
+        transform_solutions(res, f_comp; kwargs...)
 
     else
-        transform_solutions(res, func)
+        transform_solutions(res, func; kwargs...)
     end
 end
 

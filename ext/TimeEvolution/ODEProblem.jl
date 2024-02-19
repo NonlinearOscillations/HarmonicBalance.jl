@@ -1,7 +1,8 @@
 using LinearAlgebra, Latexify
-import HarmonicBalance: transform_solutions, plot, plot!
+import HarmonicBalance: transform_solutions, plot, plot!, is_stable, ParameterSweep
 import OrdinaryDiffEq: ODEProblem, solve
-export transform_solutions, plot, plot!
+import Plots: plot, plot!
+export transform_solutions, plot, plot!, is_stable
 export ODEProblem, solve
 
 """

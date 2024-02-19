@@ -1,3 +1,4 @@
+import HarmonicBalance: ParameterSweep, swept_function
 export ParameterSweep
 
 function ParameterSweep(functions::Dict, timespan::Tuple)
@@ -27,4 +28,20 @@ function swept_function(bounds, timespan)
         end
     end
     return f
+end
+
+# overload so that ParameterSweep can be accessed like a Dict
+Base.keys(s::ParameterSweep) = keys(s.functions)
+Base.getindex(s::ParameterSweep, i) = getindex(s.functions, i)
+
+
+# overload +
+function Base.:+(s1::ParameterSweep, s2::ParameterSweep)
+    common_params = intersect(keys(s1), keys(s2))
+    !isempty(common_params) && error("cannot combine sweeps of the same parameter")
+    return ParameterSweep(merge(s1.functions, s2.functions))
+
+    # combine sweeps of the same parameter
+    #interval_overlap(s1.timespan, s2.timespan) && error("cannot combine sweeps with overlapping timespans")
+    #new_funcs = filter(x -> !in(x.first, common_params), all_params)
 end

@@ -1,3 +1,4 @@
+import HarmonicBalance: _closest_branch_index, plot_1D_solutions_branch, follow_branch
 export plot_1D_solutions_branch, follow_branch
 
 """Calculate distance between a given state and a stable branch"""

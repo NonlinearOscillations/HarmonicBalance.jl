@@ -1,19 +1,8 @@
-module TimeEvolution
-
-    using ..HarmonicBalance
-    using Symbolics
-    using Plots
-    using OrdinaryDiffEq
-    using OrderedCollections
-    using DSP
-    using FFTW
-    using Peaks
-    using DocStringExtensions
-
-    include("TimeEvolution/types.jl")
-    include("TimeEvolution/ODEProblem.jl")
-    include("TimeEvolution/FFT_analysis.jl")
-    include("TimeEvolution/sweeps.jl")
-    include("TimeEvolution/hysteresis_sweep.jl")
-
-end
+function swept_function end
+function FFT end
+function u_of_t end
+function uv_nonrotating_frame end
+function FFT_analyze end
+function _closest_branch_index end
+function follow_branch end
+function plot_1D_solutions_branch end

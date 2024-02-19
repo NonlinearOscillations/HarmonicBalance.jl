@@ -61,7 +61,10 @@ module HarmonicBalance
     export plot_linear_response, plot_rotframe_jacobian_response
 
     include("modules/TimeEvolution.jl")
-    using .TimeEvolution
+    if !isdefined(Base, :get_extension)
+        include("ext/TimeEvolution.jl")
+        using .TimeEvolution
+    end
     export ParameterSweep, ODEProblem, solve
     export plot_1D_solutions_branch, follow_branch
 

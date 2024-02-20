@@ -37,7 +37,7 @@ function ODEProblem(eom::HarmonicEquation, fixed_parameters; sweep::ParameterSwe
      # substitute  sweep parameters
     eqs(v,T) = [substitute(eq,Dict(zip(keys(sweep), [sweep[p](T) for p in keys(sweep)]))) for eq in eqs(v)]
 
-    function f!(du,u,p,T)
+    function f!(du,u,p,T) # in-place
         state = eqs(u,T)
         for j in 1:length(vars)
             du[j] = state[j]

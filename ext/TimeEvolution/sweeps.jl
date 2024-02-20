@@ -1,4 +1,4 @@
-import HarmonicBalance: ParameterSweep, swept_function
+import HarmonicBalance: ParameterSweep
 export ParameterSweep
 
 function ParameterSweep(functions::Dict, timespan::Tuple)

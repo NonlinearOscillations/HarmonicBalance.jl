@@ -65,7 +65,7 @@ module HarmonicBalance
         include("ext/TimeEvolution.jl")
         using .TimeEvolution
     end
-    export ParameterSweep, ODEProblem, solve
+    export ParameterSweep, ODEProblem, solve, ODESystem
     export plot_1D_solutions_branch, follow_branch
 
     include("modules/LimitCycles.jl")

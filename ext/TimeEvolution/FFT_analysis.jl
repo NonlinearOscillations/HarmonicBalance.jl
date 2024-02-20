@@ -1,5 +1,5 @@
-import HarmonicBalance: FFT, FFT_analyze, u_of_t, uv_nonrotating_frame
-export FFT, u_of_t, uv_nonrotating_frame
+import HarmonicBalance: FFT
+export FFT
 
 """Fourier transform the timeseries of a simulation in the rotating frame and calculate the quadratures and freqeuncies in the non-rotating frame."""
 function FFT(soln_u, soln_t; window = DSP.Windows.hanning)

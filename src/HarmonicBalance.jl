@@ -41,6 +41,7 @@ is_real(x::Array) = is_real.(x)
 import Base: exp
 exp(x::Complex{Num}) = x.re.val == 0 ? exp(im * x.im.val) : exp(x.re.val + im * x.im.val)
 
+include("modules/extention_functions.jl")
 include("types.jl")
 
 include("Symbolics_customised.jl")
@@ -62,14 +63,6 @@ include("modules/LinearResponse.jl")
 using .LinearResponse
 export plot_linear_response, plot_rotframe_jacobian_response
 
-include("modules/TimeEvolution.jl")
-if !isdefined(Base, :get_extension)
-    include("ext/TimeEvolution.jl")
-    using .TimeEvolution
-end
-export ParameterSweep, ODEProblem, solve, ODESystem, steady_state_sweep
-export plot_1D_solutions_branch, follow_branch
-
 include("modules/LimitCycles.jl")
 using .LimitCycles
 
@@ -77,6 +70,14 @@ include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
 export get_krylov_equations
+
+# support for julia < 1.9
+if !isdefined(Base, :get_extension)
+    include("ext/TimeEvolution.jl")
+    using .TimeEvolution
+end
+export ParameterSweep, ODEProblem, solve, ODESystem, steady_state_sweep
+export plot_1D_solutions_branch, follow_branch
 
 # precomp_path = (@__DIR__) * "/../test/"
 # @precompile_all_calls include(precomp_path * "parametron.jl")

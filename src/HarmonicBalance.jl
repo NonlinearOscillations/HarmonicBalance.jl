@@ -12,6 +12,7 @@ using Random
 import HomotopyContinuation
 const HC = HomotopyContinuation
 import Distances
+# using Requires
 # using SnoopPrecompile
 
 import Base: show, display
@@ -72,10 +73,17 @@ export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_
 export get_krylov_equations
 
 # support for julia < 1.9
-if !isdefined(Base, :get_extension)
-    include("ext/TimeEvolution.jl")
-    using .TimeEvolution
-end
+# function __init__()
+#     @static if !isdefined(Base, :get_extension)
+#         @require OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed" begin
+#             include("../ext/TimeEvolution/TimeEvolution.jl")
+#         end
+#     end
+# end
+# if !isdefined(Base, :get_extension)
+#     include("../ext/TimeEvolution/TimeEvolution.jl")
+#     using .TimeEvolution
+# end
 export ParameterSweep, ODEProblem, solve, ODESystem, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 

@@ -30,7 +30,7 @@ function ODESystem(eom::HarmonicEquation)
     eqs = simplify.(expand.(eqs))
 
     # compute jacobian for performance
-    @named sys = ODESystem(eqs, slow_time, vars, par_names)
+    @named sys = ODESystem(eqs, slow_time, vars, par_names) #mtk v9 need @mtkbuild
     return sys
 end
 

@@ -16,12 +16,13 @@ files = [
     "parametron.jl",
     "transform_solutions.jl",
     "plotting.jl",
-    "time_evolution.jl",
     "krylov.jl",
-    "hysteresis_sweep.jl",
     "linear_response.jl",
     "limit_cycle.jl",
-    "ModelingToolkitExt.jl"
+    "time_evolution.jl",
+    "hysteresis_sweep.jl",
+    "ModelingToolkitExt.jl",
+    "SteadyStateDiffEqExt.jl"
 ]
 
 for file in files

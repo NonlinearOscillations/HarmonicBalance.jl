@@ -25,6 +25,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 [weakdeps]
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [compat]
 BijectiveHilbert = "0.3.0"
@@ -47,12 +48,15 @@ julia = "1.8.2"
 [extensions]
 TimeEvolution = "OrdinaryDiffEq"
 ModelingToolkitExt = "ModelingToolkit"
+SteadyStateDiffEqExt = "SteadyStateDiffEq"
 
 [extras]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
+NonlinearSolve = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
 
 [targets]
-test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit"]
+test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve"]

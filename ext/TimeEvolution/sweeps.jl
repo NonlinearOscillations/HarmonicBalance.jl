@@ -3,18 +3,16 @@ export ParameterSweep
 
 function ParameterSweep(functions::Dict, timespan::Tuple)
     t0, t1 = timespan[1], timespan[2]
-    sweep_func=Dict{Num,Any}([])
+    sweep_func = Dict{Num, Any}([])
     for swept_p in keys(functions)
         bounds = functions[swept_p]
         tfunc = swept_function(bounds, timespan)
-        setindex!(sweep_func,tfunc,swept_p)
+        setindex!(sweep_func, tfunc, swept_p)
     end
     return ParameterSweep(sweep_func)
 end
 
-
 ParameterSweep(functions, timespan::Tuple) = ParameterSweep(Dict(functions), timespan)
-
 
 function swept_function(bounds, timespan)
     t0, t1 = timespan
@@ -24,7 +22,7 @@ function swept_function(bounds, timespan)
         elseif t < t0
             bounds[1]
         else
-            ((t1 - t)/(t1-t0)) * bounds[1] + ((t - t0)/(t1-t0) * bounds[2])
+            ((t1 - t) / (t1 - t0)) * bounds[1] + ((t - t0) / (t1 - t0) * bounds[2])
         end
     end
     return f
@@ -33,7 +31,6 @@ end
 # overload so that ParameterSweep can be accessed like a Dict
 Base.keys(s::ParameterSweep) = keys(s.functions)
 Base.getindex(s::ParameterSweep, i) = getindex(s.functions, i)
-
 
 # overload +
 function Base.:+(s1::ParameterSweep, s2::ParameterSweep)

@@ -16,11 +16,16 @@ files = [
     "parametron.jl",
     "transform_solutions.jl",
     "plotting.jl",
-    "time_evolution.jl",
     "krylov.jl",
-    "hysteresis_sweep.jl",
     "linear_response.jl",
-    "limit_cycle.jl"
+    "limit_cycle.jl",
+    "time_evolution.jl",
+    "hysteresis_sweep.jl"
+]
+
+files_ext = [
+    "ModelingToolkitExt.jl",
+    "SteadyStateDiffEqExt.jl"
 ]
 
 for file in files
@@ -28,4 +33,10 @@ for file in files
     printstyled(file * ":    OK\n"; color=:green)
 end
 
+if isdefined(Base, :get_extension) && VERSION >= v"1.9.0"
+    for file in files_ext
+        include(file)
+        printstyled(file * ":    OK\n"; color=:green)
+    end
+end
 printstyled("\nALL TESTS PASSED!\n"; color=:green)

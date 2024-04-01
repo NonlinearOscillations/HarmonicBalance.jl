@@ -1,22 +1,28 @@
-
 name: Documenter
+
 on:
   push:
-    branches: master
-    tags: [v*]
+    tags:
+      - '*'
+    branches:
+      - 'main'
   pull_request:
+    branches:
+      - 'main'
 
 jobs:
   Documenter:
+  permissions:
+      contents: write
+      statuses: write
     name: Documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/julia-buildpkg@latest
-        env:
-          PYTHON: ""
+      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/cache@v1
+      - uses: julia-actions/julia-buildpkg@latest 
       - uses: julia-actions/julia-docdeploy@latest
         env:
-          PYTHON: ""
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}

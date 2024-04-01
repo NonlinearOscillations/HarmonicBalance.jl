@@ -39,13 +39,13 @@ Variables: u1(T), v1(T)
 
 The object `harmonic_eq` encodes Eq. \eqref{eq:harmeq}.
 
-We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers. The desired object here is `DifferentialEquations.ODEProblem`, which is then fed into `DifferentialEquations.solve`.
+We now wish to parse this input into [OrdinaryDiffEq.jl](https://diffeq.sciml.ai/stable/) and use its powerful ODE solvers. The desired object here is `OrdinaryDiffEq.ODEProblem`, which is then fed into `OrdinaryDiffEq.solve`.
 
 ## Evolving from an initial condition
 
 Given $\mathbf{u}(T_0)$, what is $\mathbf{u}(T)$ at future times?
 
-For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref HarmonicBalance.ODEProblem). The syntax is similar to DifferentialEquations.jl :
+For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref ODEProblem). The syntax is similar to DifferentialEquations.jl :
 ```julia
 using OrdinaryDiffEq
 x0 = [0.0; 0.] # initial condition

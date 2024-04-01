@@ -45,9 +45,9 @@ We now wish to parse this input into [DifferentialEquations.jl](https://diffeq.s
 
 Given $\mathbf{u}(T_0)$, what is $\mathbf{u}(T)$ at future times?
 
-For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref HarmonicBalance.TimeEvolution.ODEProblem). The syntax is similar to DifferentialEquations.jl :
+For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref HarmonicBalance.ODEProblem). The syntax is similar to DifferentialEquations.jl :
 ```julia
-import HarmonicBalance.TimeEvolution: ODEProblem, OrdinaryDiffEq.solve
+using OrdinaryDiffEq
 x0 = [0.0; 0.] # initial condition
 fixed = (ω0 => 1.0,γ => 1E-2, λ => 5E-2, F => 1E-3,  α => 1., η=>0.3, θ => 0, ω=>1.) # parameter values
 
@@ -62,7 +62,7 @@ u0: 2-element Vector{Float64}:
  0.0
 ```
 
-DifferentialEquations.jl takes it from here - we only need to use `solve`.
+OrdinaryDiffEq.jl takes it from here - we only need to use `solve`.
 
 ```julia
 time_evo = solve(ode_problem, saveat=1.);
@@ -76,7 +76,7 @@ Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plot
 
 Let us compare this to the steady state diagram.
 ```julia
-varied = ω => LinRange(0.9, 1.1, 100)
+varied = ω => range(0.9, 1.1, 100)
 result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
@@ -90,7 +90,7 @@ Clearly when evolving from `x0 = [0.,0.]`, the system ends up in the low-amplitu
 
 Experimentally, the primary means of exploring the steady state landscape is an adiabatic sweep one or more of the system parameters. This takes the system along a solution branch. If this branch disappears or becomes unstable, a jump occurs.
 
-The object [`ParameterSweep`](@ref HarmonicBalance.TimeEvolution.ParameterSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
+The object [`ParameterSweep`](@ref ParameterSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
 ```julia
 sweep = ParameterSweep(ω => (0.9,1.1), (0, 2E4))
 ```
@@ -201,7 +201,7 @@ According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.01
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
 ```julia
-import HarmonicBalance.TimeEvolution: ODEProblem, OrdinaryDiffEq.solve
+using OrdinaryDiffEq
 initial_state = result[1][1]
 
 T = 2E6

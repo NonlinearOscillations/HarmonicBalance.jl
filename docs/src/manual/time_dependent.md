@@ -5,19 +5,19 @@ Generally, solving the ODE of oscillatory systems in time requires numerically t
 The module `TimeEvolution` is used to interface `HarmonicEquation` with the powerful solvers contained in `DifferentialEquations.jl`. Time-dependent parameter sweeps are defined using the object `ParameterSweep`.
 
 ```@docs
-HarmonicBalance.TimeEvolution.ODEProblem
-HarmonicBalance.TimeEvolution.ParameterSweep
+ODEProblem(::HarmonicEquation, ::Any; timespan::Tuple)
+ParameterSweep(::Dict, ::Tuple)
 ```
 
 ## Plotting
 
 ```@docs
-HarmonicBalance.TimeEvolution.plot(::HarmonicBalance.TimeEvolution.OrdinaryDiffEq.ODESolution, ::Any, ::HarmonicEquation)
+HarmonicBalance.plot(::OrdinaryDiffEq.ODESolution, ::Any, ::HarmonicEquation)
 ```
 
 ## Miscellaneous
 Using a time-dependent simulation can verify solution stability in cases where the Jacobian is too expensive to compute.
 
 ```@docs
-HarmonicBalance.TimeEvolution.is_stable
+HarmonicBalance.is_stable
 ```

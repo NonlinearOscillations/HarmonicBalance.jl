@@ -1,8 +1,6 @@
 export transform_solutions
 
-
 _parse_expression(exp) = exp isa String ? Num(eval(Meta.parse(exp))) : exp
-
 
 """
 $(TYPEDSIGNATURES)
@@ -11,17 +9,20 @@ Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
 Returns an array with the values of `f` evaluated for the respective solutions.
 Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
 """
-function transform_solutions(res::Result, func; branches = 1:branch_count(res))
+function transform_solutions(res::Result, func; branches=1:branch_count(res), realify=false)
     # preallocate an array for the numerical values, rewrite parts of it
     # when looping through the solutions
     pars = res.swept_parameters |> values |> collect
     n_vars = length(get_variables(res))
     n_pars = length(pars)
 
-    vtype = isa(Base.invokelatest(func, rand(ComplexF64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
+    vtype = isa(Base.invokelatest(func, rand(Float64, n_vars+n_pars)), Bool) ? BitVector : Vector{ComplexF64}
     transformed = _similar(vtype, res; branches=branches)
+    f = realify ? v -> real.(v) : identity
 
-    batches = Iterators.partition(CartesianIndices(res.solutions), ceil(Int, length(res.solutions)/Threads.nthreads()))
+    batches = Iterators.partition(
+        CartesianIndices(res.solutions),
+        ceil(Int, length(res.solutions)/Threads.nthreads()))
     Threads.@threads for batch in batches |> collect
         _vals = Vector{ComplexF64}(undef, n_vars + n_pars)
         for idx in batch
@@ -30,7 +31,7 @@ function transform_solutions(res::Result, func; branches = 1:branch_count(res))
             end
             for (k, branch) in enumerate(branches)
                 _vals[1:n_vars] .= res.solutions[idx][branch]
-                transformed[idx][k] = Base.invokelatest(func, _vals) # beware, func may be mutating
+                transformed[idx][k] = Base.invokelatest(func, f(_vals)) # beware, func may be mutating
             end
         end
     end

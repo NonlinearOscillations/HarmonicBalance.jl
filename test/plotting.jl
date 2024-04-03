@@ -16,6 +16,7 @@ res = get_steady_states(harmonic_eq, varied, fixed, seed=SEED)
 
 # plot 1D result
 plot(res, x="ω", y="u1");
+plot(res, y="√(u1^2+v1^2)");
 plot_spaghetti(res, x="v1", y="u1", z="ω");
 plot_phase_diagram(res);
 

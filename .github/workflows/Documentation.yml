@@ -10,11 +10,17 @@ on:
     branches:
       - 'master'
 
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   Documenter:
-  permissions:
-      contents: write
-      statuses: write
+    permissions:
+        contents: write
+        statuses: write
     name: Documentation
     runs-on: ubuntu-latest
     steps:

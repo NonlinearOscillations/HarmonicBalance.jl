@@ -146,7 +146,7 @@ function plot1D(res::Result; x::String="default", y::String, class="default", no
     dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
     x = x == "default" ? string(first(keys(res.swept_parameters))) : x
     X = transform_solutions(res, x, branches=branches)
-    Y = transform_solutions(res, y, branches=branches)
+    Y = transform_solutions(res, y, branches=branches, realify=true)
     Y = _apply_mask(Y, _get_mask(res, class, not_class, branches=branches))
 
     # reformat and project onto real, warning if needed
@@ -170,7 +170,7 @@ plot1D(res::Result, y::String; kwargs...) = plot1D(res; y=y, kwargs...)
 
 function plot2D(res::Result; z::String, branch::Int64, class="physical", not_class=[], add=false, kwargs...)
     X, Y = values(res.swept_parameters)
-    Z = getindex.(_apply_mask(transform_solutions(res, z, branches=branch), _get_mask(res, class, not_class, branches=branch)), 1) # there is only one branch
+    Z = getindex.(_apply_mask(transform_solutions(res, z, branches=branch, realify=true), _get_mask(res, class, not_class, branches=branch)), 1) # there is only one branch
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
@@ -202,7 +202,7 @@ function plot2D_cut(res::Result; y::String, cut::Pair, class="default", not_clas
     x = swept_pars[x_index]
 
     X = res.swept_parameters[x]
-    Y =_apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class)) # first transform, then filter
+    Y =_apply_mask(transform_solutions(res, y, realify=true), _get_mask(res, class, not_class)) # first transform, then filter
     branches = x_index==1 ? Y[:, cut_par_index] : Y[cut_par_index, :]
 
     branch_data = [_realify( getindex.(branches, i), warning= "branch " * string(k) ) for (i,k) in enumerate(1:branch_count(res))]

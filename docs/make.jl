@@ -2,10 +2,18 @@ push!(LOAD_PATH, "../src/")
 
 using Documenter
 using HarmonicBalance
+using ModelingToolkit
+using OrdinaryDiffEq
+using SteadyStateDiffEq
 
 makedocs(
 	sitename="HarmonicBalance.jl",
-    modules = [HarmonicBalance],
+    modules = [
+        HarmonicBalance,
+        Base.get_extension(HarmonicBalance, :TimeEvolution),
+        Base.get_extension(HarmonicBalance, :ModelingToolkitExt),
+        Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
+        ],
     warnonly = true,
 	format = Documenter.HTML(
 		mathengine=MathJax(),

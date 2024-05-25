@@ -48,6 +48,7 @@ OrdinaryDiffEq = "v6.33.1"
 Peaks = "0.4.0, 0.5"
 Plots = "1.35.0"
 ProgressMeter = "1.7.2"
+SteadyStateDiffEq = "2"
 Symbolics = "5.0.0"
 julia = "1.9.0"
 

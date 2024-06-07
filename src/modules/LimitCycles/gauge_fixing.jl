@@ -87,10 +87,12 @@ Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assu
 """
 function get_limit_cycles(
         eom::HarmonicEquation, swept, fixed, ω_lc; explicit_Jacobian = false, kwargs...)
+
     prob = _cycle_Problem(eom, ω_lc)
     prob.jacobian = _gaugefixed_Jacobian(
         eom, _choose_fixed(eom, ω_lc), explicit = explicit_Jacobian,
         sym_order = _free_symbols(prob, swept), rules = fixed)
+
     result = get_steady_states(prob, swept, fixed; method = :warmup,
         threading = true, classify_default = true, kwargs...)
 
@@ -99,8 +101,8 @@ function get_limit_cycles(
     result
 end
 
-function get_limit_cycles(eom::HarmonicEquation, swept, fixed; cycle_harmonic, kwargs...)
-    get_limit_cycles(eom, swept, fixed, cycle_harmonic; kwargs...)
+function get_limit_cycles(eom::HarmonicEquation, swept, fixed; limit_cycle_harmonic, kwargs...)
+    get_limit_cycles(eom, swept, fixed, limit_cycle_harmonic; kwargs...)
 end
 
 # if abs(ω_lc) < tol, set all classifications to false
@@ -110,7 +112,7 @@ function _classify_limit_cycles!(res::Result, ω_lc::Num)
     for idx in CartesianIndices(res.solutions),
         c in filter(x -> x != "binary_labels", keys(res.classes))
 
-        res.classes[c][idx] .*= abs.(getindex.(res.solutions[idx], ω_lc_idx)) .> 1E-10
+        res.classes[c][idx] .*= abs.(getindex.(res.solutions[idx], ω_lc_idx)) .> 1e-10
     end
 
     classify_unique!(res, ω_lc)

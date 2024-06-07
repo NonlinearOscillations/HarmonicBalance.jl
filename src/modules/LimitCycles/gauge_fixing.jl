@@ -27,9 +27,8 @@ $(TYPEDSIGNATURES)
 
 Return the harmonic variables which participate in the limit cycle labelled by `ω_lc`.
 """
-function get_cycle_variables(eom::HarmonicEquation, ω_lc::Num; sorted = false)
+function get_cycle_variables(eom::HarmonicEquation, ω_lc::Num)
     vars = filter(x -> any(isequal.(ω_lc, get_all_terms(x.ω))), eom.variables)
-    sorted ? sort(vars, by = x -> x.ω / ω_lc) : vars
 end
 
 """
@@ -76,7 +75,10 @@ function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     return p
 end
 
-_choose_fixed(eom, ω_lc) = get_cycle_variables(eom, ω_lc, sorted = true)[1]
+function _choose_fixed(eom, ω_lc)
+    vars = get_cycle_variables(eom, ω_lc)
+    first(vars) # This is arbitrary; better would be to substitute with values
+end
 
 """
     get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; kwargs...)

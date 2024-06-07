@@ -58,7 +58,7 @@ Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a limit cycle frequency `ω_lc`.
 `explicit_Jacobian=true` attempts to derive a symbolic Jacobian (usually not possible).
 """
-function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num; explicit_Jacobian = false)
+function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     eom = deepcopy(eom) # do not mutate eom
     isempty(get_cycle_variables(eom, ω_lc)) ? error("No Hopf variables found!") : nothing
     !any(isequal.(eom.parameters, ω_lc)) ?
@@ -87,7 +87,7 @@ Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assu
 """
 function get_limit_cycles(
         eom::HarmonicEquation, swept, fixed, ω_lc; explicit_Jacobian = false, kwargs...)
-    prob = _cycle_Problem(eom, ω_lc, explicit_Jacobian = explicit_Jacobian)
+    prob = _cycle_Problem(eom, ω_lc)
     prob.jacobian = _gaugefixed_Jacobian(
         eom, _choose_fixed(eom, ω_lc), explicit = explicit_Jacobian,
         sym_order = _free_symbols(prob, swept), rules = fixed)

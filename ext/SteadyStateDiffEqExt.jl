@@ -4,6 +4,7 @@ export steady_state_sweep
 import HarmonicBalance: steady_state_sweep
 using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS, remake
 using LinearAlgebra: norm, eigvals
+using SteadyStateDiffEq.SciMLBase.SciMLStructures: isscimlstructure
 
 function steady_state_sweep(
         prob::SteadyStateProblem, alg::DynamicSS;
@@ -11,7 +12,7 @@ function steady_state_sweep(
     varied_idx, sweep_range = varied
 
     # if p is dual number (AD) result is dual number
-    result = [similar(prob.p, 2) for _ in sweep_range]
+    result = [similar(prob.u0) for _ in sweep_range]
 
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? [0.0, 0.0] : result[i - 1]
@@ -30,13 +31,22 @@ function steady_state_sweep(
         varied::Pair, kwargs...)
     varied_idx, sweep_range = varied
     # if p is dual number (AD) result is dual number
-    result = [similar(prob_np.p) for _ in sweep_range]
+    result = [similar(prob_np.u0) for _ in sweep_range]
 
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? Base.zeros(length(prob_np.u0)) : result[i - 1]
         # make type-stable: FD.Dual or Float64
-        parameters = eltype(prob_np.p)[i == varied_idx ? value : x
-                                       for (i, x) in enumerate(prob_np.p)]
+        if isscimlstructure(prob_np.p)
+            rest = [prob_np.p.discrete, prob_np.p.nonnumeric, prob_np.p.dependent, prob_np.p.constant]
+            all(isempty.(rest)) || error("Only tunable parameters are supported")
+            length(prob_np.p.tunable) == 1 || error("The type of the parameters should be uniform")
+
+            parameters = prob_np.p.tunable[1] # assumes all parameters are Float64
+            parameters[varied_idx] = value
+        else
+            parameters = eltype(prob_np.p)[i == varied_idx ? value : x
+                                        for (i, x) in enumerate(prob_np.p)]
+        end
         sol_nn = solve(remake(prob_np, p = parameters, u0 = u0), alg_np; kwargs...)
 
         # last argument is time but does not matter

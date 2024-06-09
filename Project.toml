@@ -49,7 +49,7 @@ Peaks = "0.4.0, 0.5"
 Plots = "1.35.0"
 ProgressMeter = "1.7.2"
 Symbolics = "5.0.0"
-julia = "1.9.0"
+julia = "1.10.0"
 
 [extras]
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"

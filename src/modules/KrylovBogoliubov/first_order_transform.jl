@@ -42,8 +42,8 @@ function ode_order_lowering(equations, iv, harmonics)
 
     var_order = OrderedDict{Any, Int}()
     D = Differential(iv)
-    diff_eqs = similar(equations)
-    diff_vars = similar(harmonics)
+    diff_eqs = empty(equations)
+    diff_vars = empty(harmonics)
 
     for (i, eq) in enumerate(eqs)
         var, maxorder = var_from_nested_derivative(eq.lhs)

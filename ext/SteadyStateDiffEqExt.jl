@@ -17,8 +17,7 @@ function steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? [0.0, 0.0] : result[i - 1]
         # make type-stable: FD.Dual or Float64
-        parameters = eltype(prob_np.p)[i == varied_idx ? value : x
-                                       for (i, x) in enumerate(prob_np.p)]
+        parameters = get_new_parameter(prob, varied_idx, value)
         sol = solve(remake(prob, p = parameters, u0 = u0), alg; kwargs...)
         result[i] = sol.u
     end
@@ -36,17 +35,7 @@ function steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? Base.zeros(length(prob_np.u0)) : result[i - 1]
         # make type-stable: FD.Dual or Float64
-        if isscimlstructure(prob_np.p)
-            rest = [prob_np.p.discrete, prob_np.p.nonnumeric, prob_np.p.dependent, prob_np.p.constant]
-            all(isempty.(rest)) || error("Only tunable parameters are supported")
-            length(prob_np.p.tunable) == 1 || error("The type of the parameters should be uniform")
-
-            parameters = prob_np.p.tunable[1] # assumes all parameters are Float64
-            parameters[varied_idx] = value
-        else
-            parameters = eltype(prob_np.p)[i == varied_idx ? value : x
-                                        for (i, x) in enumerate(prob_np.p)]
-        end
+        parameters = get_new_parameter(prob_np, varied_idx, value)
         sol_nn = solve(remake(prob_np, p = parameters, u0 = u0), alg_np; kwargs...)
 
         # last argument is time but does not matter
@@ -64,6 +53,26 @@ function steady_state_sweep(
     end
 
     return result
+end
+
+function get_new_parameter(prob, varied_idx, value)
+    # make type-stable: FD.Dual or Float64
+    if hasfield(typeof(prob.p), :tunable)
+        rest = [prob.p.discrete, prob.p.nonnumeric, prob.p.dependent, prob.p.constant]
+
+        all(isempty.(rest)) || error("Only tunable parameters are supported")
+        length(prob.p.tunable) == 1 ||
+            error("The type of the parameters should be uniform")
+
+        old_parameters_values = prob.p.tunable[1]
+        parameter_values = eltype(old_parameters_values)[i == varied_idx ? value : x
+                                          for (i, x) in enumerate(old_parameters_values)]
+        parameters = replace(Tunable(), prob.p, parameter_values)
+    else
+        parameters = eltype(prob.p)[i == varied_idx ? value : x
+                                    for (i, x) in enumerate(prob.p)]
+    end
+    return parameters
 end
 
 end # module

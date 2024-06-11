@@ -49,6 +49,7 @@ Peaks = "0.4.0, 0.5"
 Plots = "1.35.0"
 ProgressMeter = "1.7.2"
 Symbolics = "5.0.0"
+SteadyStateDiffEq = "1, 2"
 julia = "1.10.0"
 
 [extras]

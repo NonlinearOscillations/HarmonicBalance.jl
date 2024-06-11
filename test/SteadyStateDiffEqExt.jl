@@ -46,14 +46,15 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         omega0 = 1.1
         alpha = 1.0
         gamma = 0.01
-        param = [alpha, omega0, omega0, force, gamma]
+        param = [alpha, 1.2, omega0, force, gamma]
         x0 = [1.0, 0.0]
         prob_ss = SteadyStateProblem{true}(model, x0, param, jac = true)
         prob_np = NonlinearProblem(prob_ss)
 
         ω_span = (0.9, 1.5)
         ω_range = range(ω_span..., 100)
-        varied = 2 => ω_range
+        varied_idx = findfirst(x->x==1.2,prob_ss.p.tunable[1])
+        varied = varied_idx => ω_range
         swept = steady_state_sweep(
             prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied = varied)
 

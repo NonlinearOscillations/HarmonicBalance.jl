@@ -4,7 +4,7 @@ export steady_state_sweep
 import HarmonicBalance: steady_state_sweep
 using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS, remake
 using LinearAlgebra: norm, eigvals
-using SteadyStateDiffEq.SciMLBase.SciMLStructures: isscimlstructure
+using SteadyStateDiffEq.SciMLBase.SciMLStructures: isscimlstructure, Tunable, replace
 
 function steady_state_sweep(
         prob::SteadyStateProblem, alg::DynamicSS;
@@ -17,7 +17,7 @@ function steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? [0.0, 0.0] : result[i - 1]
         # make type-stable: FD.Dual or Float64
-        parameters = get_new_parameter(prob, varied_idx, value)
+        parameters = get_new_parameters(prob, varied_idx, value)
         sol = solve(remake(prob, p = parameters, u0 = u0), alg; kwargs...)
         result[i] = sol.u
     end
@@ -35,12 +35,13 @@ function steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? Base.zeros(length(prob_np.u0)) : result[i - 1]
         # make type-stable: FD.Dual or Float64
-        parameters = get_new_parameter(prob_np, varied_idx, value)
+        parameters = get_new_parameters(prob_np, varied_idx, value)
         sol_nn = solve(remake(prob_np, p = parameters, u0 = u0), alg_np; kwargs...)
 
         # last argument is time but does not matter
-        zeros = norm(prob_np.f.f.f.f.f_oop(sol_nn.u, parameters, 0))
-        jac = prob_np.f.jac.f.f.f_oop(sol_nn.u, parameters, 0)
+        param_val = tunable_parameters(parameters)
+        zeros = norm(prob_np.f.f.f.f.f_oop(sol_nn.u, param_val, 0))
+        jac = prob_np.f.jac.f.f.f_oop(sol_nn.u, param_val, 0)
         eigval = jac isa Vector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
 
         if !isapprox(zeros, 0, atol = 1e-5) || any(λ -> λ > 0, real.(eigval))
@@ -55,7 +56,11 @@ function steady_state_sweep(
     return result
 end
 
-function get_new_parameter(prob, varied_idx, value)
+function tunable_parameters(param)
+    hasfield(typeof(param), :tunable) ? param.tunable[1] : param
+end
+
+function get_new_parameters(prob, varied_idx, value)
     # make type-stable: FD.Dual or Float64
     if hasfield(typeof(prob.p), :tunable)
         rest = [prob.p.discrete, prob.p.nonnumeric, prob.p.dependent, prob.p.constant]

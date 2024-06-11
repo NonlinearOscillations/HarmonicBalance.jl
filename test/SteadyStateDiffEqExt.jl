@@ -71,6 +71,6 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
             return false
         end
 
-        @test has_discontinuity(norm.(swept)) skip = true
+        @test has_discontinuity(norm.(swept))
     end
 end # Steady state sweeps

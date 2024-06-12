@@ -16,7 +16,7 @@ makedocs(
         ],
     warnonly = true,
 	format = Documenter.HTML(
-		mathengine=MathJax(),
+		mathengine=MathJax2(),
         canonical="https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/",
 		assets = ["assets/favicon.ico", "assets/docs.css"]
         # size_threshold = nothing

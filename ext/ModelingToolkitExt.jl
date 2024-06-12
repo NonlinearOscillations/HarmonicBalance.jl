@@ -28,9 +28,10 @@ function ODESystem(eom::HarmonicEquation)
     eqs = deepcopy(eom.equations)
     eqs = swapsides.(eqs)
     eqs = simplify.(expand.(eqs))
+    eqs = substitute(eqs, Dict(zip(eom.parameters, par_names)))
 
     # compute jacobian for performance
-    @named sys = ODESystem(eqs, slow_time, vars, par_names) #mtk v9 need @mtkbuild
+    @mtkbuild sys = ODESystem(eqs, slow_time, vars, par_names) #mtk v9 need @mtkbuild
     return sys
 end
 

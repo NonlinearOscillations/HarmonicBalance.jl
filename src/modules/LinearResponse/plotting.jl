@@ -2,7 +2,6 @@ using Plots, Latexify, ProgressMeter
 using Latexify.LaTeXStrings
 using HarmonicBalance: _set_Plots_default
 import ..HarmonicBalance: dim, _get_mask
-export plot_linear_response, plot_rotframe_jacobian_response
 
 
 function get_jacobian_response(res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true)
@@ -39,7 +38,7 @@ function get_jacobian_response(res::Result, nat_var::Num, Ω_range, followed_bra
 end
 
 
-function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; order, show_progress=true)
+function get_linear_response(res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true)
 
     stable = classify_branch(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")

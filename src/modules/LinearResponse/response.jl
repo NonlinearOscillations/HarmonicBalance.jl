@@ -1,5 +1,3 @@
-export get_response
-
 """
     get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)
 

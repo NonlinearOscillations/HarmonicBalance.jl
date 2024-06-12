@@ -1,5 +1,4 @@
 import HarmonicBalance.compile_matrix
-export get_Jacobian
 
 """
 Here stability and linear response is treated with the slow-flow approximation (SFA), see Chapter 5 of JK's thesis.

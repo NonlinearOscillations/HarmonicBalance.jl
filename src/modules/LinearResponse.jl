@@ -18,4 +18,7 @@ module LinearResponse
     include("LinearResponse/response.jl")
     include("LinearResponse/plotting.jl")
 
+export get_Jacobian
+export plot_linear_response, plot_rotframe_jacobian_response, plot_eigenvalues
+
 end

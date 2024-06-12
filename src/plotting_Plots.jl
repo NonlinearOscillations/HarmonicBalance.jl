@@ -1,6 +1,3 @@
-import Plots.plot, Plots.plot!;
-export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti;
-
 const _set_Plots_default = Dict{Symbol,Any}([
     :fontfamily => "computer modern",
     :titlefont => "computer modern",
@@ -46,7 +43,9 @@ To make the 2d plot less chaotic it is required to specify the specific `branch`
 
 The x and y axes are taken automatically from `res`
 """
-function plot(res::Result, varargs...; cut=Pair(missing, missing), kwargs...)::Plots.Plot
+function Plots.plot(
+    res::Result, varargs...; cut=Pair(missing, missing), kwargs...
+)::Plots.Plot
     if dim(res) == 1
         plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif dim(res) == 2
@@ -65,7 +64,7 @@ $(TYPEDSIGNATURES)
 
 Similar to `plot` but adds a plot onto an existing plot.
 """
-function plot!(res::Result, varargs...; kwargs...)::Plots.Plot
+function Plots.plot!(res::Result, varargs...; kwargs...)::Plots.Plot
     return plot(res, varargs...; add=true, _set_Plots_default..., kwargs...)
 end
 """
@@ -124,7 +123,7 @@ _str_to_vec(s::Vector) = s
 _str_to_vec(s) = [s]
 
 # return true if p already has a label for branch index idx
-function _is_labeled(p::Plots.Plot, idx::Int64)
+function _is_labeled(p::Plot, idx::Int64)
     return in(string(idx), [sub[:label] for sub in p.series_list])
 end
 
@@ -278,7 +277,7 @@ function plot2D_cut(
     ]
 
     # start a new plot if needed
-    p = add ? Plots.plot!() : Plots.plot()
+    p = add ? plot!() : plot()
 
     # colouring is matched to branch index - matched across plots
     for k in findall(branch -> !all(isnan.(branch)), branch_data) # skip NaN branches but keep indices

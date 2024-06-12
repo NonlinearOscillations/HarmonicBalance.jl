@@ -10,7 +10,7 @@ function Base.:*(number::Float64, s::JacobianSpectrum)
     return JacobianSpectrum([number * peak for peak in s.peaks])
 end
 
-function show(io::IO, s::JacobianSpectrum)
+function Base.show(io::IO, s::JacobianSpectrum)
     peaks = sort(s.peaks; by=x -> x.ω0)
     print(io, "Lorentzian peaks (central frequency ω0, linewidth Γ): \n")
     for peak in peaks
@@ -18,7 +18,7 @@ function show(io::IO, s::JacobianSpectrum)
     end
 end
 
-function show(io::IO, spectra::Dict{Num,JacobianSpectrum})
+function Base.show(io::IO, spectra::Dict{Num,JacobianSpectrum})
     for var in keys(spectra)
         print("VARIABLE: ", var, "\n")
         show(spectra[var])

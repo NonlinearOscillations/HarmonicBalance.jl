@@ -2,11 +2,16 @@ using Pkg
 current_path = @__DIR__
 Pkg.activate(current_path * "/../.");
 using HarmonicBalance
+using ExplicitImports
+using DocStringExtensions
 using Test
 
 using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
+
+@test check_no_stale_explicit_imports(HarmonicBalance) == nothing
+@test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
 
 files = [
     "powers.jl",
@@ -22,10 +27,10 @@ files = [
 ]
 
 files_ext = [
-    "ModelingToolkitExt.jl",
-    "SteadyStateDiffEqExt.jl",
     "time_evolution.jl",
     "hysteresis_sweep.jl",
+    "ModelingToolkitExt.jl",
+    "SteadyStateDiffEqExt.jl",
 ]
 
 for file in files

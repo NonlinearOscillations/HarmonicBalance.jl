@@ -1,12 +1,55 @@
-import Symbolics.SymbolicUtils: quick_cancel;
-export quick_cancel;
-using Symbolics.SymbolicUtils: Postwalk #, @compactified
-using Symbolics.SymbolicUtils: Term, Add, Div, Mul, Pow, Sym, BasicSymbolic
-using Symbolics.SymbolicUtils: isterm, ispow, isadd, isdiv, ismul, issym
-using Symbolics: unwrap
+using Symbolics
+using SymbolicUtils:
+    SymbolicUtils,
+    Postwalk,
+    Term,
+    # Add,
+    # Div,
+    # Mul,
+    Pow,
+    Sym,
+    BasicSymbolic,
+    isterm,
+    ispow,
+    isadd,
+    isdiv,
+    ismul,
+    add_with_div,
+    quick_cancel,
+    frac_maketerm #, @compactified
+using SymbolicUtils.TermInterface: issym
+using Symbolics:
+    Symbolics,
+    Num,
+    unwrap,
+    get_variables,
+    simplify,
+    expand_derivatives,
+    build_function,
+    Equation,
+    Differential,
+    @variables,
+    arguments,
+    simplify_fractions,
+    substitute,
+    term,
+    expand,
+    operation
+
+
+
+
+# Symbolics does not natively support complex exponentials of variables
+function Base.exp(x::Complex{Num})
+    return x.re.val == 0 ? exp(im * x.im.val) : exp(x.re.val + im * x.im.val)
+end
+
+Base.ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im * Float64(x.im))
+Base.Float64(x::Complex{Num}) = Float64(ComplexF64(x))
+Base.Float64(x::Num) = Float64(x.val)
 
 # change SymbolicUtils' quick_cancel to simplify powers of fractions correctly
-function quick_cancel(x::Term, y::Term)
+function SymbolicUtils.quick_cancel(x::Term, y::Term)
     if x.f == exp && y.f == exp
         return exp(x.arguments[1] - y.arguments[1]), 1
     else
@@ -14,7 +57,7 @@ function quick_cancel(x::Term, y::Term)
     end
 end
 
-function quick_cancel(x::Term, y::Pow)
+function SymbolicUtils.quick_cancel(x::Term, y::Pow)
     return y.base isa Term && y.base.f == exp ? quick_cancel(x, expand_exp_power(y)) : x, y
 end
 

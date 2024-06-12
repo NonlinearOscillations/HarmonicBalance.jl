@@ -19,10 +19,17 @@ followed_branches, _ = follow_branch(1, result)
 
 plot_1D_solutions_branch(1, result; x="ω", y="u1^2+v1^2")
 
-plot_linear_response(result, x, followed_branches; Ω_range=range(0.9, 1.1, 10), show=false);
+plot_linear_response(
+    result, x, followed_branches; Ω_range=range(0.9, 1.1, 10), show_progress=false
+);
 
 # Check if an empty brspectrum can be plotted
 followed_branches[6] = 3
 plot_linear_response(
-    result, x, followed_branches; Ω_range=range(0.9, 1.1, 10), show=false, force=true
+    result,
+    x,
+    followed_branches;
+    Ω_range=range(0.9, 1.1, 10),
+    show_progress=false,
+    force=true,
 );

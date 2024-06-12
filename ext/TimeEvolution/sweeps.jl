@@ -1,7 +1,6 @@
-import HarmonicBalance: ParameterSweep
-export ParameterSweep
+using HarmonicBalance: ParameterSweep
 
-function ParameterSweep(functions::Dict, timespan::Tuple)
+function HarmonicBalance.ParameterSweep(functions::Dict, timespan::Tuple)
     t0, t1 = timespan[1], timespan[2]
     sweep_func = Dict{Num,Any}([])
     for swept_p in keys(functions)
@@ -12,7 +11,9 @@ function ParameterSweep(functions::Dict, timespan::Tuple)
     return ParameterSweep(sweep_func)
 end
 
-ParameterSweep(functions, timespan::Tuple) = ParameterSweep(Dict(functions), timespan)
+function HarmonicBalance.ParameterSweep(functions, timespan::Tuple)
+    return ParameterSweep(Dict(functions), timespan)
+end
 
 function swept_function(bounds, timespan)
     t0, t1 = timespan

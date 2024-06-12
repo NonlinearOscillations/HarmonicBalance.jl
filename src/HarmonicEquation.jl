@@ -1,10 +1,4 @@
-export get_independent_variables
-export get_harmonic_equations
-export is_rearranged
-export slow_flow, slow_flow!
-export _remove_brackets
-
-show(eom::HarmonicEquation) = show_fields(eom)
+Base.show(eom::HarmonicEquation) = show_fields(eom)
 
 """
     harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian")
@@ -139,12 +133,12 @@ end
 $(TYPEDSIGNATURES)
 Get the internal symbols of the independent variables of `eom`.
 """
-function get_variables(eom::HarmonicEquation)
+function Symbolics.get_variables(eom::HarmonicEquation)
     return flatten(get_variables.(eom.variables))
 end
 
-get_variables(p::Problem) = get_variables(p.eom)
-get_variables(res::Result) = get_variables(res.problem)
+Symbolics.get_variables(p::Problem) = get_variables(p.eom)
+Symbolics.get_variables(res::Result) = get_variables(res.problem)
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"
 function _parameters(eom::HarmonicEquation)

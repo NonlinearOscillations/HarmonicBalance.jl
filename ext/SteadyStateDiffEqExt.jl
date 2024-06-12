@@ -1,12 +1,13 @@
 module SteadyStateDiffEqExt
 
 export steady_state_sweep
-import HarmonicBalance: steady_state_sweep
+using HarmonicBalance: HarmonicBalance, steady_state_sweep
+
 using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS, remake
 using LinearAlgebra: norm, eigvals
 using SteadyStateDiffEq.SciMLBase.SciMLStructures: isscimlstructure, Tunable, replace
 
-function steady_state_sweep(
+function HarmonicBalance.steady_state_sweep(
     prob::SteadyStateProblem, alg::DynamicSS; varied::Pair, kwargs...
 )
     varied_idx, sweep_range = varied
@@ -24,7 +25,7 @@ function steady_state_sweep(
     return result
 end
 
-function steady_state_sweep(
+function HarmonicBalance.steady_state_sweep(
     prob_np::NonlinearProblem,
     prob_ss::SteadyStateProblem,
     alg_np,

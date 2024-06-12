@@ -1,6 +1,3 @@
-export add_harmonic!
-import Symbolics.get_variables
-
 """
 $(TYPEDSIGNATURES)
 Add the harmonic `ω` to the harmonic ansatz used to expand the variable `var` in `diff_eom`.
@@ -29,7 +26,7 @@ end
 $(TYPEDSIGNATURES)
 Return the dependent variables of `diff_eom`.
 """
-get_variables(diff_eom::DifferentialEquation) = collect(keys(diff_eom.equations))
+Symbolics.get_variables(diff_eom::DifferentialEquation) = collect(keys(diff_eom.equations))
 
 is_harmonic(diff_eom::DifferentialEquation, t::Num)::Bool =
     all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
@@ -50,4 +47,4 @@ function get_independent_variables(diff_eom::DifferentialEquation)
     return Num.(flatten(unique([x.val.arguments for x in keys(diff_eom.equations)])))
 end
 
-show(eom::DifferentialEquation) = show_fields(eom)
+Base.show(eom::DifferentialEquation) = show_fields(eom)

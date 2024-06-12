@@ -1,9 +1,3 @@
-using Plots, Latexify, ProgressMeter
-using Latexify.LaTeXStrings
-using HarmonicBalance: _set_Plots_default
-import ..HarmonicBalance: dim, _get_mask
-export plot_linear_response, plot_rotframe_jacobian_response
-
 function get_jacobian_response(
     res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true
 )
@@ -266,7 +260,7 @@ end
 function plot_eigenvalues(
     res; branch, type=:imag, projection=v -> 1, cscheme=:default, kwargs...
 )
-    filter = HarmonicBalance._get_mask(res, ["physical"])
+    filter = _get_mask(res, ["physical"])
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
     dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")

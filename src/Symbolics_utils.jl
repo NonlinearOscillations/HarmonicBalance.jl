@@ -1,13 +1,3 @@
-using Symbolics.SymbolicUtils: add_with_div, frac_maketerm
-
-export rearrange
-export drop_powers
-export get_averaged_equations
-export d
-export substitute_all
-export get_all_terms
-export var_name
-
 "The derivative of f w.r.t. x of degree deg"
 function d(f::Num, x::Num, deg=1)
     return isequal(deg, 0) ? f : (Differential(x)^deg)(f)
@@ -17,7 +7,7 @@ d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
 "Declare a variable in the the currently active namespace"
 function declare_variable(name::String)
     var_sym = Symbol(name)
-    @eval($(var_sym) = first(@variables $var_sym))
+    @eval($(var_sym) = first(Symbolics.@variables $var_sym))
     return eval(var_sym)
 end
 
@@ -25,7 +15,7 @@ end
 function declare_variable(name::String, independent_variable::Num)
     # independent_variable = declare_variable(independent_variable) convert string into Num
     var_sym = Symbol(name)
-    new_var = @variables $var_sym(independent_variable)
+    new_var = Symbolics.@variables $var_sym(independent_variable)
     @eval($(var_sym) = first($new_var)) # store the variable under "name" in this namespace
     return eval(var_sym)
 end
@@ -91,7 +81,7 @@ x^2 + y^2 + 2*x*y
 ```
 """
 function drop_powers(expr::Num, vars::Vector{Num}, deg::Int)
-    @variables ϵ
+    Symbolics.@variables ϵ
     subs_expr = deepcopy(expr)
     rules = Dict([var => ϵ * var for var in unique(vars)])
     subs_expr = Symbolics.expand(substitute_all(subs_expr, rules))

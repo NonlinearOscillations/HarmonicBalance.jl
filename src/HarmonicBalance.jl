@@ -9,9 +9,9 @@ using BijectiveHilbert
 using LinearAlgebra
 using Plots, Latexify
 using Random
-import HomotopyContinuation
+using HomotopyContinuation: HomotopyContinuation
 const HC = HomotopyContinuation
-import Distances
+using Distances: Distances
 # using Requires
 # using SnoopPrecompile
 
@@ -31,7 +31,7 @@ Float64(x::Num) = Float64(x.val)
 export IM_TOL
 IM_TOL::Float64 = 1E-6
 function set_imaginary_tolerance(x::Float64)
-    @eval(IM_TOL::Float64=$x)
+    @eval(IM_TOL::Float64 = $x)
 end
 
 export is_real

@@ -12,11 +12,11 @@ forces = F * cos(ω * t)
 dEOM = DifferentialEquation(natural_equation ~ forces, x)
 
 add_harmonic!(dEOM, x, ω)
-harmonic_eq = get_harmonic_equations(dEOM, slow_time=T, fast_time=t);
+harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
 
 fixed = (Ω => 1.0, γ => 1e-2, F => 1e-3, α => 1.0)
 varied = ω => range(0.9, 1.1, 10)
-res = get_steady_states(harmonic_eq, varied, fixed, show_progress=false, seed=SEED);
+res = get_steady_states(harmonic_eq, varied, fixed; show_progress=false, seed=SEED);
 
 transform_solutions(res, "u1^2+v1^2")
 transform_solutions(res, "√(u1^2+v1^2)"; realify=true)

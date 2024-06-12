@@ -3,7 +3,7 @@ export ParameterSweep
 
 function ParameterSweep(functions::Dict, timespan::Tuple)
     t0, t1 = timespan[1], timespan[2]
-    sweep_func = Dict{Num, Any}([])
+    sweep_func = Dict{Num,Any}([])
     for swept_p in keys(functions)
         bounds = functions[swept_p]
         tfunc = swept_function(bounds, timespan)

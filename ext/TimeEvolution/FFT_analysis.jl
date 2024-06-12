@@ -4,7 +4,7 @@ export FFT
 """
 Fourier transform the timeseries of a simulation in the rotating frame and calculate the quadratures and freqeuncies in the non-rotating frame.
 """
-function FFT(soln_u, soln_t; window = DSP.Windows.hanning)
+function FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     "Input: solution object of DifferentialEquation (positions array and corresponding time)
     Output: Fourier transform and frequencies, where window function window was used"
     w = window(length(soln_t))
@@ -12,17 +12,17 @@ function FFT(soln_u, soln_t; window = DSP.Windows.hanning)
 
     soln_tuples = Tuple.(zip(soln_u, soln_t))
 
-    fft_u = length(soln_t) / sum(w) *
-            [fft(w .* [u[j] for (u, t) in soln_tuples]) |> fftshift
-             for j in 1:length(soln_u[1])]
-    fft_f = fftfreq(length(soln_t), 1 / dt) |> fftshift
+    fft_u =
+        length(soln_t) / sum(w) *
+        [fftshift(fft(w .* [u[j] for (u, t) in soln_tuples])) for j in 1:length(soln_u[1])]
+    fft_f = fftshift(fftfreq(length(soln_t), 1 / dt))
 
     # normalize fft_u
     return (fft_u / length(fft_f), 2 * pi * fft_f)
 end
 
-function FFT(soln::OrdinaryDiffEq.ODESolution; window = DSP.Windows.hanning)
-    FFT(soln.u, soln.t, window = window)
+function FFT(soln::OrdinaryDiffEq.ODESolution; window=DSP.Windows.hanning)
+    return FFT(soln.u, soln.t; window=window)
 end
 
 function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
@@ -31,7 +31,7 @@ function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
     This correction works for a rectangular window."
 
     # retaining more sigdigits gives more ''spurious'' peaks
-    max_indices, mxval = peakprom(round.(abs.(fft_u), sigdigits = 3), minprom = 1)
+    max_indices, mxval = peakprom(round.(abs.(fft_u), sigdigits=3); minprom=1)
     Del = fft_f[2] - fft_f[1] # frequency spacing
     A1 = abs.(fft_u)[max_indices]
     df = zeros(length(max_indices))
@@ -46,7 +46,8 @@ function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
             df[i] = Del / (A1[i] / A2 + 1)
         end
     end
-    return 2 * pi * (fft_f[max_indices] - df), A1 .* 2,
+    return 2 * pi * (fft_f[max_indices] - df),
+    A1 .* 2,
     angle.(fft_u)[max_indices] + pi * df / Del
 end
 
@@ -61,13 +62,20 @@ function u_of_t(omegas_peak, As_peak, phis_peak, t)
 end
 
 function uv_nonrotating_frame(
-        omega_rot, omega_peak, A_u_peak, phi_u_peak, A_v_peak, phi_v_peak)
+    omega_rot, omega_peak, A_u_peak, phi_u_peak, A_v_peak, phi_v_peak
+)
     "calculates amplitudes and frequencies of the position in the nonrotating frame from the
     amplitudes and frequencies in the rotating frame."
     omega_nr = [omega_rot - omega_peak, omega_rot + omega_peak]
-    u_nr = [-A_u_peak * cos(phi_u_peak) + A_v_peak * sin(phi_v_peak);
-            -A_u_peak * cos(phi_u_peak) - A_v_peak * sin(phi_v_peak)] ./ 2
-    v_nr = [A_v_peak * cos(phi_v_peak) + A_u_peak * sin(phi_u_peak);
-            A_v_peak * cos(phi_v_peak) - A_u_peak * sin(phi_u_peak)] ./ 2
+    u_nr =
+        [
+            -A_u_peak * cos(phi_u_peak) + A_v_peak * sin(phi_v_peak)
+            -A_u_peak * cos(phi_u_peak) - A_v_peak * sin(phi_v_peak)
+        ] ./ 2
+    v_nr =
+        [
+            A_v_peak * cos(phi_v_peak) + A_u_peak * sin(phi_u_peak)
+            A_v_peak * cos(phi_v_peak) - A_u_peak * sin(phi_u_peak)
+        ] ./ 2
     return omega_nr, u_nr, v_nr
 end

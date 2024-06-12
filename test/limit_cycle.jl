@@ -2,7 +2,6 @@ using HarmonicBalance
 import HarmonicBalance.LinearResponse.plot_linear_response
 import HarmonicBalance.LimitCycles.get_limit_cycles
 
-
 @testset "van der Pol oscillator " begin
     @variables ω_lc, t, ω0, x(t), μ
 
@@ -15,14 +14,16 @@ import HarmonicBalance.LimitCycles.get_limit_cycles
     harmonic_eq = get_harmonic_equations(dEOM)
     HarmonicBalance.LimitCycles._choose_fixed(harmonic_eq, ω_lc)
 
-    fixed = ();
+    fixed = ()
     varied = μ => range(1, 5, 5)
 
-    result = get_limit_cycles(harmonic_eq, varied, fixed, ω_lc; show_progress=false, seed=SEED)
+    result = get_limit_cycles(
+        harmonic_eq, varied, fixed, ω_lc; show_progress=false, seed=SEED
+    )
 
     @test sum(any.(classify_branch(result, "stable"))) == 4
     @test sum(any.(classify_branch(result, "unique_cycle"))) == 1
 
-    plot(result, y="ω_lc")
-    plot_linear_response(result, x, branch=1, Ω_range=range(0.9, 1.1, 2), order=1)
+    plot(result; y="ω_lc")
+    plot_linear_response(result, x; branch=1, Ω_range=range(0.9, 1.1, 2), order=1)
 end

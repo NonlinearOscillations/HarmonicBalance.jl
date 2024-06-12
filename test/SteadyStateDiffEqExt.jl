@@ -3,21 +3,22 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
 
 @testset "Steady state sweeps" begin
     @testset "one variable ODE" begin
-        @variables t v(t)=0
-        @parameters g=9.8 k=0.2
+        @variables t v(t) = 0
+        @parameters g = 9.8 k = 0.2
         D = Differential(t)
         eqs = [D(v) ~ g - k * v]
         @named model = ODESystem(eqs, t)
 
         model = structural_simplify(model)
 
-        prob_ss = SteadyStateProblem{false}(model, [], [], jac = true)
+        prob_ss = SteadyStateProblem{false}(model, [], []; jac=true)
         prob_np = NonlinearProblem(prob_ss)
 
         varied = 2 => range(0, 1, 100)
 
         swept = steady_state_sweep(
-            prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied = varied)
+            prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied=varied
+        )
     end
 
     @testset "two variable ODE (duffing)" begin
@@ -25,18 +26,24 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         @parameters α ω ω0 F γ
 
         eqs = [
-            Differential(t)(u1) ~ (F * γ - u1 * γ * (ω^2) - u1 * γ * (ω0^2) -
-                                   v1 * (γ^2) * ω - 2 * v1 * (ω^3) +
-                                   2 * v1 * ω * (ω0^2) - (3 // 4) * (u1^3) * α * γ +
-                                   (3 // 2) * (u1^2) * v1 * α * ω -
-                                   (3 // 4) * u1 * (v1^2) * α * γ +
-                                   (3 // 2) * (v1^3) * α * ω) / (γ^2 + (4) * (ω^2)),
-            Differential(t)(v1) ~ (-2 * F * ω - u1 * (γ^2) * ω - (2) * u1 * (ω^3) +
-                                   2 * u1 * ω * (ω0^2) + v1 * γ * (ω^2) +
-                                   v1 * γ * (ω0^2) + (3 // 2) * (u1^3) * α * ω +
-                                   (3 // 4) * (u1^2) * v1 * α * γ +
-                                   (3 // 2) * u1 * (v1^2) * α * ω +
-                                   (3 // 4) * (v1^3) * α * γ) / (-(γ^2) - (4) * (ω^2))
+            Differential(t)(u1) ~
+                (
+                    F * γ - u1 * γ * (ω^2) - u1 * γ * (ω0^2) - v1 * (γ^2) * ω -
+                    2 * v1 * (ω^3) + 2 * v1 * ω * (ω0^2) - (3//4) * (u1^3) * α * γ +
+                    (3//2) * (u1^2) * v1 * α * ω - (3//4) * u1 * (v1^2) * α * γ +
+                    (3//2) * (v1^3) * α * ω
+                ) / (γ^2 + (4) * (ω^2)),
+            Differential(t)(v1) ~
+                (
+                    -2 * F * ω - u1 * (γ^2) * ω - (2) * u1 * (ω^3) +
+                    2 * u1 * ω * (ω0^2) +
+                    v1 * γ * (ω^2) +
+                    v1 * γ * (ω0^2) +
+                    (3//2) * (u1^3) * α * ω +
+                    (3//4) * (u1^2) * v1 * α * γ +
+                    (3//2) * u1 * (v1^2) * α * ω +
+                    (3//4) * (v1^3) * α * γ
+                ) / (-(γ^2) - (4) * (ω^2)),
         ]
 
         @named model = ODESystem(eqs, t, [u1, v1], [α, ω, ω0, F, γ])
@@ -48,19 +55,20 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         gamma = 0.01
         param = [alpha, 1.2, omega0, force, gamma]
         x0 = [1.0, 0.0]
-        prob_ss = SteadyStateProblem{true}(model, x0, param, jac = true)
+        prob_ss = SteadyStateProblem{true}(model, x0, param; jac=true)
         prob_np = NonlinearProblem(prob_ss)
 
         ω_span = (0.9, 1.5)
         ω_range = range(ω_span..., 100)
-        varied_idx = findfirst(x->x==1.2,prob_ss.p.tunable[1])
+        varied_idx = findfirst(x -> x == 1.2, prob_ss.p.tunable[1])
         varied = varied_idx => ω_range
         swept = steady_state_sweep(
-            prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied = varied)
+            prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied=varied
+        )
 
         @test length(swept) == 100
         @test length(swept[1]) == 2
-        @test norm.(swept) isa Array{Float64, 1}
+        @test norm.(swept) isa Array{Float64,1}
         # using Plots, LinearAlgebra; plot(norm.(swept))
 
         function has_discontinuity(v::Vector{Float64})

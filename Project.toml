@@ -1,6 +1,6 @@
 name = "HarmonicBalance"
 uuid = "e13b9ff6-59c3-11ec-14b1-f3d2cc6c135e"
-authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>"]
+authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>", "Orjan Ameye <orjan.ameye@hotmail.com>"]
 version = "0.9.2"
 
 [deps]

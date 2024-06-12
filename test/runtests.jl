@@ -18,14 +18,14 @@ files = [
     "plotting.jl",
     "krylov.jl",
     "linear_response.jl",
-    "limit_cycle.jl"
+    "limit_cycle.jl",
 ]
 
 files_ext = [
     "ModelingToolkitExt.jl",
     "SteadyStateDiffEqExt.jl",
     "time_evolution.jl",
-    "hysteresis_sweep.jl"
+    "hysteresis_sweep.jl",
 ]
 
 for file in files

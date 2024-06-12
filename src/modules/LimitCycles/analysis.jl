@@ -1,6 +1,6 @@
 import HarmonicBalance: classify_solutions, _free_symbols, _symidx, _is_physical
 
-function classify_unique!(res::Result, Δω; class_name="unique_cycle")
+function classify_unique!(res::Result, Δω; class_name = "unique_cycle")
 
     # 1st degeneracy: arbitrary sign of Δω
     i1 = _symidx(Δω, res)

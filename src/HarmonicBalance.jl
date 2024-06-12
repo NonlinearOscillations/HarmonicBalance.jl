@@ -66,6 +66,9 @@ export plot_linear_response, plot_rotframe_jacobian_response
 
 include("modules/LimitCycles.jl")
 using .LimitCycles
+export get_cycle_variables
+export add_pairs!
+export get_limit_cycles
 
 include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov

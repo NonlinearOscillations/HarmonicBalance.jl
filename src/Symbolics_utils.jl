@@ -1,4 +1,4 @@
-using Symbolics.SymbolicUtils: add_with_div, frac_similarterm
+using Symbolics.SymbolicUtils: add_with_div, frac_maketerm
 
 export rearrange
 export drop_powers
@@ -260,7 +260,7 @@ function _fourier_term(x, ω, t, f)
 end
 
 "Simplify fraction a/b + c/d = (ad + bc)/bd"
-add_div(x) =  Num(Postwalk(add_with_div, similarterm=frac_similarterm)(unwrap(x)))
+add_div(x) =  Num(Postwalk(add_with_div, maketerm=frac_maketerm)(unwrap(x)))
 
 "Expand all sin/cos powers in `x`."
 function trig_reduce(x)

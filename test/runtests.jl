@@ -1,42 +1,54 @@
-using Pkg
-current_path = @__DIR__
-Pkg.activate(current_path * "/../.");
 using HarmonicBalance
-using Test
+using Test, TestItems
 
 using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-files = [
-    "powers.jl",
-    "harmonics.jl",
-    "fourier.jl",
-    "load.jl",
-    "parametron.jl",
-    "transform_solutions.jl",
-    "plotting.jl",
-    "krylov.jl",
-    "linear_response.jl",
-    "limit_cycle.jl",
-]
-
-files_ext = [
-    "ModelingToolkitExt.jl",
-    "SteadyStateDiffEqExt.jl",
-    "time_evolution.jl",
-    "hysteresis_sweep.jl",
-]
-
-for file in files
-    include(file)
-    printstyled(file * ":    OK\n"; color=:green)
+@testset "Package health" begin
+    using ExplicitImports
+    @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
+    @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
 end
 
-if isdefined(Base, :get_extension) && VERSION >= v"1.9.0"
-    for file in files_ext
-        include(file)
-        printstyled(file * ":    OK\n"; color=:green)
-    end
+@testset "Symbolics customised" begin
+    include("powers.jl")
+    include("harmonics.jl")
+    include("fourier.jl")
 end
-printstyled("\nALL TESTS PASSED!\n"; color=:green)
+
+@testset "IO" begin
+    include("load.jl")
+end
+
+@testset "Computing steady states" begin
+    include("parametron.jl")
+    include("krylov.jl")
+end
+
+@testset "Processing solutions" begin
+    include("transform_solutions.jl")
+end
+
+@testset "Plotting" begin
+    include("plotting.jl")
+end
+
+@testset "Linear response" begin
+    include("linear_response.jl")
+end
+
+@testset "Limit cycle" begin
+    include("limit_cycle.jl")
+end
+
+@testset "Time evolution extention" begin
+    include("time_evolution.jl")
+    include("hysteresis_sweep.jl")
+end
+
+@testset "Extentions" begin
+    include("ModelingToolkitExt.jl")
+    include("SteadyStateDiffEqExt.jl")
+
+end

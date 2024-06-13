@@ -1,11 +1,5 @@
-using LinearAlgebra
-using Symbolics.SymbolicUtils: isterm
-import HomotopyContinuation: Variable
-import HarmonicBalance: Problem
-export Problem, Num_to_Variable
-
 "Conversion from Symbolics.jl types to HomotopyContinuation types."
-Variable(var::Num) =
+HomotopyContinuation.Variable(var::Num) =
     isterm(var.val) ? Variable(string(var.val.f)) : Variable(string(var_name(var)))
 
 "Converts a Num into Variable in the active namespace."
@@ -36,7 +30,7 @@ declare_variable(x::Num) = declare_variable(string(x))
 
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
-function Problem(eom::HarmonicEquation; Jacobian=true)
+function HarmonicBalance.Problem(eom::HarmonicEquation; Jacobian=true)
     S = System(eom)
     # use the rearranged system for the proper definition of the Jacobian
     # this possibly has variables in the denominator and cannot be used for solving
@@ -49,12 +43,14 @@ function Problem(eom::HarmonicEquation; Jacobian=true)
         J = Jacobian
     end
     vars_orig = get_variables(eom)
-    vars_new = declare_variable.(HarmonicBalance.var_name.(vars_orig))
+    vars_new = declare_variable.(var_name.(vars_orig))
     return Problem(vars_new, eom.parameters, S, J, eom)
 end
 
 "A constructor for Problem from explicitly entered equations, variables and parameters."
-function Problem(equations::Vector{Num}, variables::Vector{Num}, parameters::Vector{Num})
+function HarmonicBalance.Problem(
+    equations::Vector{Num}, variables::Vector{Num}, parameters::Vector{Num}
+)
     conv_vars = Num_to_Variable.(variables)
     conv_para = Num_to_Variable.(parameters)
 
@@ -62,8 +58,8 @@ function Problem(equations::Vector{Num}, variables::Vector{Num}, parameters::Vec
         Expression(eval(symbol)) for
         symbol in [Meta.parse(s) for s in [string(eq) for eq in equations]]
     ] #note in polar coordinates there could be imaginary factors, requiring the extra replacement "I"=>"1im"
-    system = HC.System(eqs_HC; variables=conv_vars, parameters=conv_para)
-    J = HarmonicBalance.get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
+    system = HomotopyContinuation.System(eqs_HC; variables=conv_vars, parameters=conv_para)
+    J = get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
     return Problem(variables, parameters, system, J)
 end
 
@@ -71,5 +67,7 @@ function System(eom::HarmonicEquation)
     eqs = expand_derivatives.(_remove_brackets(eom))
     conv_vars = Num_to_Variable.(get_variables(eom))
     conv_para = Num_to_Variable.(eom.parameters)
-    return S = HC.System(parse_equations(eqs); variables=conv_vars, parameters=conv_para)
+    return S = HomotopyContinuation.System(
+        parse_equations(eqs); variables=conv_vars, parameters=conv_para
+    )
 end

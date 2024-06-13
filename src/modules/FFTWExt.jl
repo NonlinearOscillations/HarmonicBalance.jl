@@ -1,3 +1,5 @@
+module FFTWExt
+
 using DSP: DSP
 using FFTW: fft, fftfreq, fftshift
 using Peaks: Peaks
@@ -5,7 +7,7 @@ using Peaks: Peaks
 """
 Fourier transform the timeseries of a simulation in the rotating frame and calculate the quadratures and freqeuncies in the non-rotating frame.
 """
-function HarmonicBalance.FFT(soln_u, soln_t; window=DSP.Windows.hanning)
+function FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     "Input: solution object of DifferentialEquation (positions array and corresponding time)
     Output: Fourier transform and frequencies, where window function window was used"
     w = window(length(soln_t))
@@ -22,9 +24,9 @@ function HarmonicBalance.FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     return (fft_u / length(fft_f), 2 * pi * fft_f)
 end
 
-function HarmonicBalance.FFT(soln::OrdinaryDiffEq.ODESolution; window=DSP.Windows.hanning)
-    return HarmonicBalance.FFT(soln.u, soln.t; window=window)
-end
+# function HarmonicBalance.FFT(soln::OrdinaryDiffEq.ODESolution; window=DSP.Windows.hanning)
+#     return HarmonicBalance.FFT(soln.u, soln.t; window=window)
+# end
 
 function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
     "finds peaks in the spectrum and returns corresponding frequency, amplitude and phase.
@@ -80,3 +82,4 @@ function uv_nonrotating_frame(
         ] ./ 2
     return omega_nr, u_nr, v_nr
 end
+end # module

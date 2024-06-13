@@ -61,7 +61,9 @@ end
 function substitute_all(x::Union{Num,Equation}, rules::Union{Pair,Vector,OrderedDict})
     return substitute_all(x, Dict(rules))
 end
-substitute_all(x::Complex{Num}, rules::Union{Pair,Vector,OrderedDict, Dict}) = substitute_all(Num(x.re.val.arguments[1]), rules)
+function substitute_all(x::Complex{Num}, rules::Union{Pair,Vector,OrderedDict,Dict})
+    return substitute_all(Num(x.re.val.arguments[1]), rules)
+end
 substitute_all(x, rules) = substitute_all(Num(x), rules::Dict)
 
 """

@@ -25,7 +25,6 @@ const HB = HarmonicBalance
 
 include("sweeps.jl")
 include("ODEProblem.jl")
-include("FFT_analysis.jl")
 include("hysteresis_sweep.jl")
 include("plotting.jl")
 

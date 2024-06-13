@@ -50,5 +50,4 @@ end
 @testset "Extentions" begin
     include("ModelingToolkitExt.jl")
     include("SteadyStateDiffEqExt.jl")
-
 end

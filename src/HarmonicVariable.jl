@@ -1,9 +1,6 @@
-import Symbolics: get_variables;
-export get_variables;
-
 # pretty-printing
-display(var::HarmonicVariable) = display(var.name)
-display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name")))
+Base.display(var::HarmonicVariable) = display(var.name)
+Base.display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name")))
 
 function _coordinate_transform(new_var, ω, t, type)::Num
     coords = Dict([
@@ -47,9 +44,10 @@ function substitute_all(vars::Vector{HarmonicVariable}, rules)
 end
 
 "Returns the symbols of a `HarmonicVariable`."
-get_variables(vars::Vector{Num}) = unique(flatten([Num.(get_variables(x)) for x in vars]))
+Symbolics.get_variables(vars::Vector{Num}) =
+    unique(flatten([Num.(get_variables(x)) for x in vars]))
 
-get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
+Symbolics.get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
 
 Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable)::Bool =
     isequal(v1.symbol, v2.symbol)

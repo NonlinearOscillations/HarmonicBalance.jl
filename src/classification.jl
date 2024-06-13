@@ -1,6 +1,3 @@
-export classify_branch
-export classify_solutions!
-
 """
 $(TYPEDSIGNATURES)
 

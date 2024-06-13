@@ -1,7 +1,3 @@
-export get_steady_states
-export get_single_solution
-export _free_symbols
-
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)
 function _free_symbols(res::Result)
     return cat(res.problem.variables, collect(keys(res.swept_parameters)); dims=1)

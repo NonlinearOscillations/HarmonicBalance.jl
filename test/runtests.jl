@@ -28,10 +28,10 @@ files_ext = [
     "hysteresis_sweep.jl",
 ]
 
-# for file in files
-#     include(file)
-#     printstyled(file * ":    OK\n"; color=:green)
-# end
+for file in files
+    include(file)
+    printstyled(file * ":    OK\n"; color=:green)
+end
 
 if isdefined(Base, :get_extension) && VERSION >= v"1.9.0"
     for file in files_ext

@@ -1,15 +1,8 @@
-export DifferentialEquation, HarmonicVariable, HarmonicEquation, Problem, Result
-
 const ParameterRange = OrderedDict{Num,Vector{Union{Float64,ComplexF64}}};
-export ParameterRange;
 const ParameterList = OrderedDict{Num,Float64};
-export ParameterList;
 const StateDict = OrderedDict{Num,ComplexF64};
-export StateDict;
 const SteadyState = Vector{ComplexF64};
-export SteadyState;
 const ParameterVector = Vector{Float64};
-export ParameterVector;
 
 """
 $(TYPEDEF)
@@ -60,7 +53,7 @@ mutable struct DifferentialEquation
     end
 end
 
-function show(io::IO, diff_eq::DifferentialEquation)
+function Base.show(io::IO, diff_eq::DifferentialEquation)
     println(io, "System of ", length(keys(diff_eq.equations)), " differential equations")
     println(io, "Variables:       ", join(keys(diff_eq.equations), ", "))
     print(io, "Harmonic ansatz: ")
@@ -93,7 +86,7 @@ mutable struct HarmonicVariable
     natural_variable::Num
 end
 
-function show(io::IO, hv::HarmonicVariable)
+function Base.show(io::IO, hv::HarmonicVariable)
     return println(
         io,
         "Harmonic variable ",
@@ -133,7 +126,7 @@ mutable struct HarmonicEquation
     end
 end
 
-function show(io::IO, eom::HarmonicEquation)
+function Base.show(io::IO, eom::HarmonicEquation)
     println(io, "A set of ", length(eom.equations), " harmonic equations")
     println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
     println(io, "Parameters: ", join(string.(eom.parameters), ", "))
@@ -202,7 +195,7 @@ mutable struct Problem
     end
 end
 
-function show(io::IO, p::Problem)
+function Base.show(io::IO, p::Problem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")
     println(io, "Variables: ", join(string.(p.variables), ", "))
     println(io, "Parameters: ", join(string.(p.parameters), ", "))
@@ -244,7 +237,7 @@ mutable struct Result
     Result(sol, swept, fixed, problem) = new(sol, swept, fixed, problem, Dict([]))
 end
 
-function show(io::IO, r::Result)
+function Base.show(io::IO, r::Result)
     println(io, "A steady state result for ", length(r.solutions), " parameter points")
     println(io, "\nSolution branches:   ", length(r.solutions[1]))
     println(io, "   of which real:    ", sum(any.(classify_branch(r, "physical"))))

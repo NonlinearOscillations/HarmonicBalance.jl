@@ -5,7 +5,8 @@ using LinearAlgebra
 using Printf
 using Symbolics
 using OrderedCollections
-using ..HarmonicBalance
+using HarmonicBalance
+using HarmonicBalance: _remove_brackets, _free_symbols
 using ..HC_wrapper
 using DocStringExtensions
 

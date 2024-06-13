@@ -1,5 +1,3 @@
-export transform_solutions
-
 _parse_expression(exp) = exp isa String ? Num(eval(Meta.parse(exp))) : exp
 
 """
@@ -61,7 +59,7 @@ function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
     transformed = Vector{ComplexF64}(undef, length(soln))
 
     # parse the input with Symbolics
-    expr = HarmonicBalance._parse_expression(f)
+    expr = _parse_expression(f)
 
     rule(u) = Dict(zip(vars, u))
 

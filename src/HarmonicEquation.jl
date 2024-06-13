@@ -81,9 +81,9 @@ function slow_flow(
 end
 
 #   Drop powers of `var` of degree >= `deg` from the equation set in `eom`.
-function drop_powers(eom::HarmonicEquation, var, deg::Integer)
+function drop_powers(eom::HarmonicEquation, terms::Vector{Num}, deg::Int)
     new_eom = deepcopy(eom)
-    new_eom.equations = drop_powers(eom.equations, var, deg)
+    new_eom.equations = drop_powers(eom.equations, terms, deg)
     return new_eom
 end
 
@@ -282,10 +282,4 @@ function _remove_brackets(eom::HarmonicEquation)
     variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
     equations_lhs = Num.(getfield.(eom.equations, :lhs) - getfield.(eom.equations, :rhs))
     return substitute_all(equations_lhs, variable_rules)
-end
-
-function drop_powers(eom::HarmonicEquation, terms, deg::Int)
-    new_eom = deepcopy(eom)
-    new_eom.equations = drop_powers(eom.equations, terms, deg)
-    return new_eom
 end

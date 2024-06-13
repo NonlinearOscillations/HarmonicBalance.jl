@@ -58,12 +58,11 @@ function substitute_all(
 )
     return [substitute_all(x, rules) for x in v]
 end
-function substitute_all(x::Union{Num,Equation}, rules::Union{Pair,Vector,Dict})
+function substitute_all(x::Union{Num,Equation}, rules::Union{Pair,Vector,OrderedDict})
     return substitute_all(x, Dict(rules))
 end
-substitute_all(x, rules::OrderedDict) = substitute_all(x, Dict(rules))
-substitute_all(x::Complex{Num}, rules) = substitute_all(Num(x.re.val.arguments[1]), rules)
-substitute_all(x, rules) = substitute_all(Num(x), rules)
+substitute_all(x::Complex{Num}, rules::Union{Pair,Vector,OrderedDict, Dict}) = substitute_all(Num(x.re.val.arguments[1]), rules)
+substitute_all(x, rules) = substitute_all(Num(x), rules::Dict)
 
 """
 $(SIGNATURES)
@@ -92,21 +91,21 @@ function drop_powers(expr::Num, vars::Vector{Num}, deg::Int)
     #res isa Complex ? Num(res.re.val.arguments[1]) : res
 end
 
-function drop_powers(expr::Vector{Num}, var::Num, deg::Int)
+function drop_powers(expr::Vector{Num}, var::Vector{Num}, deg::Int)
     return [drop_powers(x, var, deg) for x in expr]
 end
 
 # calls the above for various types of the first argument
-function drop_powers(eq::Equation, var, deg)
+function drop_powers(eq::Equation, var::Vector{Num}, deg::Int)
     return drop_powers(eq.lhs, var, deg) .~ drop_powers(eq.lhs, var, deg)
 end
-function drop_powers(eqs::Vector{Equation}, var, deg)
+function drop_powers(eqs::Vector{Equation}, var::Vector{Num}, deg::Int)
     return [
         Equation(drop_powers(eq.lhs, var, deg), drop_powers(eq.rhs, var, deg)) for eq in eqs
     ]
 end
 drop_powers(expr, var::Num, deg::Int) = drop_powers(expr, [var], deg)
-drop_powers(x, vars, deg) = drop_powers(Num(x), vars, deg)
+drop_powers(x, vars, deg::Int) = drop_powers(Num(x), vars, deg)
 
 flatten(a) = collect(Iterators.flatten(a))
 

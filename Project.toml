@@ -53,16 +53,17 @@ SteadyStateDiffEq = "1, 2"
 SymbolicUtils = "2.0"
 Symbolics = "5.0.0"
 julia = "1.10.0"
+Aqua = "0.8"
 
 [extras]
 ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
-TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 NonlinearSolve = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 
 [targets]
-test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve", "ExplicitImports", "TestItems"]
+test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve", "ExplicitImports", "Aqua"]

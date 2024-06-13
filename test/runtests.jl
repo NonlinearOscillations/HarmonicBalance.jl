@@ -1,14 +1,16 @@
 using HarmonicBalance
-using Test, TestItems
+using Test
 
 using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
 @testset "Package health" begin
-    using ExplicitImports
+    using ExplicitImports, Aqua
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
+    Aqua.test_ambiguities(HarmonicBalance)
+    # Aqua.test_all(HarmonicBalance)
 end
 
 @testset "Symbolics customised" begin

@@ -1,16 +1,3 @@
-export get_cycle_variables
-export add_pairs!
-
-using HarmonicBalance: is_rearranged, rearrange_standard, _remove_brackets
-using HarmonicBalance.LinearResponse: get_implicit_Jacobian, get_Jacobian
-import HarmonicBalance:
-    is_stable,
-    is_physical,
-    is_Hopf_unstable,
-    order_branches!,
-    classify_binaries!,
-    find_branch_order
-
 function add_pairs!(eom::DifferentialEquation, ω_lc::Num)
     for var in get_variables(eom), ω in eom.harmonics[var]
         add_harmonic!(eom, var, ω + ω_lc)

@@ -1,6 +1,3 @@
-import HarmonicBalance.compile_matrix
-export get_Jacobian
-
 """
 Here stability and linear response is treated with the slow-flow approximation (SFA), see Chapter 5 of JK's thesis.
 Linear response always appears as a sum of Lorentzians, but is inaccurate where these are peaked far from the drive frequency.
@@ -15,8 +12,7 @@ This is the linearised left-hand side of F(u) = du/dT.
 
 """
 function get_Jacobian(eom::HarmonicEquation)
-    rearr =
-        !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
+    rearr = !is_rearranged(eom) ? rearrange_standard(eom) : eom
     lhs = _remove_brackets(rearr)
     vars = _remove_brackets.(eom.variables)
 
@@ -61,13 +57,11 @@ function _get_J_matrix(eom::HarmonicEquation; order=0)
         "Cannot get a J matrix of order > 1 from the harmonic equations.\nThese are by definition missing higher derivatives",
     )
 
-    vars_simp = Dict([
-        var => HarmonicBalance._remove_brackets(var) for var in get_variables(eom)
-    ])
+    vars_simp = Dict([var => _remove_brackets(var) for var in get_variables(eom)])
     T = get_independent_variables(eom)[1]
     J = get_Jacobian(eom.equations, d(get_variables(eom), T, order))
 
-    return expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp)) # a symbolic matrix to be compiled
+    return expand_derivatives.(substitute_all(J, vars_simp)) # a symbolic matrix to be compiled
 end
 
 # COMPILE THIS?

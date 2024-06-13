@@ -1,5 +1,3 @@
-export get_response
-
 """
     get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)
 
@@ -12,12 +10,12 @@ function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2):
     @variables T, i
     time = get_independent_variables(diff_eq)[1]
 
-    eom = HarmonicBalance.harmonic_ansatz(diff_eq, time)
+    eom = harmonic_ansatz(diff_eq, time)
 
     # replace the time-dependence of harmonic variables by slow time BUT do not drop any derivatives
-    eom = HarmonicBalance.slow_flow(eom; fast_time=time, slow_time=T, degree=order + 1)
+    eom = slow_flow(eom; fast_time=time, slow_time=T, degree=order + 1)
 
-    eom = HarmonicBalance.fourier_transform(eom, time)
+    eom = fourier_transform(eom, time)
 
     # get the response matrix by summing the orders
     M = get_Jacobian(eom.equations, get_variables(eom))
@@ -25,11 +23,7 @@ function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2):
         M += (i * freq)^n * get_Jacobian(eom.equations, d(get_variables(eom), T, n))
     end
     M = substitute_all(
-        M,
-        [
-            var => HarmonicBalance.declare_variable(var_name(var)) for
-            var in get_variables(eom)
-        ],
+        M, [var => declare_variable(var_name(var)) for var in get_variables(eom)]
     )
     return substitute_all(expand_derivatives.(M), i => im)
 end

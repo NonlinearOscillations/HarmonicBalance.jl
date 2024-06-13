@@ -37,7 +37,7 @@ function HarmonicBalance.Problem(eom::HarmonicEquation; Jacobian=true)
     if Jacobian == true || Jacobian == "explicit"
         J = HarmonicBalance.get_Jacobian(eom)
     elseif Jacobian == "false" || Jacobian == false
-        dummy_J(arg) = I(1)
+        dummy_J(arg) = LinearAlgebra.I(1)
         J = dummy_J
     else
         J = Jacobian
@@ -59,9 +59,9 @@ function HarmonicBalance.Problem(
         symbol in [Meta.parse(s) for s in [string(eq) for eq in equations]]
     ] #note in polar coordinates there could be imaginary factors, requiring the extra replacement "I"=>"1im"
     system = HomotopyContinuation.System(eqs_HC; variables=conv_vars, parameters=conv_para)
-    J = get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
+    J = HarmonicBalance.get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
     return Problem(variables, parameters, system, J)
-end
+end # is this funciton still needed/used?
 
 function System(eom::HarmonicEquation)
     eqs = expand_derivatives.(_remove_brackets(eom))

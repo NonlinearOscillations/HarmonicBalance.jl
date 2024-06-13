@@ -83,7 +83,7 @@ function get_linear_response(
 end
 
 function get_rotframe_jacobian_response(
-    res::Result, Ω_range, branch::Int; show_progress=show_progress, damping_mod::Float64
+    res::Result, Ω_range, branch::Int; show_progress=true, damping_mod::Float64
 )
     stable = classify_branch(res, branch, "stable")
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")

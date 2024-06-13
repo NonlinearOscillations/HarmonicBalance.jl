@@ -9,11 +9,12 @@ using Latexify: Latexify, latexify, @L_str
 using Latexify.LaTeXStrings: LaTeXStrings
 
 using Symbolics: Num, build_function, Equation, substitute, unwrap
-using LinearAlgebra: norm, eigvals, eigen
+using LinearAlgebra: norm, eigvals, eigen, eigvecs
 using OrderedCollections: OrderedDict
 
 using HarmonicBalance
 using HarmonicBalance:
+    var_name,
     rearrange_standard,
     _remove_brackets,
     expand_derivatives,

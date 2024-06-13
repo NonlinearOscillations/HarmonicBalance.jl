@@ -47,7 +47,7 @@ end
 get_variables_nums(vars::Vector{Num}) =
     unique(flatten([Num.(get_variables(x)) for x in vars]))
 
-Symbolics.get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))
+Symbolics.get_variables(var::HarmonicVariable)::Num = Num(first(get_variables(var.symbol)))
 
 Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable)::Bool =
     isequal(v1.symbol, v2.symbol)

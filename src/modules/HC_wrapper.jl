@@ -3,6 +3,7 @@ module HC_wrapper
 using DocStringExtensions
 using Symbolics: Num, @variables
 using Symbolics.SymbolicUtils: isterm
+using LinearAlgebra: LinearAlgebra
 
 using HarmonicBalance:
     HarmonicBalance,

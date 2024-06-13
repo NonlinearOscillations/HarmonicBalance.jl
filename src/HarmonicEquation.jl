@@ -133,12 +133,12 @@ end
 $(TYPEDSIGNATURES)
 Get the internal symbols of the independent variables of `eom`.
 """
-function Symbolics.get_variables(eom::HarmonicEquation)
-    return flatten(get_variables.(eom.variables))
+function Symbolics.get_variables(eom::HarmonicEquation)::Vector{Num}
+    return get_variables.(eom.variables)
 end
 
-Symbolics.get_variables(p::Problem) = get_variables(p.eom)
-Symbolics.get_variables(res::Result) = get_variables(res.problem)
+Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
+Symbolics.get_variables(res::Result)::Vector{Num} = get_variables(res.problem)
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"
 function _parameters(eom::HarmonicEquation)

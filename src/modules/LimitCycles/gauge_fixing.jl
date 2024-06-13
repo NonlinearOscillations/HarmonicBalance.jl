@@ -23,25 +23,29 @@ function get_cycle_variables(eom::HarmonicEquation, ω_lc::Num)
     return vars = filter(x -> any(isequal.(ω_lc, get_all_terms(x.ω))), eom.variables)
 end
 
-"""
-    Obtain the Jacobian of `eom` with a gauge-fixed variable `fixed_var`.
-    `fixed_var` marks the variable which is fixed to zero due to U(1) symmetry.
-    This leaves behind a finite degeneracy of solutions (see Chapter 6 of Jan's thesis).
+# """
+#     Obtain the Jacobian of `eom` with a gauge-fixed variable `fixed_var`.
+#     `fixed_var` marks the variable which is fixed to zero due to U(1) symmetry.
+#     This leaves behind a finite degeneracy of solutions (see Chapter 6 of Jan's thesis).
 
-    For limit cycles, we always use an 'implicit' Jacobian - a function which only returns the numerical Jacobian when a numerical solution
-    is inserted. Finding the analytical Jacobian is usually extremely time-consuming.
-"""
+#     For limit cycles, we always use an 'implicit' Jacobian - a function which only returns the numerical Jacobian when a numerical solution
+#     is inserted. Finding the analytical Jacobian is usually extremely time-consuming.
+# """
 function _gaugefixed_Jacobian(
     eom::HarmonicEquation, fixed_var::HarmonicVariable; explicit=false, sym_order, rules
 )
     if explicit
-        _fix_gauge!(get_Jacobian(eom), fixed_var) # get a symbolic explicit J, compile later
+        error("Explicit Jacobian not implemented for limit cycles yet!")
+        # _fix_gauge!(get_Jacobian(eom), fixed_var) # get a symbolic explicit J, compile later
     else
         rules = Dict(rules)
         setindex!(rules, 0, _remove_brackets(fixed_var))
-        get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
+        jac = get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
     end
+    return jac
 end
+# ^ The above function is not finished?
+# no matching method found `_fix_gauge!(::Matrix{Symbolics.Num}, ::HarmonicBalance.HarmonicVariable)`
 
 """
 $(TYPEDSIGNATURES)

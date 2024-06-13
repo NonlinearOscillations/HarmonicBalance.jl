@@ -1,8 +1,8 @@
 "The derivative of f w.r.t. x of degree deg"
-function d(f::Num, x::Num, deg=1)
+function d(f::Num, x::Num, deg=1)::Num
     return isequal(deg, 0) ? f : (Differential(x)^deg)(f)
 end
-d(funcs::Vector{Num}, x::Num, deg=1) = [d(f, x, deg) for f in funcs]
+d(funcs::Vector{Num}, x::Num, deg=1) = Num[d(f, x, deg) for f in funcs]
 
 "Declare a variable in the the currently active namespace"
 function declare_variable(name::String)
@@ -64,7 +64,7 @@ end
 function substitute_all(x::Complex{Num}, rules::Union{Pair,Vector,OrderedDict,Dict})
     return substitute_all(Num(x.re.val.arguments[1]), rules)
 end
-substitute_all(x, rules) = substitute_all(Num(x), rules::Dict)
+substitute_all(x, rules) = substitute_all(Num(x), rules)
 
 """
 $(SIGNATURES)

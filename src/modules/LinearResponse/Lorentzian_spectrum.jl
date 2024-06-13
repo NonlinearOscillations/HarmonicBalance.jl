@@ -40,14 +40,10 @@ function add_peak(s1::JacobianSpectrum, s2::JacobianSpectrum)
 end
 
 "Gives the numerical value of a peak at ω."
-evaluate(peak::Lorentzian, ω::Float64) = peak.A / sqrt(((peak.ω0 - ω)^2 + (peak.Γ)^2))
+evaluate(peak::Lorentzian, ω::Float64)::Float64 = peak.A / sqrt(((peak.ω0 - ω)^2 + (peak.Γ)^2))
 
 "Gives the numerical value of a JacobianSpectrum at ω"
-evaluate(s::JacobianSpectrum, ω::Float64) = sum([evaluate(p, ω) for p in s.peaks])
-
-function evaluate(spectra::Dict{Num,JacobianSpectrum}, ω::Float64)
-    return Dict([[var, evaluate(spectra[var], ω)] for var in keys(spectra)])
-end
+evaluate(s::JacobianSpectrum, ω::Float64)::Float64 = sum([evaluate(p, ω) for p in s.peaks])
 
 "Take a pair of harmonic variable u,v and an eigenvalue λ and eigenvector eigvec_2d of the Jacobian to generate corresponding Lorentzians.
     IMPORTANT: The eigenvetor eigen_2d contains only the two components of the full eigenvector which correspond to the u,v pair in question."

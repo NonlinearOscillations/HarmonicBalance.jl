@@ -36,9 +36,6 @@ using Symbolics:
     expand,
     operation
 
-
-
-
 # Symbolics does not natively support complex exponentials of variables
 function Base.exp(x::Complex{Num})
     return x.re.val == 0 ? exp(im * x.im.val) : exp(x.re.val + im * x.im.val)

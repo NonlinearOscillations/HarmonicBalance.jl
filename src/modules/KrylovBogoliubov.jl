@@ -4,11 +4,7 @@ using DocStringExtensions
 using OrderedCollections: OrderedDict
 
 using Symbolics
-using Symbolics:
-    unwrap,
-    diff2term,
-    var_from_nested_derivative,
-    lower_varname
+using Symbolics: unwrap, diff2term, var_from_nested_derivative, lower_varname
 using SymbolicUtils: BasicSymbolic, isdiv
 
 using HarmonicBalance

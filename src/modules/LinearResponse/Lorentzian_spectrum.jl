@@ -40,7 +40,8 @@ function add_peak(s1::JacobianSpectrum, s2::JacobianSpectrum)
 end
 
 "Gives the numerical value of a peak at ω."
-evaluate(peak::Lorentzian, ω::Float64)::Float64 = peak.A / sqrt(((peak.ω0 - ω)^2 + (peak.Γ)^2))
+evaluate(peak::Lorentzian, ω::Float64)::Float64 =
+    peak.A / sqrt(((peak.ω0 - ω)^2 + (peak.Γ)^2))
 
 "Gives the numerical value of a JacobianSpectrum at ω"
 evaluate(s::JacobianSpectrum, ω::Float64)::Float64 = sum([evaluate(p, ω) for p in s.peaks])

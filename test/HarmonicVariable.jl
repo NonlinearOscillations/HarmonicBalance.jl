@@ -8,7 +8,6 @@ diff_eq = DifferentialEquation(
 
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
 
-
 harmonic_eq = get_harmonic_equations(diff_eq) # implement ansatz to get harmonic equations
 get_variables(harmonic_eq)
 

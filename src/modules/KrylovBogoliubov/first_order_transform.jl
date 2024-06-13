@@ -1,5 +1,3 @@
-export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
-
 get_equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
 # TODO: check the degree of the eom

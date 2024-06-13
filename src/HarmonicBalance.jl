@@ -3,6 +3,7 @@ module HarmonicBalance
 using Printf
 using OrderedCollections
 using Symbolics
+using SymbolicUtils
 using ProgressMeter
 using DocStringExtensions
 using BijectiveHilbert

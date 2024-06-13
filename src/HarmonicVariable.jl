@@ -44,7 +44,7 @@ function substitute_all(vars::Vector{HarmonicVariable}, rules)
 end
 
 "Returns the symbols of a `HarmonicVariable`."
-Symbolics.get_variables(vars::Vector{Num}) =
+get_variables_nums(vars::Vector{Num}) =
     unique(flatten([Num.(get_variables(x)) for x in vars]))
 
 Symbolics.get_variables(var::HarmonicVariable) = Num.(get_variables(var.symbol))

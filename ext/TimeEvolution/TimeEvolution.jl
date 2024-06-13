@@ -1,7 +1,7 @@
 module TimeEvolution
 
 using DocStringExtensions
-using Symbolics: Num, substitute
+using Symbolics: Num, substitute, unwrap
 using OrdinaryDiffEq: OrdinaryDiffEq
 
 using HarmonicBalance:

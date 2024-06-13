@@ -61,7 +61,7 @@ _parse_loaded(x) = x
 function _parse_symbol_names(x::Problem)
     all_symbols = cat(
         x.parameters,
-        get_variables(x.variables),
+        get_variables_nums(x.variables),
         get_independent_variables(x.eom),
         get_independent_variables(x.eom.natural_equation);
         dims=1,

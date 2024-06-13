@@ -39,10 +39,12 @@ function OrdinaryDiffEq.ODEProblem(
     eqs(v) = [substitute(eq, Dict(zip(vars, v))) for eq in subeqs]
     # substitute  sweep parameters
     function eqs(v, T)
-        return [
-            substitute(eq, Dict(zip(keys(sweep), [sweep[p](T) for p in keys(sweep)]))) for
-            eq in eqs(v)
-        ]
+        return real.(
+            unwrap.([
+                substitute(eq, Dict(zip(keys(sweep), [sweep[p](T) for p in keys(sweep)])))
+                for eq in eqs(v)
+            ])
+        )
     end
 
     function f!(du, u, p, T) # in-place

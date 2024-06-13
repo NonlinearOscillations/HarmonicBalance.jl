@@ -63,7 +63,7 @@ function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
 
     rule(u) = Dict(zip(vars, u))
 
-    transformed = map(x -> substitute_all(expr, rule(x)), soln)
+    transformed = map(x -> unwrap(substitute_all(expr, rule(x))), soln)
     return convert(typeof(soln[1]), transformed)
 end
 
@@ -96,12 +96,12 @@ end
 # TRANSFORMATIONS TO THE LAB frame
 ###
 
-function to_lab_frame(soln, res, times)
+function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
-        val = real(substitute_all(_remove_brackets(var), soln))
-        ω = Float64(substitute_all(var.ω, soln))
+        val = unwrap(substitute_all(_remove_brackets(var), soln))
+        ω = unwrap(substitute_all(var.ω, soln))
         if var.type == "u"
             timetrace .+= val * cos.(ω * times)
         elseif var.type == "v"
@@ -127,8 +127,8 @@ function to_lab_frame_velocity(soln, res, times)
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
-        val = real(substitute_all(_remove_brackets(var), soln))
-        ω = Float64(real(substitute_all(var.ω, soln)))
+        val = real(unwrap(substitute_all(_remove_brackets(var), soln)))
+        ω = real(unwrap(real(substitute_all(var.ω, soln))))
         if var.type == "u"
             timetrace .+= -ω * val * sin.(ω * times)
         elseif var.type == "v"

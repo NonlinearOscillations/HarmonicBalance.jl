@@ -1,5 +1,5 @@
-import HarmonicBalance: fourier_cos_term, fourier_sin_term
-import HarmonicBalance.Symbolics.expand
+using HarmonicBalance: fourier_cos_term, fourier_sin_term
+using HarmonicBalance.Symbolics: expand
 
 @variables f t θ a b
 

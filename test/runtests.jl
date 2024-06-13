@@ -19,8 +19,8 @@ Random.seed!(SEED)
             check_extras=(ignore=ignore_deps,),
             check_weakdeps=(ignore=ignore_deps,),
         ),
+        piracies=(treat_as_own=[HarmonicBalance.Num],),
         ambiguities=false,
-        piracies=false,
         persistent_tasks=false,
     )
 end

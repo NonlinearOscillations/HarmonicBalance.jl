@@ -8,7 +8,7 @@ using Plots: heatmap, theme_palette, scatter, RGB, cgrad
 using Latexify: Latexify, latexify, @L_str
 using Latexify.LaTeXStrings: LaTeXStrings
 
-using Symbolics: Num, build_function, Equation, substitute
+using Symbolics: Num, build_function, Equation, substitute, unwrap
 using LinearAlgebra: norm, eigvals, eigen
 using OrderedCollections: OrderedDict
 

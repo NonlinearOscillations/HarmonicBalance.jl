@@ -20,7 +20,8 @@ using HarmonicBalance:
     substitute_all,
     slow_flow,
     _remove_brackets,
-    get_all_terms
+    get_all_terms,
+    get_variables_nums
 
 include("KrylovBogoliubov/first_order_transform.jl")
 include("KrylovBogoliubov/KrylovEquation.jl")

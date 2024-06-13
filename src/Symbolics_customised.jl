@@ -2,11 +2,6 @@ using Symbolics
 using SymbolicUtils:
     SymbolicUtils,
     Postwalk,
-    Term,
-    # Add,
-    # Div,
-    # Mul,
-    Pow,
     Sym,
     BasicSymbolic,
     isterm,
@@ -15,7 +10,6 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    quick_cancel,
     frac_maketerm #, @compactified
 using SymbolicUtils.TermInterface: issym
 using Symbolics:
@@ -35,28 +29,6 @@ using Symbolics:
     term,
     expand,
     operation
-
-# Symbolics does not natively support complex exponentials of variables
-function Base.exp(x::Complex{Num})
-    return x.re.val == 0 ? exp(im * x.im.val) : exp(x.re.val + im * x.im.val)
-end
-
-Base.ComplexF64(x::Complex{Num}) = ComplexF64(Float64(x.re) + im * Float64(x.im))
-Base.Float64(x::Complex{Num}) = Float64(ComplexF64(x))
-Base.Float64(x::Num) = Float64(x.val)
-
-# change SymbolicUtils' quick_cancel to simplify powers of fractions correctly
-function SymbolicUtils.quick_cancel(x::Term, y::Term)
-    if x.f == exp && y.f == exp
-        return exp(x.arguments[1] - y.arguments[1]), 1
-    else
-        return x, y
-    end
-end
-
-function SymbolicUtils.quick_cancel(x::Term, y::Pow)
-    return y.base isa Term && y.base.f == exp ? quick_cancel(x, expand_exp_power(y)) : x, y
-end
 
 "Returns true if expr is an exponential"
 is_exp(expr) = isterm(expr) && expr.f == exp
@@ -201,20 +173,4 @@ function Num(x::Complex{Num})::Num
         end
     end
 end
-
-#=
-chop(x) = x
-chop(x::Complex{Int64})= Int64(x)
-chop(x::Complex{Float64}) = Float64(x)
-chop(x::Add) = _apply_termwise(chop, x)
-chop(x::Mul) = _apply_termwise(chop, x)
-chop(x::Num) = chop(x.val)
-chop(x::Complex{Num}) = Complex{Num}(x.re, x.im)
-
-#expand_fraction(expr::Div) = expr.num isa Add ? sum([arg / expr.den for arg in arguments(expr.num)]) : expr
-#expand_fraction(expr) = expr
-
-#simplify_parts(expr::Num) = simplify_parts(expr.val)
-#simplify_parts(expr::Add) = sum([simplify_fractions(arg) for arg in arguments(expr)])
-#simplify_parts(expr) = simplify_fractions(expr)
-=#
+# ^ This function commits type-piracy with Symbolics.jl. We should change this.

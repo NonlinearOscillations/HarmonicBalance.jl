@@ -69,7 +69,7 @@ function get_response(rmat::ResponseMatrix, s::StateDict, Ω)
     # uv-type
     for pair in _get_uv_pairs(rmat.variables)
         u, v = rmat.variables[pair]
-        this_ω = Float64(substitute_all(u.ω, s))
+        this_ω = unwrap(substitute_all(u.ω, s))
         uv1 = _evaluate_response_vector(rmat, s, Ω - this_ω)[pair]
         uv2 = _evaluate_response_vector(rmat, s, -Ω + this_ω)[pair]
         resp += sqrt(_plusamp(uv1)^2 + _minusamp(uv2)^2)

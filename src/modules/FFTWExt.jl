@@ -34,7 +34,7 @@ function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
     This correction works for a rectangular window."
 
     # retaining more sigdigits gives more ''spurious'' peaks
-    max_indices, mxval = Peaks.peakprom(round.(abs.(fft_u), sigdigits=3); minprom=1)
+    max_indices, mxval = Peaks.peakproms(round.(abs.(fft_u), sigdigits=3); minprom=1)
     Del = fft_f[2] - fft_f[1] # frequency spacing
     A1 = abs.(fft_u)[max_indices]
     df = zeros(length(max_indices))

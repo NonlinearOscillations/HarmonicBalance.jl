@@ -5,7 +5,7 @@ using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-@testset "Package health" begin
+@testset "Code quality" begin
     using ExplicitImports, Aqua
     ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
 
@@ -21,8 +21,11 @@ Random.seed!(SEED)
         ),
         piracies=(treat_as_own=[HarmonicBalance.Num],),
         ambiguities=false,
-        persistent_tasks=false,
     )
+end
+
+@testset "Code linting" begin
+    JET.test_package(HarmonicBalance; target_defined_modules=true)
 end
 
 @testset "Symbolics customised" begin
@@ -64,4 +67,8 @@ end
 @testset "Extentions" begin
     include("ModelingToolkitExt.jl")
     include("SteadyStateDiffEqExt.jl")
+end
+
+@testset "Doctests" begin
+    Documenter.doctest(HiddenMarkovModels)
 end

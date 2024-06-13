@@ -347,7 +347,7 @@ function _get_raw_solution(
         end
         for i in eachindex(parameter_values) # do NOT thread this
             p = parameter_values[i]
-            show_progress ? next!(bar) : nothing
+            show_progress ? ProgressMeter.next!(bar) : nothing
             result_full[i] = [
                 HC.solve(
                     problem.system;

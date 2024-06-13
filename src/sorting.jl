@@ -111,7 +111,7 @@ function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
         )
     end
     for i in eachindex(solns[1:(end - 1)])
-        show_progress ? next!(bar) : nothing
+        show_progress ? ProgressMeter.next!(bar) : nothing
         matched_indices = align_pair(sorted_solns[i], solns[i + 1]) # pairs of matching indices
         next_indices = getindex.(matched_indices, 2) # indices of the next solution
         sorted_solns[i + 1] = (solns[i + 1])[next_indices]
@@ -185,7 +185,7 @@ function sort_2D(
         )
     end
     for i in 1:(length(idx_pairs) - 1)
-        show_progress ? next!(bar) : nothing
+        show_progress ? ProgressMeter.next!(bar) : nothing
         neighbors = get_nn_2D(idx_pairs[i + 1], size(solns, 1), size(solns, 2))
         reference = [sorted_solns[ind...] for ind in neighbors]
         matched_indices = align_pair(reference, solns[idx_pairs[i + 1]...]) # pairs of matching indices

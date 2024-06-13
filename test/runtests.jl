@@ -7,10 +7,22 @@ Random.seed!(SEED)
 
 @testset "Package health" begin
     using ExplicitImports, Aqua
+    ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
+
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
     Aqua.test_ambiguities(HarmonicBalance)
-    # Aqua.test_all(HarmonicBalance)
+    Aqua.test_all(
+        HarmonicBalance;
+        deps_compat=(
+            ignore=ignore_deps,
+            check_extras=(ignore=ignore_deps,),
+            check_weakdeps=(ignore=ignore_deps,),
+        ),
+        ambiguities=false,
+        piracies=false,
+        persistent_tasks=false,
+    )
 end
 
 @testset "Symbolics customised" begin

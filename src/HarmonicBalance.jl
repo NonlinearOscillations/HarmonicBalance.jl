@@ -68,4 +68,7 @@ using .KrylovBogoliubov
 export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
 export get_krylov_equations
 
+include("modules/FFTWExt.jl")
+using .FFTWExt
+
 end # module

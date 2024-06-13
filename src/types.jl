@@ -226,7 +226,7 @@ mutable struct Result
     If problem.jacobian is a symbolic matrix, this holds a compiled function.
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
-    jacobian::Union{Function,Int64}
+    jacobian::Function
     "Seed used for the solver"
     seed::Union{Nothing,UInt32}
 

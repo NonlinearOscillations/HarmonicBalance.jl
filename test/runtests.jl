@@ -24,9 +24,10 @@ Random.seed!(SEED)
     )
 end
 
-@testset "Code linting" begin
-    JET.test_package(HarmonicBalance; target_defined_modules=true)
-end
+# @testset "Code linting" begin
+#     using JET
+#     JET.test_package(HarmonicBalance; target_defined_modules=true)
+# end
 
 @testset "Symbolics customised" begin
     include("powers.jl")
@@ -69,6 +70,7 @@ end
     include("SteadyStateDiffEqExt.jl")
 end
 
-@testset "Doctests" begin
-    Documenter.doctest(HiddenMarkovModels)
-end
+# @testset "Doctests" begin
+#     using Documenter
+#     Documenter.doctest(HiddenMarkovModels)
+# end

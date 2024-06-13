@@ -48,7 +48,7 @@ export get_variables, get_independent_variables, classify_branch, classify_solut
 
 export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 
-export ParameterSweep, ODEProblem, solve, ODESystem, steady_state_sweep
+export ParameterSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
 include("modules/HC_wrapper.jl")
@@ -61,6 +61,7 @@ export transform_solutions
 
 include("modules/LimitCycles.jl")
 using .LimitCycles
+export get_cycle_variables, get_limit_cycles, add_pairs!
 
 include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov

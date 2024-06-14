@@ -12,6 +12,7 @@ varied = ω => range(0.95, 1.1, 10)           # range of parameter values
 result = get_steady_states(harmonic_eq, varied, fixed, show_progress=false, seed=SEED)
 
 followed_branches, _ = follow_branch(1, result)
+followed_branches, _ = follow_branch(1, result, y="√(u1^2+v1^2)")
 
 @test first(followed_branches) ≠ last(followed_branches)
 

@@ -31,7 +31,7 @@ function follow_branch(starting_branch::Int64, res::Result; y = "u1^2+v1^2",
         "Only the following (1D) sweeping directions are allowed:  ", sweep_directions)
 
     # get stable solutions
-    Y = transform_solutions(res, y)
+    Y = transform_solutions(res, y; realify=true)
     Ys = HarmonicBalance._apply_mask(
         Y, HarmonicBalance._get_mask(res, ["physical", "stable"], []))
     Ys = sweep == "left" ? reverse(Ys) : Ys

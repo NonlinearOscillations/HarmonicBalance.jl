@@ -1,6 +1,3 @@
-export get_cycle_variables
-export add_pairs!
-
 using HarmonicBalance: is_rearranged, rearrange_standard, _remove_brackets
 using HarmonicBalance.LinearResponse: get_implicit_Jacobian, get_Jacobian
 import HarmonicBalance: is_stable, is_physical, is_Hopf_unstable, order_branches!,

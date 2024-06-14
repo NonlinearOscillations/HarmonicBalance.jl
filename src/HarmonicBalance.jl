@@ -56,7 +56,7 @@ using .HC_wrapper
 
 include("modules/LinearResponse.jl")
 using .LinearResponse
-export plot_linear_response, plot_rotframe_jacobian_response, get_Jacobian
+export plot_linear_response, plot_rotframe_jacobian_response, get_Jacobian, plot_eigenvalues
 export transform_solutions
 
 include("modules/LimitCycles.jl")

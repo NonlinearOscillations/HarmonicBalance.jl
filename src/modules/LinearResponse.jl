@@ -39,9 +39,7 @@ include("LinearResponse/Lorentzian_spectrum.jl")
 include("LinearResponse/response.jl")
 include("LinearResponse/plotting.jl")
 
-export show
-export get_Jacobian
-export plot_linear_response, plot_rotframe_jacobian_response
-export get_response
+export get_Jacobian, get_response, show
+export plot_linear_response, plot_rotframe_jacobian_response, plot_eigenvalues
 
 end

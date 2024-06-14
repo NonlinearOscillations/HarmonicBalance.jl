@@ -29,7 +29,7 @@ function HarmonicBalance.follow_branch(
     )
 
     # get stable solutions
-    Y = transform_solutions(res, y)
+    Y = transform_solutions(res, y; realify=true)
     Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
     Ys = sweep == "left" ? reverse(Ys) : Ys
 

@@ -1,6 +1,6 @@
 name = "HarmonicBalance"
 uuid = "e13b9ff6-59c3-11ec-14b1-f3d2cc6c135e"
-authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>"]
+authors = ["Jan Kosata <kosataj@phys.ethz.ch>", "Javier del Pino <jdelpino@phys.ethz.ch>", "Orjan Ameye <orjan.ameye@hotmail.com>"]
 version = "0.9.2"
 
 [deps]
@@ -20,6 +20,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
@@ -33,26 +34,37 @@ SteadyStateDiffEqExt = "SteadyStateDiffEq"
 TimeEvolution = "OrdinaryDiffEq"
 
 [compat]
+Aqua = "0.8"
 BijectiveHilbert = "0.3.0"
 DSP = "0.7.9"
 DelimitedFiles = "1.9"
 Distances = "0.10.11"
+Documenter = "1.4"
 DocStringExtensions = "0.9.3"
+ExplicitImports = "1.6"
 FFTW = "1.8"
 HomotopyContinuation = "2.9"
 JLD2 = "0.4.48"
+JET = "0.9"
 Latexify = "0.16"
 ModelingToolkit = "9.17"
+NonlinearSolve = "3.12"
 OrderedCollections = "1.6"
-OrdinaryDiffEq = "v6.82.0"
+OrdinaryDiffEq = "v6.82"
 Peaks = "0.5"
 Plots = "1.39"
 ProgressMeter = "1.7.2"
-Symbolics = "5.30"
 SteadyStateDiffEq = "2"
+SymbolicUtils = "2.0"
+Symbolics = "5.30"
+
 julia = "1.10.0"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 NonlinearSolve = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
@@ -61,4 +73,4 @@ SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve"]
+test = ["Pkg", "Test", "OrdinaryDiffEq", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve", "ExplicitImports", "Aqua", "JET", "Documenter"]

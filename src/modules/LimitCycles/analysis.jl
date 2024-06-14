@@ -1,6 +1,4 @@
-import HarmonicBalance: classify_solutions, _free_symbols, _symidx, _is_physical
-
-function classify_unique!(res::Result, Δω; class_name = "unique_cycle")
+function classify_unique!(res::Result, Δω; class_name="unique_cycle")
 
     # 1st degeneracy: arbitrary sign of Δω
     i1 = _symidx(Δω, res)
@@ -11,5 +9,5 @@ function classify_unique!(res::Result, Δω; class_name = "unique_cycle")
     i2 = _symidx(var, res)
     c2 = classify_solutions(res, soln -> _is_physical(soln) && real(soln[i2]) >= 0)
 
-    res.classes[class_name] = map(.*, c1, c2)
+    return res.classes[class_name] = map(.*, c1, c2)
 end

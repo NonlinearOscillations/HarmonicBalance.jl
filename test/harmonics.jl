@@ -1,4 +1,4 @@
-import HarmonicBalance.is_harmonic
+using HarmonicBalance: is_harmonic
 
 @variables a, b, c, t, x(t), f, y(t)
 

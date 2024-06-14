@@ -11,29 +11,27 @@ struct Lorentzian
     ω0::Float64
     Γ::Float64
     A::Float64
-    Lorentzian(;ω0::Float64, Γ::Float64) = new(ω0, Γ, 1) # default peak height is 1
+    Lorentzian(; ω0::Float64, Γ::Float64) = new(ω0, Γ, 1) # default peak height is 1
     Lorentzian(ω0, Γ, A) = new(ω0, Γ, A)
- end
+end
 
+"""
+$(TYPEDEF)
 
- """
- $(TYPEDEF)
+Holds a set of `Lorentzian` objects belonging to a variable.
 
- Holds a set of `Lorentzian` objects belonging to a variable.
+# Fields
+$(TYPEDFIELDS)
 
- # Fields
- $(TYPEDFIELDS)
+# Constructor
+```julia
+JacobianSpectrum(res::Result; index::Int, branch::Int)
+```
 
- # Constructor
- ```julia
- JacobianSpectrum(res::Result; index::Int, branch::Int)
- ```
-
- """
- mutable struct JacobianSpectrum
+"""
+mutable struct JacobianSpectrum
     peaks::Vector{Lorentzian}
- end
-
+end
 
 """
 $(TYPEDEF)

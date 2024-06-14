@@ -1,5 +1,3 @@
-import HarmonicBalance.compile_matrix
-
 """
 Here stability and linear response is treated with the slow-flow approximation (SFA), see Chapter 5 of JK's thesis.
 Linear response always appears as a sum of Lorentzians, but is inaccurate where these are peaked far from the drive frequency.
@@ -14,22 +12,21 @@ This is the linearised left-hand side of F(u) = du/dT.
 
 """
 function get_Jacobian(eom::HarmonicEquation)
-
-    rearr = !HarmonicBalance.is_rearranged(eom) ? HarmonicBalance.rearrange_standard(eom) : eom
+    rearr = !is_rearranged(eom) ? rearrange_standard(eom) : eom
     lhs = _remove_brackets(rearr)
     vars = _remove_brackets.(eom.variables)
 
-    get_Jacobian(lhs, vars)
-
+    return get_Jacobian(lhs, vars)
 end
 
 " Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "
 function get_Jacobian(diff_eom::DifferentialEquation)
     @variables T
-    harmonic_eq = get_harmonic_equations(diff_eom, slow_time=T, fast_time=first(get_independent_variables(diff_eom)))
-    get_Jacobian(harmonic_eq)
+    harmonic_eq = get_harmonic_equations(
+        diff_eom; slow_time=T, fast_time=first(get_independent_variables(diff_eom))
+    )
+    return get_Jacobian(harmonic_eq)
 end
-
 
 " Get the Jacobian of a set of equations `eqs` with respect to the variables `vars`. "
 function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
@@ -39,11 +36,12 @@ function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
     for idx in CartesianIndices(M)
         M[idx] = expand_derivatives(d(eqs[idx[1]], vars[idx[2]]))
     end
-    M
+    return M
 end
 
-get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num}) = get_Jacobian(Num.(getfield.(eqs, :lhs) .- getfield.(eqs, :rhs)), vars)
-
+function get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num})
+    return get_Jacobian(Num.(getfield.(eqs, :lhs) .- getfield.(eqs, :rhs)), vars)
+end
 
 """
 Code folllows for an implicit treatment of the Jacobian. Usually we rearrange the linear response equations to have time-derivatives on one side.
@@ -55,16 +53,16 @@ Code folllows for an implicit treatment of the Jacobian. Usually we rearrange th
 # for limit cycles, the zero eigenvalue causes the rearrangement to fail -> filter it out
 # THIS SETS ALL DERIVATIVES TO ZERO - assumes use for steady states
 function _get_J_matrix(eom::HarmonicEquation; order=0)
+    order > 1 && error(
+        "Cannot get a J matrix of order > 1 from the harmonic equations.\nThese are by definition missing higher derivatives",
+    )
 
-    order > 1 && error("Cannot get a J matrix of order > 1 from the harmonic equations.\nThese are by definition missing higher derivatives")
-
-    vars_simp = Dict([var => HarmonicBalance._remove_brackets(var) for var in get_variables(eom)])
+    vars_simp = Dict([var => _remove_brackets(var) for var in get_variables(eom)])
     T = get_independent_variables(eom)[1]
     J = get_Jacobian(eom.equations, d(get_variables(eom), T, order))
 
-    expand_derivatives.(HarmonicBalance.substitute_all(J, vars_simp)) # a symbolic matrix to be compiled
+    return expand_derivatives.(substitute_all(J, vars_simp)) # a symbolic matrix to be compiled
 end
-
 
 # COMPILE THIS?
 """
@@ -77,10 +75,12 @@ Necessary matrix inversions are only performed AFTER substituting numerical valu
 Returns a function `f(soln::OrderedDict)::Matrix{ComplexF64}`.
 """
 function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
-    J0c = compile_matrix(_get_J_matrix(eom, order=0), sym_order, rules=rules)
-    J1c = compile_matrix(_get_J_matrix(eom, order=1), sym_order, rules=rules)
+    J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules=rules)
+    J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules=rules)
     m(vals::Vector) = -inv(J1c(vals)) * J0c(vals)
-    m(s::OrderedDict) = m([s[var] for var in sym_order])
+    return m(s::OrderedDict) = m([s[var] for var in sym_order])
 end
 
-get_implicit_Jacobian(p::Problem, swept, fixed) = get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p, swept), rules=fixed)
+function get_implicit_Jacobian(p::Problem, swept, fixed)
+    return get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p, swept), rules=fixed)
+end

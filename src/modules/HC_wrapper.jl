@@ -1,12 +1,23 @@
 module HC_wrapper
 
-    using HomotopyContinuation: independent_normal
-    using Base: get_uuid_name
-    using Symbolics
-    using HomotopyContinuation
-    const HC = HomotopyContinuation
-    using DocStringExtensions
-    using ..HarmonicBalance
+using DocStringExtensions
+using Symbolics: Num, @variables
+using Symbolics.SymbolicUtils: isterm
+using LinearAlgebra: LinearAlgebra
 
-    include("HC_wrapper/homotopy_interface.jl")
+using HarmonicBalance:
+    HarmonicBalance,
+    HarmonicEquation,
+    _remove_brackets,
+    expand_derivatives,
+    var_name,
+    get_variables,
+    Problem
+using HomotopyContinuation
+using HomotopyContinuation: Variable, System
+
+include("HC_wrapper/homotopy_interface.jl")
+
+export Problem
+
 end

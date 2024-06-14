@@ -4,6 +4,11 @@
 [![docs](https://img.shields.io/badge/docs-online-blue.svg)](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/)
 [![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Fmonthly_downloads%2FHarmonicBalance&query=total_requests&suffix=%2Fmonth&label=Downloads)](https://juliapkgstats.com/pkg/HarmonicBalance)
 
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+[![JET](https://img.shields.io/badge/%E2%9C%88%EF%B8%8F%20tested%20with%20-%20JET.jl%20-%20red)](https://github.com/aviatesk/JET.jl)
+
+
 **HarmonicBalance.jl** is a Julia package for solving nonlinear differential equations using the method of harmonic balance.
 
 ## Installation

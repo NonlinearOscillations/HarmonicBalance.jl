@@ -9,4 +9,3 @@ local_tests
 .DS_Store
 docs/build/**
 examples/jdp.mplstyle
-.JuliaFormatter.toml

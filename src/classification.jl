@@ -1,6 +1,3 @@
-export classify_branch
-export classify_solutions!
-
 """
 $(TYPEDSIGNATURES)
 
@@ -20,11 +17,12 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1.0" , "large_amplitude")
 ```
 
 """
-function classify_solutions!(res::Result, func::Union{String, Function}, name::String; physical=true)
+function classify_solutions!(
+    res::Result, func::Union{String,Function}, name::String; physical=true
+)
     values = classify_solutions(res, func; physical=physical)
-    res.classes[name] = values
+    return res.classes[name] = values
 end
-
 
 function classify_solutions(res::Result, func; physical=true)
     func = isa(func, Function) ? func : _build_substituted(func, res)
@@ -37,18 +35,18 @@ function classify_solutions(res::Result, func; physical=true)
     end
 end
 
-
 """
 $(TYPEDSIGNATURES)
 Returns an array of booleans classifying `branch` in the solutions in `res`
 according to `class`.
 """
 function classify_branch(res::Result, branch::Int64, class::String)
-    branch_values = getindex.(res.classes[class], branch)
+    return branch_values = getindex.(res.classes[class], branch)
 end
 
-classify_branch(soln::Result, class::String) = [classify_branch(soln, b, class) for b in 1:length(first(soln.solutions))]
-
+function classify_branch(soln::Result, class::String)
+    return [classify_branch(soln, b, class) for b in 1:length(first(soln.solutions))]
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -60,9 +58,8 @@ function is_physical(soln::StateDict, res::Result)
     return _is_physical(var_values)
 end
 
-_is_physical(soln; im_tol=IM_TOL) = all( x -> !isnan(x) && abs(imag(x)) < im_tol, soln)
+_is_physical(soln; im_tol=IM_TOL) = all(x -> !isnan(x) && abs(imag(x)) < im_tol, soln)
 _is_physical(res::Result) = classify_solutions(res, _is_physical)
-
 
 """
 $(TYPEDSIGNATURES)
@@ -72,18 +69,18 @@ Stable solutions are real and have all Jacobian eigenvalues Re[λ] <= 0.
 `rel_tol`: Re(λ) considered <=0 if real.(λ) < rel_tol*abs(λmax)
 """
 function is_stable(soln::StateDict, res::Result; kwargs...)
-    _is_stable(values(soln) |> collect, res.jacobian; kwargs...)
+    return _is_stable(collect(values(soln)), res.jacobian; kwargs...)
 end
 
 function _is_stable(res::Result; kwargs...)
-    _isit(soln) = _is_stable(soln, res.jacobian; kwargs...)
+    return _isit(soln) = _is_stable(soln, res.jacobian; kwargs...)
 end
 
 function _is_stable(soln, J; rel_tol=1E-10)
     _is_physical(soln) || return false
     λs = eigvals(real.(J(soln)))
     scale = maximum(Iterators.map(abs, λs))
-    all(x -> real(x) < rel_tol*scale, λs)
+    return all(x -> real(x) < rel_tol * scale, λs)
 end
 
 """
@@ -94,21 +91,24 @@ are complex conjugates of each other.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
 function is_Hopf_unstable(soln::StateDict, res::Result)
-    _is_Hopf_unstable(values(soln) |> collect, res.jacobian)
+    return _is_Hopf_unstable(collect(values(soln)), res.jacobian)
 end
 
 function _is_Hopf_unstable(res::Result)
-    _isit(soln) = _is_Hopf_unstable(soln, res.jacobian)
+    return _isit(soln) = _is_Hopf_unstable(soln, res.jacobian)
 end
 
 function _is_Hopf_unstable(soln, J)
     _is_physical(soln) || return false  # the solution is unphysical anyway
     λs = eigvals(J(soln))
     unstable = filter(x -> real(x) > 0, λs)
-    (length(unstable) == 2 && abs(conj(unstable[1]) - unstable[2]) < IM_TOL && return true) || return false
+    (
+        length(unstable) == 2 &&
+        abs(conj(unstable[1]) - unstable[2]) < IM_TOL &&
+        return true
+    ) || return false
     return all(x -> real(x) < 0, λs)
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -117,21 +117,24 @@ on its permutation of stable branches (allows to distinguish between different p
 of stable solutions). It works by converting each bistring `[is_stable(solution_1),is_stable(solution_2),...,]` into unique labels.
 """
 function classify_binaries!(res::Result)
-    bin_label  = bitarr_to_int.(clean_bitstrings(res)) #mapping of binary string (stable or not) for each solution set to integer. Sensitive to ordering!
+    bin_label = bitarr_to_int.(clean_bitstrings(res)) #mapping of binary string (stable or not) for each solution set to integer. Sensitive to ordering!
     #renormalize labels with numbers from 1 to length(unique(label))
-    for (idx,el) in enumerate(unique(bin_label))
-        bin_label[findall(x->x==el, bin_label)] .= idx
+    for (idx, el) in enumerate(unique(bin_label))
+        bin_label[findall(x -> x == el, bin_label)] .= idx
     end
-    res.classes["binary_labels"] = bin_label
+    return res.classes["binary_labels"] = bin_label
 end
 
-clean_bitstrings(res::Result) = [[el for el in bit_string[phys_string]]
-for (bit_string,phys_string) in zip(res.classes["stable"],res.classes["physical"])]; #remove unphysical solutions from strings
+function clean_bitstrings(res::Result)
+    return [
+        [el for el in bit_string[phys_string]] for
+        (bit_string, phys_string) in zip(res.classes["stable"], res.classes["physical"])
+    ] #remove unphysical solutions from strings
+end; #remove unphysical solutions from strings
 
 function bitarr_to_int(arr)
-    return sum(arr .* (2 .^ collect(length(arr)-1:-1:0)))
+    return sum(arr .* (2 .^ collect((length(arr) - 1):-1:0)))
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -139,7 +142,7 @@ Removes all solution branches from `res` where NONE of the solution falls into `
 Typically used to filter out unphysical solutions to prevent huge file sizes.
 """
 function filter_result!(res::Result, class::String)
-    bools = [any(getindex.(res.classes[class],i)) for i in 1:length(res[1])]
+    bools = [any(getindex.(res.classes[class], i)) for i in 1:length(res[1])]
     res.solutions = [s[bools] for s in res.solutions]
     for c in filter(x -> x != "binary_labels", keys(res.classes)) # binary_labels stores one Int per parameter set, ignore here
         res.classes[c] = [s[bools] for s in res.classes[c]]

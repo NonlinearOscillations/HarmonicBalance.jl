@@ -1,24 +1,22 @@
-export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
-
 get_equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
 # TODO: check the degree of the eom
-function is_rearranged_standard(eom::DifferentialEquation, degree = 2)
+function is_rearranged_standard(eom::DifferentialEquation, degree=2)
     tvar = get_independent_variables(eom)[1]
     D = Differential(tvar)^degree
-    isequal(getfield.(values(eom.equations), :lhs), D.(get_variables(eom)))
+    return isequal(getfield.(values(eom.equations), :lhs), D.(get_variables(eom)))
 end
 
-function rearrange_standard!(eom::DifferentialEquation, degree = 2)
+function rearrange_standard!(eom::DifferentialEquation, degree=2)
     tvar = get_independent_variables(eom)[1]
     D = Differential(tvar)^degree
     dvars = D.(get_variables(eom))
-    rearrange!(eom, dvars)
+    return rearrange!(eom, dvars)
 end
 
 function HarmonicBalance.rearrange!(eom::DifferentialEquation, new_lhs::Vector{Num})
-    soln = Symbolics.solve_for(get_equations(eom), new_lhs, simplify = false, check = true)
-    eom.equations = OrderedDict(zip(get_variables(new_lhs), new_lhs .~ soln))
+    soln = Symbolics.solve_for(get_equations(eom), new_lhs; simplify=false, check=true)
+    eom.equations = OrderedDict(zip(get_variables_nums(new_lhs), new_lhs .~ soln))
     return nothing
 end
 
@@ -32,7 +30,7 @@ function first_order_transform!(diff_eom::DifferentialEquation, time)
     eqs′, states′ = ode_order_lowering(diff_eom.equations, time, diff_eom.harmonics)
     diff_eom.equations = eqs′
     diff_eom.harmonics = states′
-    nothing
+    return nothing
 end
 
 # taken from ModelingToolkit.jl
@@ -40,7 +38,7 @@ function ode_order_lowering(equations, iv, harmonics)
     states = unwrap.(collect(keys(harmonics)))
     eqs = unwrap.(collect(values(equations)))
 
-    var_order = OrderedDict{Any, Int}()
+    var_order = OrderedDict{Any,Int}()
     D = Differential(iv)
     diff_eqs = empty(equations)
     diff_vars = empty(harmonics)

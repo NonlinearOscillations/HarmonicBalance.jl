@@ -1,9 +1,5 @@
 using HarmonicBalance
 
-import HarmonicBalance.LinearResponse.plot_linear_response
-import HarmonicBalance.LinearResponse.plot_rotframe_jacobian_response
-import HarmonicBalance.LinearResponse.plot_eigenvalues
-
 @variables α, ω, ω0, F, γ, t, x(t);
 
 diff_eq = DifferentialEquation(d(x, t, 2) + ω0 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x)

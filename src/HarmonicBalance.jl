@@ -62,7 +62,7 @@ using .HC_wrapper
 
 include("modules/LinearResponse.jl")
 using .LinearResponse
-export plot_linear_response, plot_rotframe_jacobian_response
+export plot_linear_response, plot_rotframe_jacobian_response, plot_eigenvalues
 
 include("modules/LimitCycles.jl")
 using .LimitCycles

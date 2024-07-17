@@ -58,7 +58,7 @@ Solves `prob` over the ranges specified by `swept_parameters`, keeping `fixed_pa
 `fixed_parameters` accepts pairs mapping symbolic variables to numbers.
 
 Keyword arguments
-- `method`: If `:warmup` (default), a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all swept_parameters is then much faster than the initial solving. If `method=:total_degree`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
+- `method`: If `:warmup` (default), a problem similar to `prob` but with random complex parameters is first solved to find all non-singular paths. The subsequent tracking to find results for all `swept_parameters` is then much faster than the initial solving. If `method=:total_degree`, each parameter point is solved separately by tracking the maximum number of paths (employs a total degree homotopy).
 This takes far longer but can be more reliable.
 - `threading`: If `true`, multithreaded support is activated. The number of available threads is set by the environment variable `JULIA_NUM_THREADS`.
 - `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.

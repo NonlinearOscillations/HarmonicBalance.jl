@@ -47,6 +47,7 @@ export ParameterRange, ParameterList, StateDict, SteadyState, ParameterVector
 export DifferentialEquation, HarmonicVariable, HarmonicEquation, Problem, Result
 export get_steady_states, get_single_solution, get_harmonic_equations, add_harmonic!
 export get_variables, get_independent_variables, classify_branch, classify_solutions!
+export rearrange_standard
 
 export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 

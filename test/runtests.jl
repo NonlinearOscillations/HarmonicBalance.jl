@@ -33,9 +33,7 @@ end
 end
 
 @testset "Symbolics customised" begin
-    include("powers.jl")
-    include("harmonics.jl")
-    include("fourier.jl")
+    include("symbolics.jl")
 end
 
 @testset "IO" begin

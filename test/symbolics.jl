@@ -1,3 +1,20 @@
+# @testset "apply_termwise" begin
+    using Test
+    using HarmonicBalance: _apply_termwise, unwrap
+    using SymbolicUtils: Postwalk
+    using Symbolics
+
+@testset "exp(x)^n => exp(x*n)" begin
+    using HarmonicBalance: expand_all
+    @variables a n::Int
+    @test z isa Complex{Num}
+    @test isequal(simplify(exp(a)^3), exp(3*a))
+    @test isequal(simplify(exp(a)^n), exp(n*a))
+    @test isequal(expand_all(exp(a)^3),exp(3*a))
+    @test isequal(expand_all(exp(a)^3),exp(3*a))
+    @test isequal(expand_all(im*exp(a)^5),exp(5*a))
+end
+
 @testset "powers" begin
     using HarmonicBalance: drop_powers, max_power
     using HarmonicBalance.Symbolics: expand

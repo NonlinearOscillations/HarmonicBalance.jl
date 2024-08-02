@@ -1,16 +1,20 @@
 using Test
 using Symbolics
 using HarmonicBalance
-using SymbolicUtils: Fixpoint, Prewalk, PassThrough
-using SymbolicUtils: @eqtest
+using SymbolicUtils: Fixpoint, Postwalk, PassThrough, @rule
+
+@variables x y
+x + im * y
 
 macro eqtest(expr)
     @assert expr.head == :call && expr.args[1] in [:(==), :(!=)]
-    if expr.args[1] == :(==)
-        :(@test isequal($(expr.args[2]), $(expr.args[3])))
-    else
-        :(@test !isequal($(expr.args[2]), $(expr.args[3])))
-    end |> esc
+    return esc(
+        if expr.args[1] == :(==)
+            :(@test isequal($(expr.args[2]), $(expr.args[3])))
+        else
+            :(@test !isequal($(expr.args[2]), $(expr.args[3])))
+        end,
+    )
 end
 
 @testset "exp(x)^n => exp(x*n)" begin
@@ -30,9 +34,8 @@ end
 
     @eqtest simplify_exp_products(exp(a) * exp(b)) == exp(a + b)
     @eqtest simplify_exp_products(exp(3a) * exp(4b)) == exp(3a + 4b)
-    @eqtest simplify_exp_products(im * exp(3a) * exp(4b)) == im * exp(3a+4b)
+    @eqtest simplify_exp_products(im * exp(3a) * exp(4b)) == im * exp(3a + 4b)
 end
-
 
 @testset "simplify_complex" begin
     using HarmonicBalance: simplify_complex, is_not_complex
@@ -44,14 +47,14 @@ end
     @eqtest simplify_complex(z) == a
     @test a isa Num
 
-    z = Complex{Num}(1+0*im)
+    z = Complex{Num}(1 + 0 * im)
     @test simplify_complex(z) isa Num
 end
 
 @testset "euler" begin
     @variables a b
-    @eqtest cos(a) + im*sin(a) == exp(im*a)
-    @eqtest exp(a)*cos(b) + im*sin(b)*exp(a) == exp(a + im*b)
+    @eqtest cos(a) + im * sin(a) == exp(im * a)
+    @eqtest exp(a) * cos(b) + im * sin(b) * exp(a) == exp(a + im * b)
 end
 
 @testset "powers" begin
@@ -69,17 +72,43 @@ end
     @eqtest drop_powers((a + b)^3 + (a + b)^5, [a, b], 4) == expand((a + b)^3)
 end
 
-@testset "trig_to_exp" begin
-    using HarmonicBalance: expand_all, trig_to_exp, unwrap
-    using SymbolicUtils.Code: toexpr
+@testset "trig_to_exp and trig_to_exp" begin
+    using HarmonicBalance: expand_all, trig_to_exp, exp_to_trig
     @variables f t
-    cos_euler(x) = (exp(im*x)+exp(-im*x))/2
-    sin_euler(x) = (exp(im*x)-exp(-im*x))/(2*im)
-    @eqtest string(trig_to_exp(cos(f*t))) == "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))"
-    @eqtest string(trig_to_exp(sin(f*t))) == "(0.0 - 0.5im)*(-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))"
-    @eqtest string(trig_to_exp(sin(f*t)^2 + cos(f*t))) == "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t)) + (-0.25 - 0.0im)((-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))^2)"
-end
+    cos_euler(x) = (exp(im * x) + exp(-im * x)) / 2
+    sin_euler(x) = (exp(im * x) - exp(-im * x)) / (2 * im)
 
+    trigs = [cos(f * t), sin(f * t), sin(f * t)^2 + cos(f * t)]
+    exp_string = [
+        "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))",
+        "(0.0 - 0.5im)*(-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))",
+        "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t)) + (-0.25 - 0.0im)((-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))^2)",
+    ]
+    for (i, trig) in pairs(trigs)
+        z = trig_to_exp(trig)
+        @eqtest string(z) == exp_string[i]
+        @eqtest exp_to_trig(z) == trig
+    end
+end
+using HarmonicBalance: simplify_complex, trig_to_exp, unwrap
+@variables f t
+z = trig_to_exp(cos(f * t))
+
+expon = arguments(arguments(arguments(arguments(unwrap(z))[1])[1])[2])[1]
+typeof(arguments(arguments(expon)[1])[1])
+arguments(substitute(z, Dict()))
+z = trig_to_exp(sin(f * t)^2 + cos(f * t))
+expr = :(
+    1//2 * (exp((0 - 1im) * f * t) + exp((0 + 1im) * f * t)) +
+    (-0.25 - 0.0im)((-(exp((0 - 1im) * f * t)) + exp((0 + 1im) * f * t))^2)
+)
+parse_expr_to_symbolic(expr, @__MODULE__)
+# z_unwrapped = unwrap(z)
+# z |> typeof
+# SymbolicUtils.isterm(z_unwrapped)
+# z_s = expand_all(exp_to_trig(z))
+z = parse_expr_to_symbolic(Meta.parse(string(trig_to_exp(cos(f)))), @__MODULE__)
+unwrap(z.re)
 @testset "harmonic" begin
     using HarmonicBalance: is_harmonic
 
@@ -93,6 +122,16 @@ end
     dEOM = DifferentialEquation([a + x, t^2 + cos(t)], [x, y])
     @test !is_harmonic(dEOM, t)
 end
+# using SymbolicUtils
+# using Symbolics
+# using SymbolicUtils: has_operation
+# using HarmonicBalance: get_all_terms, is_trig, exp_to_trig, reparse, trig_reduce_neg
+# @variables x y
+
+# z=sin(x) + sin(-x)^2
+# trig_reduce_neg(z)
+# exp_to_trig(z)
+# using SymbolicUtils.TermInterface:issym
 
 # @testset "fourier" begin
 #     using HarmonicBalance: fourier_cos_term, fourier_sin_term
@@ -151,4 +190,4 @@ end
 #     @test isequal(fourier_cos_term(cos(f * t)^3 + 1, 0, t), 1)
 #     @test isequal(fourier_cos_term(cos(f * t)^2 + 1, 0, t), 3//2)
 #     @test isequal(fourier_cos_term((cos(f * t)^2 + cos(f * t))^3, 0, t), 23//16)
-# # end
+# end

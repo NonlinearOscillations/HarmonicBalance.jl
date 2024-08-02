@@ -10,12 +10,18 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    frac_maketerm #, @compactified
+    frac_maketerm,
+    @rule,
+    @acrule,
+    @compactified,
+    isliteral,
+    Chain
 using SymbolicUtils.TermInterface: issym
 using Symbolics:
     Symbolics,
     Num,
     unwrap,
+    wrap,
     get_variables,
     simplify,
     expand_derivatives,
@@ -28,51 +34,48 @@ using Symbolics:
     substitute,
     term,
     expand,
-    operation
+    operation,
+    _iszero
 
-"Returns true if expr is an exponential"
-is_exp(expr) = isterm(expr) && expr.f == exp
-
-"Expand powers of exponential such that exp(x)^n => exp(x*n) "
-expand_exp_power(expr) =
-    ispow(expr) && is_exp(expr.base) ? exp(expr.base.arguments[1] * expr.exp) : expr
-expand_exp_power_add(expr) = sum([expand_exp_power(arg) for arg in arguments(expr)])
-expand_exp_power_mul(expr) = prod([expand_exp_power(arg) for arg in arguments(expr)])
-expand_exp_power(expr::Num) = expand_exp_power(expr.val)
-
-function expand_exp_power(expr::BasicSymbolic)
-    if isadd(expr)
-        return expand_exp_power_add(expr)
-    elseif ismul(expr)
-        return expand_exp_power_mul(expr)
-    else
-        return if ispow(expr) && is_exp(expr.base)
-            exp(expr.base.arguments[1] * expr.exp)
-        else
-            expr
-        end
-    end
+# ∨ Complex{Num} can contain
+is_false_or_zero(x) = x === false || _iszero(x)
+is_literal_complex(x) = isliteral(Complex)(x)
+is_literal_real(x) = isliteral(Real)(x)
+function is_not_complex(x)
+    return !is_literal_real(x) && (is_literal_complex(x) && is_false_or_zero(unwrap(x.im)))
 end
 
 "Expands using SymbolicUtils.expand and expand_exp_power (changes exp(x)^n to exp(x*n)"
-expand_all(x) = Postwalk(expand_exp_power)(SymbolicUtils.expand(x))
-expand_all(x::Complex{Num}) = expand_all(x.re) + im * expand_all(x.im)
-expand_all(x::Num) = Num(expand_all(x.val))
+const expand_exp_power = @rule(exp(~x)^(~y) => exp(~x * ~y))
+expand_all(x) = simplify(expand(x); rewriter=Postwalk(expand_exp_power))
+expand_all(x::Num) = wrap(expand_all(unwrap(x)))
+function expand_all(x::Complex{Num})
+    re_val = is_false_or_zero(unwrap(x.re)) ? 0.0 : expand_all(x.re)
+    im_val = is_false_or_zero(unwrap(x.im)) ? 0.0 : expand_all(x.im)
+    return re_val + im * im_val
+end # This code is stupid, we can just use simplify
 
-"Apply a function f on every member of a sum or a product"
-_apply_termwise(f, x) = f(x)
-function _apply_termwise(f, x::BasicSymbolic)
-    if isadd(x)
-        return sum([f(arg) for arg in arguments(x)])
-    elseif ismul(x)
-        return prod([f(arg) for arg in arguments(x)])
-    elseif isdiv(x)
-        return _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
-    else
-        return f(x)
-    end
+simplify_complex(x) = Postwalk(@rule(~x::is_not_complex => real(~x)))(x)
+
+"Simplify products of exponentials such that exp(a)*exp(b) => exp(a+b)"
+const simplify_exp_mul = @acrule(exp(~x) * exp(~y) => _iszero(~x + ~y) ? 1 : exp(~x + ~y))
+simplify_exp_products(x) = Postwalk(simplify_exp_mul)(x)
+function simplify_exp_products(x::Complex{Num})
+    re_val = is_false_or_zero(unwrap(x.re)) ? 0.0 : simplify_exp_products(x.re)
+    im_val = is_false_or_zero(unwrap(x.im)) ? 0.0 : simplify_exp_products(x.im)
+    return re_val + im * im_val
 end
-# We could use @compactified to do the achive thing wit a speed-up. Neverthless, it yields less readable code.
+
+const sin_euler = @rule(sin(~x) => (exp(im * ~x) - exp(-im * ~x)) / (2 * im))
+const cos_euler = @rule(cos(~x) => (exp(im * ~x) + exp(-im * ~x)) / 2)
+trig_to_exp(x) = simplify(x; rewriter=Postwalk(Chain([sin_euler, cos_euler])))
+trig_to_exp(x::Num) = wrap(trig_to_exp(unwrap(x)))
+function trig_to_exp(x::Complex{Num})
+    re_val = is_false_or_zero(unwrap(x.re)) ? 0.0 : trig_to_exp(x.re)
+    im_val = is_false_or_zero(unwrap(x.im)) ? 0.0 : trig_to_exp(x.im)
+    return re_val + im * im_val
+end
+
 # @compactified is what SymbolicUtils uses internally
 # function _apply_termwise(f, x::BasicSymbolic)
 #     @compactified x::BasicSymbolic begin
@@ -83,94 +86,37 @@ end
 #     end
 # end
 
-simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im * x.im
-simplify_complex(x) = x
-function simplify_complex(x::BasicSymbolic)
-    if isadd(x) || ismul(x) || isdiv(x)
-        return _apply_termwise(simplify_complex, x)
-    else
-        return x
-    end
-end
+# TODO ∨ try symbolicUtils.substitute such that maketerm gets called
+reparse(x) = parse_expr_to_symbolic(Meta.parse(string(x)), @__MODULE__)
+# ^ parsing and reevaluting makes it that (1 - 0.0im) becomes (1)
 
-"Simplify products of exponentials such that exp(a)*exp(b) => exp(a+b)
-This is included in SymbolicUtils as of 17.0 but the method here avoid other simplify calls"
-function simplify_exp_products_mul(expr)
-    ind = findall(x -> is_exp(x), arguments(expr))
-    rest_ind = setdiff(1:length(arguments(expr)), ind)
-    rest = isempty(rest_ind) ? 1 : prod(arguments(expr)[rest_ind])
-    total = isempty(ind) ? 0 : sum(getindex.(arguments.(arguments(expr)[ind]), 1))
-    if SymbolicUtils.is_literal_number(total)
-        (total == 0 && return rest)
-    else
-        return rest * exp(total)
-    end
-end
+function make_positive_trig(x::Num)
+    all_terms = get_all_terms(x)
+    trigs = filter(z -> is_trig(z), all_terms)
 
-function simplify_exp_products(x::Complex{Num})
-    return Complex{Num}(simplify_exp_products(x.re.val), simplify_exp_products(x.im.val))
-end
-simplify_exp_products(x::Num) = simplify_exp_products(x.val)
-simplify_exp_products(x) = x
+    rules = []
+    for trig in trigs
+        is_pow = ispow(trig.val) # trig is either a trig or a power of a trig
+        power = is_pow ? trig.val.exp : 1
+        arg = is_pow ? arguments(trig.val.base)[1] : arguments(trig.val)[1]
+        type = is_pow ? operation(trig.val.base) : operation(trig.val)
+        negative =
+            !issym(arg) && prod(Number.(filter(x -> x isa Number, arguments(arg)))) < 0
 
-function simplify_exp_products(expr::BasicSymbolic)
-    if isadd(expr) || isdiv(expr)
-        return _apply_termwise(simplify_exp_products, expr)
-    elseif ismul(expr)
-        return simplify_exp_products_mul(expr)
-    else
-        return expr
-    end
-end
-
-function exp_to_trig(x::BasicSymbolic)
-    if isadd(x) || isdiv(x) || ismul(x)
-        return _apply_termwise(exp_to_trig, x)
-    elseif isterm(x) && x.f == exp
-        arg = first(x.arguments)
-        trigarg = Symbolics.expand(-im * arg) # the argument of the to-be trig function
-        trigarg = simplify_complex(trigarg)
-
-        # put arguments of trigs into a standard form such that sin(x) = -sin(-x), cos(x) = cos(-x) are recognized
-        if isadd(trigarg)
-            first_symbol = minimum(
-                cat(string.(arguments(trigarg)), string.(arguments(-trigarg)); dims=1)
-            )
-
-            # put trigarg => -trigarg the lowest alphabetic argument of trigarg is lower than that of -trigarg
-            # this is a meaningless key but gives unique signs to all sums
-            is_first = minimum(string.(arguments(trigarg))) == first_symbol
-            return if is_first
-                cos(-trigarg) - im * sin(-trigarg)
-            else
-                cos(trigarg) + im * sin(trigarg)
+        if negative
+            if type == cos
+                term = cos(-arg)
+            elseif type == sin
+                term = (-1)^power * sin(-arg)^power
             end
-        end
-        return if ismul(trigarg) && trigarg.coeff < 0
-            cos(-trigarg) - im * sin(-trigarg)
-        else
-            cos(trigarg) + im * sin(trigarg)
-        end
-    else
-        return x
-    end
-end
-
-exp_to_trig(x) = x
-exp_to_trig(x::Num) = exp_to_trig(x.val)
-exp_to_trig(x::Complex{Num}) = exp_to_trig(x.re) + im * exp_to_trig(x.im)
-
-# sometimes, expressions get stored as Complex{Num} with no way to decode what real(x) and imag(x)
-# this overloads the Num constructor to return a Num if x.re and x.im have similar arguments
-function Num(x::Complex{Num})::Num
-    if x.re.val isa Float64 && x.im.val isa Float64
-        return Num(x.re.val)
-    else
-        if isequal(x.re.val.arguments, x.im.val.arguments)
-            Num(first(x.re.val.arguments))
-        else
-            error("Cannot convert Complex{Num} " * string(x) * " to Num")
+            append!(rules, [trig => term])
         end
     end
+    result = Symbolics.substitute(x, Dict(rules))
+    return result
 end
-# ^ This function commits type-piracy with Symbolics.jl. We should change this.
+
+function exp_to_trig(z::Complex{Num})
+    z = reparse(z)
+    return simplify_complex(make_positive_trig(z.re) + im * make_positive_trig(z.im))
+end

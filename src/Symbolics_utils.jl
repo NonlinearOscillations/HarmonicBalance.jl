@@ -185,36 +185,36 @@ end
 is_harmonic(x::Equation, t::Num) = is_harmonic(x.lhs, t) && is_harmonic(x.rhs, t)
 is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
 
-"Convert all sin/cos terms in `x` into exponentials."
-function trig_to_exp(x::Num)
-    all_terms = get_all_terms(x)
-    trigs = filter(z -> is_trig(z), all_terms)
+# "Convert all sin/cos terms in `x` into exponentials."
+# function trig_to_exp(x::Num)
+#     all_terms = get_all_terms(x)
+#     trigs = filter(z -> is_trig(z), all_terms)
 
-    rules = []
-    for trig in trigs
-        is_pow = ispow(trig.val) # trig is either a trig or a power of a trig
-        power = is_pow ? trig.val.exp : 1
-        arg = is_pow ? arguments(trig.val.base)[1] : arguments(trig.val)[1]
-        type = is_pow ? operation(trig.val.base) : operation(trig.val)
+#     rules = []
+#     for trig in trigs
+#         is_pow = ispow(trig.val) # trig is either a trig or a power of a trig
+#         power = is_pow ? trig.val.exp : 1
+#         arg = is_pow ? arguments(trig.val.base)[1] : arguments(trig.val)[1]
+#         type = is_pow ? operation(trig.val.base) : operation(trig.val)
 
-        if type == cos
-            term = Complex{Num}((exp(im * arg) + exp(-im * arg))^power * (1//2)^power, 0)
-        elseif type == sin
-            term =
-                (1 * im^power) *
-                Complex{Num}(((exp(-im * arg) - exp(im * arg)))^power * (1//2)^power, 0)
-        end
-        # avoid Complex{Num} where possible as this causes bugs
-        # instead, the Nums store SymbolicUtils Complex types
-        term = Num(Symbolics.expand(term.re.val + im * term.im.val))
-        append!(rules, [trig => term])
-    end
+#         if type == cos
+#             term = Complex{Num}((exp(im * arg) + exp(-im * arg))^power * (1//2)^power, 0)
+#         elseif type == sin
+#             term =
+#                 (1 * im^power) *
+#                 Complex{Num}(((exp(-im * arg) - exp(im * arg)))^power * (1//2)^power, 0)
+#         end
+#         # avoid Complex{Num} where possible as this causes bugs
+#         # instead, the Nums store SymbolicUtils Complex types
+#         term = Num(Symbolics.expand(term.re.val + im * term.im.val))
+#         append!(rules, [trig => term])
+#     end
 
-    result = Symbolics.substitute(x, Dict(rules))
-    #result = result isa Complex ? Num(first(result.re.val.arguments)) : result
-    result = Num(result)
-    return result
-end
+#     result = Symbolics.substitute(x, Dict(rules))
+#     #result = result isa Complex ? Num(first(result.re.val.arguments)) : result
+#     result = Num(result)
+#     return result
+# end
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))

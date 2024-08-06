@@ -177,8 +177,8 @@ end
 function get_steady_states(p::Problem, swept, fixed; kwargs...)
     return get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 end
-function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
-    return get_steady_states(Problem(eom), swept, fixed; kwargs...)
+function get_steady_states(eom::HarmonicEquation, swept, fixed; compute_jacobian=true, kwargs...)
+    return get_steady_states(Problem(eom, Jacobian=compute_jacobian), swept, fixed; kwargs...)
 end
 function get_steady_states(p, pairs; kwargs...)
     return get_steady_states(

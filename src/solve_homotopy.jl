@@ -144,7 +144,11 @@ function get_steady_states(
     all(isempty.(rounded_solutions)) ? error("No solutions found!") : nothing
     solutions = pad_solutions(rounded_solutions)
 
-    compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
+    compiled_J = if classify_default
+        _compile_Jacobian(prob, swept_parameters, unique_fixed)
+    else
+        identity
+    end
 
     # a "raw" solution struct
     result = Result(

@@ -157,11 +157,13 @@ function get_steady_states(
 
     # sort into branches
     if sorting != "no_sorting"
+        @info "Sorting solutions"
         sort_solutions!(result; sorting=sorting, show_progress=show_progress)
-    else
-        nothing
     end
-    classify_default ? _classify_default!(result) : nothing
+    if classify_default
+        @info "Classify solutions"
+        _classify_default!(result)
+    end
 
     return result
 end
@@ -177,8 +179,12 @@ end
 function get_steady_states(p::Problem, swept, fixed; kwargs...)
     return get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 end
-function get_steady_states(eom::HarmonicEquation, swept, fixed; compute_jacobian=true, kwargs...)
-    return get_steady_states(Problem(eom, Jacobian=compute_jacobian), swept, fixed; kwargs...)
+function get_steady_states(
+    eom::HarmonicEquation, swept, fixed; compute_jacobian=true, kwargs...
+)
+    return get_steady_states(
+        Problem(eom; Jacobian=compute_jacobian), swept, fixed; kwargs...
+    )
 end
 function get_steady_states(p, pairs; kwargs...)
     return get_steady_states(
@@ -215,7 +221,7 @@ Substitute the values according to `fixed_parameters` and compile into a functio
 """
 function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
     J = substitute_all.(mat, Ref(rules))
-    matrix = build_function(J, variables)
+    matrix = build_function(J, variables; expression=Val{false})
     matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
     m(vals::Vector) = postproc(matrix(vals))
     m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI

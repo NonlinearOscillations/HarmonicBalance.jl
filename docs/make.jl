@@ -1,32 +1,47 @@
-push!(LOAD_PATH, "../src/")
+CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
 
-using Documenter
 using HarmonicBalance
+using Documenter
+using DocumenterVitepress
+using DocumenterCitations
+
+
+# extentions
 using ModelingToolkit
 using OrdinaryDiffEq
 using SteadyStateDiffEq
 
+bib = CitationBibliography(
+  joinpath(@__DIR__, "src", "refs.bib");
+  style=:numeric,  # default
+)
+
 include("pages.jl")
 
 makedocs(;
-    sitename="HarmonicBalance.jl",
-    authors="Nonlinear Oscillations Group",
     modules=[
         HarmonicBalance,
         Base.get_extension(HarmonicBalance, :TimeEvolution),
         Base.get_extension(HarmonicBalance, :ModelingToolkitExt),
         Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt),
     ],
+    sitename="HarmonicBalance.jl",
+    authors="Quest",
     warnonly=true,
-    format=Documenter.HTML(;
-        mathengine=MathJax2(),
-        canonical="https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/",
-        assets=["assets/favicon.ico", "assets/docs.css"],
-        # size_threshold = nothing
+    format=DocumenterVitepress.MarkdownVitepress(;
+        repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
+        devbranch="master", devurl="dev"
     ),
     pages=pages,
+    plugins=[bib],
 )
 
-deploydocs(;
-    repo="github.com/NonlinearOscillations/HarmonicBalance.jl.git", push_preview=false
-)
+if CI
+    deploydocs(;
+      repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
+      devbranch="master",
+      target="build",
+      branch="gh-pages",
+      push_preview=true,
+    )
+end

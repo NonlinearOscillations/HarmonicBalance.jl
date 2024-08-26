@@ -5,15 +5,14 @@ using Documenter
 using DocumenterVitepress
 using DocumenterCitations
 
-
 # extentions
 using ModelingToolkit
 using OrdinaryDiffEq
 using SteadyStateDiffEq
 
 bib = CitationBibliography(
-  joinpath(@__DIR__, "src", "refs.bib");
-  style=:numeric,  # default
+    joinpath(@__DIR__, "src", "refs.bib");
+    style=:numeric,  # default
 )
 
 makedocs(;
@@ -27,22 +26,23 @@ makedocs(;
     ],
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
-        devbranch="master", devurl="dev"
+        devbranch="master",
+        devurl="dev",
     ),
-    source = "src",
-    build = "build",
+    source="src",
+    build="build",
     draft=false,
     warnonly=true,
     doctest=false,  # We test it in the CI, no need to run it here
-    plugins=[bib,],
+    plugins=[bib],
 )
 
 if CI
     deploydocs(;
-      repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
-      devbranch="master",
-      target="build",
-      branch="gh-pages",
-      push_preview=true,
+        repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
+        devbranch="master",
+        target="build",
+        branch="gh-pages",
+        push_preview=true,
     )
 end

@@ -27,13 +27,15 @@ makedocs(;
     ],
     sitename="HarmonicBalance.jl",
     authors="Quest",
+    source = "src",
+    build = "build",
     warnonly=true,
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
         devbranch="master", devurl="dev"
     ),
     pages=pages,
-    plugins=[bib],
+    plugins=[bib,],
 )
 
 if CI

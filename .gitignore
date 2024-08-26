@@ -10,3 +10,4 @@ local_tests
 docs/build/**
 examples/jdp.mplstyle
 docs/node_modules/** 
+docs/package-lock.json

@@ -16,25 +16,24 @@ bib = CitationBibliography(
   style=:numeric,  # default
 )
 
-include("pages.jl")
-
 makedocs(;
+    sitename="HarmonicBalance.jl",
+    authors="Quest",
     modules=[
         HarmonicBalance,
         Base.get_extension(HarmonicBalance, :TimeEvolution),
         Base.get_extension(HarmonicBalance, :ModelingToolkitExt),
         Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt),
     ],
-    sitename="HarmonicBalance.jl",
-    authors="Quest",
-    source = "src",
-    build = "build",
-    warnonly=true,
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
         devbranch="master", devurl="dev"
     ),
-    pages=pages,
+    source = "src",
+    build = "build",
+    draft=false,
+    warnonly=true,
+    doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib,],
 )
 

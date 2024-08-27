@@ -30,19 +30,3 @@ features:
     details: Find limit cycles involving many frequencies.
 ---
 ```
-
-## How to Install HarmonicBalance.jl?
-
-It is easy to install HarmonicBalance.jl as we are registered in the Julia General registry.
-You can simply run the following command in the Julia REPL:
-```julia
-julia> using Pkg
-julia> Pkg.add("HarmonicBalance")
-```
-
-If you want to use the latest unreleased version of HarmonicBalance.jl, you can run the following
-command: (in most cases the released version will be same as the version on github)
-```julia
-julia> using Pkg
-julia> Pkg.add(url="https://github.com/NonlinearOscillations/HarmonicBalance.jl")
-```

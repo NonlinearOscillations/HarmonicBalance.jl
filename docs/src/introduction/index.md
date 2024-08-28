@@ -41,5 +41,7 @@ result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 The found steady states can be plotted as a function of the driving frequency:
 ```@example getting_started
+using Plots # hide
+theme(:dark) # hide
 plot(result, "sqrt(u1^2 + v1^2)")
 ```

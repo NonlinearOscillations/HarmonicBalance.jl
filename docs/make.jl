@@ -15,6 +15,9 @@ bib = CitationBibliography(
     style=:numeric,  # default
 )
 
+using Plots
+default(; fmt=:png)
+
 makedocs(;
     sitename="HarmonicBalance.jl",
     authors="Quest",

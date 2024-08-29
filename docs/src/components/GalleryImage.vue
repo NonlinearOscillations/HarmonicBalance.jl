@@ -1,3 +1,4 @@
+<!-- Adding the thumbnail in src fails locally makes it that the page has to be reloaded 2x. Instead we use links.  -->
 <script setup lang="ts">
 import { withBase } from 'vitepress'
 export interface Props {

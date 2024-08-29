@@ -90,7 +90,7 @@ export default defineConfig({
       },
       "/tutorials/": {
         text: 'Tutorials', collapsed: false, items: [
-          { text: 'Steady states', link: '/tutorials/simple_Duffing' },
+          { text: 'Steady states', link: '/tutorials/duffing' },
           { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
           { text: 'Classifying solutions', link: '/tutorials/parametron' },
           { text: 'Linear response', link: '/tutorials/linear_response' },

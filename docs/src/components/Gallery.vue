@@ -37,3 +37,5 @@ defineProps<{
   transition: transform 0.4s ease;
 }
 </style>
+
+<!-- Adding the thumbnail fails locally makes it that the page has to be reloaded 2x. Instead we use links. -->

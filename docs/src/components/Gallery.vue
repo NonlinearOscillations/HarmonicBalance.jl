@@ -19,20 +19,20 @@ defineProps<{
   text-align: center;
   font-size: 2em;
   letter-spacing: 1px;
-  padding: 40px;
+  padding: 5px;
   color: white;
 }
 
 .gallery-image {
-  padding: 20px;
+  padding: 5px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .gallery-image :deep(img) {
-  height: 350px;
-  width: 250px;
+  height: 190px;
+  width: 140px;
   transform: scale(1);
   transition: transform 0.4s ease;
 }

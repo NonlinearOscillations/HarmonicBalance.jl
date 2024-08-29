@@ -16,7 +16,7 @@ defineProps<Props>();
       <img :src="withBase(src)" height="150px" alt="">
       <div class="transparent-box1">
         <div class="caption">
-          <h2>{{ caption }}</h2>
+          <h3>{{ caption }}</h3>
         </div>
       </div>
       <div class="transparent-box2">
@@ -32,9 +32,9 @@ defineProps<Props>();
 .img-box {
   box-sizing: content-box;
   border-radius: 14px;
-  margin: 20px;
-  height: 350px;
-  width: 250px;
+  margin: 10px;
+  height: 190px;
+  width: 140px;
   overflow: hidden;
   display: inline-block;
   color: white;
@@ -43,15 +43,11 @@ defineProps<Props>();
   border: 2px solid var(--vp-c-bg-alt);
 }
 
-.img-box h2 {
-  border-top: 0;
-}
-
 .img-box img {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  opacity: 0.3;
+  opacity: 0.4;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -73,36 +69,33 @@ defineProps<Props>();
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
+.subcaption p {
+  line-height: 1.2;
+  text-align: left;
+  font-size: 10pt;
+}
+
 .transparent-box1 {
-  height: 250px;
-  width: 250px;
+  height: 125px;
+  width: 135px;
   background-color: transparent;
   position: absolute;
   top: 0;
   left: 0;
-  transition: background-color 0.3s ease;
 }
 
 .transparent-box2 {
-  height: 100px;
-  width: 250px;
+  height: 60px;
+  width: 135px;
   background-color: transparent;
   position: absolute;
-  top: 250px;
+  top: 160px;
   left: 0;
-  transition: background-color 0.3s ease;
 }
 
 .img-box:hover img {
   transform: scale(1.1);
-}
-
-.img-box:hover .transparent-box1 {
-  background-color: var(--vp-c-bg-alt);
-}
-
-.img-box:hover .transparent-box2 {
-  background-color: var(--vp-c-bg-alt);
+  opacity: 0;
 }
 
 .img-box:hover .caption {
@@ -118,14 +111,6 @@ defineProps<Props>();
 .img-box:hover {
   border: 2px solid var(--vp-c-brand-light);
   cursor: pointer;
-}
-
-.caption>p:nth-child(2) {
-  font-size: 0.8em;
-}
-
-.subcaption>p:nth-child(2) {
-  font-size: 0.8em;
 }
 
 .opacity-low {

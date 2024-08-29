@@ -5,34 +5,34 @@ import Gallery from "../components/Gallery.vue";
 
 const beginner = [
   {
-    href: "tutorials/simple_Duffing",
+    href: "simple_Duffing",
     src: "../assets/response_single.png",
-    caption: "Finding the steady states",
-    desc: "How to get started with Julia and HarmonicBalance for those who have never used Julia before."
+    caption: "Steady states",
+    desc: "How to get the steady states of the harmonic equations."
   },
   {
-    href: "tutorials/linear_response",
+    href: "parametron",
+    src: "../assets/2d_phase_diagram.png",
+    caption: "Classifying solutions",
+    desc: "Learn how to add different types of drives."
+  },
+  {
+    href: "linear_response",
     src: "../assets/nonlin_F_noise.png",
-    caption: "Compute the linear response",
+    caption: "Linear response",
     desc: "Learn how to compute the linear response of a steady state."
   },
   {
-    href: "tutorials/time_dependent",
+    href: "time_dependent",
     src: "../assets/evo_to_steady.png",
-    caption: "Evolve the stroboscopic system in time",
-    desc: "Learn how to investigate custom layers and train an RNN on time-series data."
+    caption: "Stroboscopic evolution",
+    desc: "Learn how to investigate stroboscopic time evolution."
   },
   {
-    href: "tutorials/limit_cycles",
+    href: "limit_cycles",
     src: "../assets/vdp_degenerate.png",
-    caption: "Find limit cycles",
+    caption: "Limit cycles",
     desc: "Learn how to find the limit cycles of your system."
-  },
-  {
-    href: "tutorials/parametron",
-    src: "../assets/2d_phase_diagram.png",
-    caption: "Adding parametric driving",
-    desc: "Learn how to add different types of drives."
   }
 ];
 

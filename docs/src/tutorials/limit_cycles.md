@@ -32,11 +32,11 @@ result = get_limit_cycles(harmonic_eq, μ => 1:0.1:5, (), ω_lc)
 ```
 The results show a fourfold [degeneracy of solutions](@ref degeneracies):
 ```@example lc
-plot(result, ω_lc)
+plot(result, y="ω_lc")
 ```
  The automatically created solution class `unique_cycle` filters the degeneracy out:
 ```@example lc
-plot(result, ω_lc, class="unique_cycle")
+plot(result, y="ω_lc", class="unique_cycle")
 ```
 
 ## Driven system - coupled Duffings

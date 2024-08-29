@@ -55,10 +55,12 @@ time_evo = solve(ode_problem, saveat=1.0);
 plot(time_evo, ["u1", "v1"], harmonic_eq)
 ```
 
-Running the above code with `x0 = [0., 0.]` and `x0 = [0.2, 0.2]` gives the plots
-```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/evo_to_steady.png" alignment="center" \>
-``` ⠀
+Running the above code with `x0 = [0.2, 0.2]` gives the plots
+```@example time_dependent
+x0 = [0.2; 0.2] # initial condition
+time_evo = solve(ode_problem, saveat=1.0);
+plot(time_evo, ["u1", "v1"], harmonic_eq)
+```
 
 Let us compare this to the steady state diagram.
 ```@example time_dependent
@@ -85,9 +87,6 @@ ode_problem = ODEProblem(harmonic_eq, fixed, sweep=sweep, x0=[0.1;0.0], timespan
 time_evo = solve(ode_problem, saveat=100)
 plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```
-```@raw html
-<img style="display: block; margin: 0 auto;" src="../../assets/time_dependent/sweep_omega.png" alignment="center" \>
-``` ⠀
 We see the system first evolves from the initial condition towards the low-amplitude steady state. The amplitude increases as the sweep proceeds, with a jump occurring around $\omega = 1.08$ (i.e., time 18000).
 
 Successive sweeps can be combined,

@@ -49,15 +49,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/introduction' },
       { text: 'Background', link: '/background/harmonic_balance' },
-      {
-        text: 'Tutorials', items: [
-          { text: 'Steady states', link: '/examples/simple_Duffing.md' },
-          { text: 'Transient dynamics', link: '/examples/time_dependent.md' },
-          { text: 'Classifying solutions', link: '/examples/parametron.md' },
-          { text: 'Linear response', link: '/examples/linear_response.md' },
-          { text: 'Limit cycle', link: '/examples/limit_cycles.md' },
-        ]
-      },
+      { text: 'Tutorials', link: '/tutorials' },
       { text: 'Examples', link: '/examples/overview' },
       {
         text: 'Manual', items: [
@@ -89,11 +81,11 @@ export default defineConfig({
       },
       "/tutorials/": {
         text: 'Tutorials', collapsed: false, items: [
-          { text: 'Steady states', link: '/examples/simple_Duffing' },
-          { text: 'Transient dynamics', link: '/examples/time_dependent' },
-          { text: 'Classifying solutions', link: '/examples/parametron' },
-          { text: 'Linear response', link: '/examples/linear_response' },
-          { text: 'Limit cycle', link: '/examples/limit_cycles' },
+          { text: 'Steady states', link: '/tutorials/simple_Duffing' },
+          { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
+          { text: 'Classifying solutions', link: '/tutorials/parametron' },
+          { text: 'Linear response', link: '/tutorials/linear_response' },
+          { text: 'Limit cycle', link: '/tutorials/limit_cycles' },
         ]
       },
       "/manual/": {

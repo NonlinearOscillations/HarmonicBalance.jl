@@ -11,7 +11,6 @@ using SymbolicUtils:
     ismul,
     add_with_div,
     frac_maketerm #, @compactified
-using SymbolicUtils.TermInterface: issym
 using Symbolics:
     Symbolics,
     Num,
@@ -28,7 +27,8 @@ using Symbolics:
     substitute,
     term,
     expand,
-    operation
+    operation,
+    issym
 
 "Returns true if expr is an exponential"
 is_exp(expr) = isterm(expr) && expr.f == exp

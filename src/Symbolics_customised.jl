@@ -1,4 +1,3 @@
-using Symbolics
 using SymbolicUtils:
     SymbolicUtils,
     Postwalk,
@@ -10,7 +9,9 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    frac_maketerm #, @compactified
+    frac_maketerm, #, @compactified
+    issym
+
 using Symbolics:
     Symbolics,
     Num,
@@ -27,8 +28,7 @@ using Symbolics:
     substitute,
     term,
     expand,
-    operation,
-    issym
+    operation
 
 "Returns true if expr is an exponential"
 is_exp(expr) = isterm(expr) && expr.f == exp

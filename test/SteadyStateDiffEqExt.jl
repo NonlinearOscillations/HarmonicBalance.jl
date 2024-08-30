@@ -15,6 +15,9 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         prob_ss = SteadyStateProblem{false}(model, [], []; jac=true)
         prob_np = NonlinearProblem(prob_ss)
 
+        @test prob_np.p isa MTKParameters
+        @test prob_np.p.tunable isa Vector{Float64}
+
         varied = 2 => range(0, 1, 100)
 
         swept = steady_state_sweep(

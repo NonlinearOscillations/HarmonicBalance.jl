@@ -1,4 +1,3 @@
-using Symbolics
 using SymbolicUtils:
     SymbolicUtils,
     Postwalk,
@@ -10,8 +9,9 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    frac_maketerm #, @compactified
-using SymbolicUtils.TermInterface: issym
+    frac_maketerm, #, @compactified
+    issym
+
 using Symbolics:
     Symbolics,
     Num,

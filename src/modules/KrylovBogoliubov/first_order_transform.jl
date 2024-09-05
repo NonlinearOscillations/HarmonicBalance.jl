@@ -15,7 +15,9 @@ function rearrange_standard!(eom::DifferentialEquation, degree=2)
 end
 
 function HarmonicBalance.rearrange!(eom::DifferentialEquation, new_lhs::Vector{Num})
-    soln = Symbolics.solve_for(get_equations(eom), new_lhs; simplify=false, check=true)
+    soln = Symbolics.symbolic_linear_solve(
+        get_equations(eom), new_lhs; simplify=false, check=true
+    )
     eom.equations = OrderedDict(zip(get_variables_nums(new_lhs), new_lhs .~ soln))
     return nothing
 end

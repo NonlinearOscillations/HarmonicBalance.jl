@@ -20,3 +20,6 @@ plot_linear_response(
 plot_rotframe_jacobian_response(
     result; Ω_range=range(0.01, 1.1, 10), branch=1, logscale=true
 )
+
+plot_eigenvalues(result; branch=1)
+plot_eigenvalues(result; branch=1, type=:re, class="all")

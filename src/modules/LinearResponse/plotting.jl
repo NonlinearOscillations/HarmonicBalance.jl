@@ -257,7 +257,7 @@ function plot_rotframe_jacobian_response(
 end
 
 """
-    plot_eigenvalues(res::Result; branch::Int, type=:imag, projection=v -> 1, cscheme=:default, kwargs...)
+    plot_eigenvalues(res::Result; branch::Int, class=["physical"], type=:imag, projection=v -> 1, cscheme=:default, kwargs...)
 
 Plot the eigenvalues of the jacobian in the rotating frame for Result `res` on `branch`. Either the real (`type=:real``) or imaginary part (`type=:imag``) can be plotted. The `projection` function ℜᵈ → ℜ is applied to the eigenvectors and defines the color of the eigenvalues. The color scheme can be set to a custom one or to the default one.
 
@@ -266,9 +266,15 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function plot_eigenvalues(
-    res; branch, type=:imag, projection=v -> 1, cscheme=:default, kwargs...
+    res;
+    branch,
+    class=["physical"],
+    type=:imag,
+    projection=v -> 1,
+    cscheme=:default,
+    kwargs...,
 )
-    filter = _get_mask(res, ["physical"])
+    filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
     dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")

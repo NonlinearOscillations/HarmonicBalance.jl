@@ -63,18 +63,19 @@ function HarmonicBalance.steady_state_sweep(
 end
 
 function tunable_parameters(param)
-    return hasfield(typeof(param), :tunable) ? param.tunable[1] : param
+    return hasfield(typeof(param), :tunable) ? param.tunable : param
 end
 
 function get_new_parameters(prob, varied_idx, value)
     # make type-stable: FD.Dual or Float64
     if hasfield(typeof(prob.p), :tunable)
-        rest = [prob.p.discrete, prob.p.nonnumeric, prob.p.dependent, prob.p.constant]
+        rest = map(filter(x -> x != :tunable, propertynames(prob.p))) do prop
+            getproperty(prob.p, prop)
+        end
 
         all(isempty.(rest)) || error("Only tunable parameters are supported")
-        length(prob.p.tunable) == 1 || error("The type of the parameters should be uniform")
 
-        old_parameters_values = prob.p.tunable[1]
+        old_parameters_values = prob.p.tunable
         parameter_values = eltype(old_parameters_values)[
             i == varied_idx ? value : x for (i, x) in enumerate(old_parameters_values)
         ]

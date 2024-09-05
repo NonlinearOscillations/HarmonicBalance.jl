@@ -68,12 +68,12 @@ end
         include("time_evolution.jl")
         include("hysteresis_sweep.jl")
     end
-    # @testset "ModelingToolkit extention" begin
-    #     include("ModelingToolkitExt.jl")
-    # end
-    # @testset "SteadyState Extention" begin
-    #     include("SteadyStateDiffEqExt.jl")
-    # end
+    @testset "ModelingToolkit extention" begin
+        include("ModelingToolkitExt.jl")
+    end
+    @testset "SteadyState Extention" begin
+        include("SteadyStateDiffEqExt.jl")
+    end
 end
 
 @testset "Doctests" begin

@@ -220,7 +220,6 @@ Any kwargs are fed to Plots' gr().
 
 Solutions not belonging to the `physical` class are ignored.
 """
-
 function plot_rotframe_jacobian_response(
     res::Result;
     Ω_range,
@@ -257,6 +256,15 @@ function plot_rotframe_jacobian_response(
     )
 end
 
+"""
+    plot_eigenvalues(res::Result; branch::Int, type=:imag, projection=v -> 1, cscheme=:default, kwargs...)
+
+Plot the eigenvalues of the jacobian in the rotating frame for Result `res` on `branch`. Either the real (`type=:real``) or imaginary part (`type=:imag``) can be plotted. The `projection` function ℜᵈ → ℜ is applied to the eigenvectors and defines the color of the eigenvalues. The color scheme can be set to a custom one or to the default one.
+
+Any kwargs are fed to Plots' gr().
+
+Solutions not belonging to the `physical` class are ignored.
+"""
 function plot_eigenvalues(
     res; branch, type=:imag, projection=v -> 1, cscheme=:default, kwargs...
 )

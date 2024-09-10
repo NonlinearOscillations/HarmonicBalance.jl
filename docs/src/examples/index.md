@@ -8,6 +8,12 @@ const examples = [
     src: "",
     caption: "Wave mixing",
     desc: "Understand three and four wave mixing."
+  },
+  {
+    href: "parametric_via_three_wave_mixing",
+    src: "",
+    caption: "parametric three wave mixing",
+    desc: "Parametric excitation through three wave mixing."
   }
 ];
 

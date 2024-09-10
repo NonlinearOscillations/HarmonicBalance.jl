@@ -100,6 +100,7 @@ export default defineConfig({
       "/examples/": {
         text: 'Examples', collapsed: false, items: [
           { text: 'Wave mixing', link: '/examples/wave_mixing' },
+          { text: 'Parametric three wave mixing', link: '/examples/parametric_via_three_wave_mixing' },
         ]
       },
       "/manual/": {

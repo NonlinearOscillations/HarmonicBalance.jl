@@ -21,7 +21,9 @@ function preprocess(content)
 end
 
 for example in examples
-    Literate.notebook(
-        example, OUTPUT_NB_DIR; documenter=false, execute=true, preprocess=preprocess
-    )
+    Literate.notebook(example, OUTPUT_NB_DIR; documenter=false, execute=true)
+end
+
+for example in examples
+    Literate.notebook(example, OUTPUT_NB_DIR; documenter=false, execute=true)
 end

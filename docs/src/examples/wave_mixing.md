@@ -2,6 +2,8 @@
 EditURL = "wave_mixing.jl"
 ```
 
+# Three Wave Mixing vs four wave mixing
+
 ## Packages
 
 We load the following packages into our environment:

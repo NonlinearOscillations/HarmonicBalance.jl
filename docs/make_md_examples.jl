@@ -34,6 +34,6 @@ for example in examples
         OUTPUT_MD_DIR;
         flavor=Literate.DocumenterFlavor(),
         config=extra_literate_config,
-        preprocess=preprocess,
+        # preprocess=preprocess,
     )
 end

@@ -59,7 +59,7 @@ export default defineConfig({
       { text: 'Getting Started', link: '/introduction' },
       { text: 'Background', link: '/background/harmonic_balance' },
       { text: 'Tutorials', link: '/tutorials' },
-      { text: 'Examples', link: '/examples/overview' },
+      { text: 'Examples', link: '/examples' },
       {
         text: 'Manual', items: [
           { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
@@ -95,6 +95,11 @@ export default defineConfig({
           { text: 'Classifying solutions', link: '/tutorials/parametron' },
           { text: 'Linear response', link: '/tutorials/linear_response' },
           { text: 'Limit cycle', link: '/tutorials/limit_cycles' },
+        ]
+      },
+      "/examples/": {
+        text: 'Examples', collapsed: false, items: [
+          { text: 'Wave mixing', link: '/examples/wave_mixing' },
         ]
       },
       "/manual/": {

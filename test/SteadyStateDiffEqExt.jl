@@ -3,7 +3,8 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
 
 @testset "Steady state sweeps" begin
     @testset "one variable ODE" begin
-        @variables t v(t) = 0
+        @independent_variables t
+        @variables v(t) = 0
         @parameters g = 9.8 k = 0.2
         D = Differential(t)
         eqs = [D(v) ~ g - k * v]
@@ -14,6 +15,9 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         prob_ss = SteadyStateProblem{false}(model, [], []; jac=true)
         prob_np = NonlinearProblem(prob_ss)
 
+        @test prob_np.p isa MTKParameters
+        @test prob_np.p.tunable isa Vector{Float64}
+
         varied = 2 => range(0, 1, 100)
 
         swept = steady_state_sweep(
@@ -22,7 +26,8 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
     end
 
     @testset "two variable ODE (duffing)" begin
-        @variables t u1(t) v1(t)
+        @independent_variables t
+        @variables u1(t) v1(t)
         @parameters α ω ω0 F γ
 
         eqs = [
@@ -50,7 +55,7 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         model = structural_simplify(model)
 
         force = 0.01
-        omega0 = 1.1
+        omega0 = 1.0
         alpha = 1.0
         gamma = 0.01
         param = [alpha, 1.2, omega0, force, gamma]
@@ -60,7 +65,7 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
 
         ω_span = (0.9, 1.5)
         ω_range = range(ω_span..., 100)
-        varied_idx = findfirst(x -> x == 1.2, prob_ss.p.tunable[1])
+        varied_idx = findfirst(x -> x == 1.2, prob_ss.p.tunable)
         varied = varied_idx => ω_range
         swept = steady_state_sweep(
             prob_np, prob_ss, NewtonRaphson(), DynamicSS(Rodas5()); varied=varied

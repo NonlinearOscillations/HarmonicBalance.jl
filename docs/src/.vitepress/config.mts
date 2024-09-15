@@ -74,50 +74,39 @@ export default defineConfig({
     ],
 
     sidebar: {
-      "/introduction/": {
-        text: 'Getting Started', collapsed: false, items: [
-          { text: 'Introduction', link: '/index' },
-          { text: 'Overview', link: '/introduction/overview' },
-          { text: 'Tutorials', link: '/tutorials/index' },
-          { text: 'Citation', link: '/introduction/citation' }]
-      },
-      "/background/": {
-        text: 'Background', collapsed: false, items: [
-          { text: 'The method of Harmonic Balance', link: '/background/harmonic_balance.md' },
-          { text: 'Stability and linear response', link: 'background/stability_response.md' },
-          { text: 'Limit cycles', link: 'background/limit_cycles.md' },
-        ]
-      },
-      "/tutorials/": {
-        text: 'Tutorials', collapsed: false, items: [
-          { text: 'Steady states', link: '/tutorials/steady_states' },
-          { text: 'Classifying solutions', link: '/tutorials/classification' },
-          { text: 'Linear response', link: '/tutorials/linear_response' },
-          { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
-          { text: 'Limit cycles', link: '/tutorials/limit_cycles' },
-        ]
-      },
-      "/examples/": {
-        text: 'Examples', collapsed: false, items: [
-          { text: 'Wave mixing', link: '/examples/wave_mixing' },
-          { text: 'Parametric three wave mixing', link: '/examples/parametric_via_three_wave_mixing' },
-          { text: 'Parametric oscillator', link: '/examples/parametron' },
-        ]
-      },
-      "/manual/": {
-        text: 'Manual', items: [
-          { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
-          { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
-          { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
-          { text: 'Time evolution', link: '/manual/time_dependent' },
-          { text: 'Linear response', link: '/manual/linear_response' },
-          { text: 'Plotting', link: '/manual/plotting' },
-          { text: `Saving and loading`, link: '/manual/saving' },
-        ]
-      },
-      "/api/": {
-        text: 'API Reference', collapsed: false, items: []
-      }
+      "/introduction/": [
+        { text: 'Introduction', link: '/index' },
+        { text: 'Overview', link: '/introduction/overview' },
+        { text: 'Tutorials', link: '/tutorials/index' },
+        { text: 'Citation', link: '/introduction/citation' }
+      ],
+      "/background/": [
+        { text: 'The method of Harmonic Balance', link: '/background/harmonic_balance.md' },
+        { text: 'Stability and linear response', link: 'background/stability_response.md' },
+        { text: 'Limit cycles', link: 'background/limit_cycles.md' }
+      ],
+      "/tutorials/": [
+        { text: 'Steady states', link: '/tutorials/steady_states' },
+        { text: 'Classifying solutions', link: '/tutorials/classification' },
+        { text: 'Linear response', link: '/tutorials/linear_response' },
+        { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
+        { text: 'Limit cycles', link: '/tutorials/limit_cycles' }
+      ],
+      "/examples/": [
+        { text: 'Wave mixing', link: '/examples/wave_mixing' },
+        { text: 'Parametric three wave mixing', link: '/examples/parametric_via_three_wave_mixing' },
+        { text: 'Parametric oscillator', link: '/examples/parametron' }
+      ],
+      "/manual/": [
+        { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
+        { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
+        { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
+        { text: 'Time evolution', link: '/manual/time_dependent' },
+        { text: 'Linear response', link: '/manual/linear_response' },
+        { text: 'Plotting', link: '/manual/plotting' },
+        { text: `Saving and loading`, link: '/manual/saving' }
+      ],
+      "/api/": []
     },
 
     editLink: {

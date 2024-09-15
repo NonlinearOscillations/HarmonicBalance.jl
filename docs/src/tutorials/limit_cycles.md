@@ -30,7 +30,7 @@ Taking instead ``ω_{lc}`` as a variable to be solved for [results in a phase fr
 ```@example lc
 result = get_limit_cycles(harmonic_eq, μ => 1:0.1:5, (), ω_lc)
 ```
-The results show a fourfold [degeneracy of solutions](@ref degeneracies):
+The results show a fourfold [degeneracy of solutions](@ref limit_cycles_bg):
 ```@example lc
 plot(result, y="ω_lc")
 ```

@@ -78,7 +78,7 @@ export default defineConfig({
         text: 'Getting Started', collapsed: false, items: [
           { text: 'Introduction', link: '/index' },
           { text: 'Overview', link: '/introduction/overview' },
-          { text: 'Resources', link: '/introduction/resources' },
+          { text: 'Tutorials', link: '/tutorials/index' },
           { text: 'Citation', link: '/introduction/citation' }]
       },
       "/background/": {

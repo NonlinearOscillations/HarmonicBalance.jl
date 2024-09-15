@@ -65,7 +65,7 @@ The process of obtaining the harmonic equations is best shown on an example.
 
 Here, we derive the harmonic equations for a single Duffing resonator, governed by the equation
 ```math
-\begin{equation} \label{eq:duffing}
+\begin{equation}
     \ddot{x}(t) + \omega_0^2 x(t) + \alpha x^3(t) = F \cos(\omega_d t + \theta)\,.
 \end{equation}
 ```
@@ -80,7 +80,7 @@ We first attempt to describe the steady states of Eq. \eqref{eq:duffing} using o
 \end{equation}
 ```
 
-with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into Eq. \eqref{eq:duffing} results in
+with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into mechanical equations of motion results in
 ```math
 \begin{align} \label{eq:ansatz1}
 	\left[\ddot{u} + 2 \omega_d \dot{v} + u \left(\omega_0^2 - \omega_d^2 \right) +  \frac{3 \alpha \left(u^3 + uv^2\right)}{4} + F \cos{\theta}\right] &\cos(\omega_d t)& \\
@@ -106,7 +106,7 @@ The steady states describe a response that may be recast as $x_0(t) = X_0 \cos(\
     \delta \ddot{x}(t) + \left[\omega_0^2 + \frac{3 \alpha X_0^2}{4} \right]\delta x(t) = - \frac{\alpha X_0^3}{4} \cos(3 \omega_d t + 3 \phi)\,,
 \end{equation}
 ```
-describes a simple harmonic oscillator, which is exactly soluble. Correspondingly, a response of $\delta x(t)$ at frequency $3 \omega_d$ is observed. Since this response is obtained 'on top of' each steady state of Eq. \eqref{eq:duffing}, no previously-unknown solutions are generated in the process.
+describes a simple harmonic oscillator, which is exactly soluble. Correspondingly, a response of $\delta x(t)$ at frequency $3 \omega_d$ is observed. Since this response is obtained 'on top of' each steady state of the equations of motion, no previously-unknown solutions are generated in the process.
 	
 ### Two-frequency ansatz
 
@@ -131,5 +131,5 @@ with $u_1, u_2, v_1, v_2$ being the harmonic variables. As before we substitute 
 	\end{split}
 	\end{align}
 ```
-In contrast to the single-frequency ansatz [Eqs. \eqref{eq:ansatz1}],  we now have 4 equations of order 3, allowing up to $3^4=81$ solutions (the number of unique real ones is again generally far smaller). The larger number of solutions is explained by higher harmonics which cannot be captured perturbatively by the single-frequency ansatz. In particular, those where the $3 \omega_d$ component is significant. Such solutions appear, e.g., for $\omega_d \approx \omega_0 / 3$ where the generated $3 \omega_d$ harmonic is close to the natural resonant frequency. See the [examples](@ref Duffing) for numerical results.
+In contrast to the single-frequency ansatz,  we now have 4 equations of order 3, allowing up to $3^4=81$ solutions (the number of unique real ones is again generally far smaller). The larger number of solutions is explained by higher harmonics which cannot be captured perturbatively by the single-frequency ansatz. In particular, those where the $3 \omega_d$ component is significant. Such solutions appear, e.g., for $\omega_d \approx \omega_0 / 3$ where the generated $3 \omega_d$ harmonic is close to the natural resonant frequency. See the [examples](@ref Duffing) for numerical results.
 	

@@ -14,7 +14,7 @@ This means the system is now described using a discrete set of variables $u_{i,j
 ``` 
 we may obtain the _harmonic equations_ (see [an example of this procedure](@ref Duffing_harmeq))
 ```math
-\begin{equation} \label{eq:harmeq}
+\begin{equation}
 \frac{d\mathbf{u}(T)}{dT}  = \bar{\mathbf{F}} (\mathbf{u})
 \end{equation}
 ```
@@ -22,7 +22,7 @@ where $\bar{\mathbf{F}}(\mathbf{u})$ is a nonlinear function. A steady state $\m
 
 ### Stability
 
-Let us assume that we found a steady state $\mathbf{u}_0$. When the system is in this state, it responds to small perturbations either by returning to $\mathbf{u}_0$ over some characteristic timescale (_stable state_) or by evolving away from $\mathbf{u}_0$ (_unstable state_). To analyze the stability of $\mathbf{u}_0$, we linearize Eq. \eqref{eq:harmeq} around $\mathbf{u}_0$ for a small perturbation $\delta \mathbf{u} = \mathbf{u} - \mathbf{u}_0$ to obtain
+Let us assume that we found a steady state $\mathbf{u}_0$. When the system is in this state, it responds to small perturbations either by returning to $\mathbf{u}_0$ over some characteristic timescale (_stable state_) or by evolving away from $\mathbf{u}_0$ (_unstable state_). To analyze the stability of $\mathbf{u}_0$, we linearize the equations of motion around $\mathbf{u}_0$ for a small perturbation $\delta \mathbf{u} = \mathbf{u} - \mathbf{u}_0$ to obtain
 ```math
 \begin{equation} \label{eq:Jaceq}
 \frac{d}{dT} \left[\delta \mathbf{u}(T)\right] =  J(\mathbf{u}_0) \delta \mathbf{u}(T) \,,
@@ -33,7 +33,7 @@ where $J(\mathbf{u}_0)=\nabla_{\mathbf{u}}  \bar{\mathbf{F}}|_{\mathbf{u}=\mathb
 Eq. \eqref{eq:Jaceq} is exactly solvable for $\delta \mathbf{u}(T)$ given an initial condition $\delta \mathbf{u}(T_0)$. The solution can be expanded in terms of the complex eigenvalues $\lambda_r$ and eigenvectors $\mathbf{v}_r$ of $J(\mathbf{u}_0)$, namely
 
 ```math
-\begin{equation} \label{eq:fluct_evo}
+\begin{equation} 
     \delta \mathbf{u}(T) = \sum_{r} c_r \hspace{1mm}\mathbf{v}_r e^{\lambda_r T}.
 \end{equation}
 ```
@@ -46,7 +46,7 @@ The dynamical behaviour near the steady states is thus governed by $e^{ \lambda_
 The response of a stable steady state to an additional oscillatory force, caused by weak probes or noise, is often of interest. It can be calculated by solving for the perturbation $\delta \mathbf{u}(T)$ in the presence of an additional drive term.
 
 ```math
-\begin{equation} \label{eq:Jacforced}
+\begin{equation} 
 \frac{d}{dT} \left[\delta \mathbf{u}(T)\right] =  J(\mathbf{u}_0) \delta \mathbf{u}(T) + \boldsymbol{\xi} \,e^{i \Omega T}\,,
 \end{equation}
 ```
@@ -67,7 +67,7 @@ Knowing the response of the harmonic variables $\mathbf{u}(T)$, what is the corr
 ```  
 and multiplying out the sines and cosines gives
 ```math
-\begin{align} \label{eq:deltax}
+\begin{align}
 \delta x_i(t) = \sum_{j=1}^{M_i} \bigg\{ \left( \text{Re}[\delta u_{i,j}] - \text{Im}[\delta v_{i,j}] \right) \,\cos[(\omega_{i,j} - \Omega) t]  \\
 + \left( \text{Im}[\delta u_{i,j}] + \text{Re}[\delta v_{i,j}] \right) \,\sin[(\omega_{i,j} - \Omega) t] \nonumber \\
 + \left( \text{Re}[\delta u_{i,j}] + \text{Im}[\delta v_{i,j}] \right) \,\cos[(\omega_{i,j} + \Omega) t] \nonumber \\

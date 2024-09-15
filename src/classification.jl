@@ -86,7 +86,7 @@ end
 """
 $(TYPEDSIGNATURES)
 Returns true if the solution `soln` of the problem `prob` is Hopf-unstable.
-Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with +ve real parts, which
+Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with positive real parts, which
 are complex conjugates of each other.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """

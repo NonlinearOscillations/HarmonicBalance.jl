@@ -12,16 +12,23 @@ const examples = [
   {
     href: "parametric_via_three_wave_mixing",
     src: "",
-    caption: "parametric three wave mixing",
+    caption: "Parametric three wave mixing",
     desc: "Parametric excitation through three wave mixing."
+  },
+  {
+    href: "parametron",
+    src: "",
+    caption: "Parametric oscillator",
+    desc: "Introduction to the parametric oscillator."
   }
 ];
 
 
 </script>
+```
+# [Examples](@id examples)
 
-# Examples
-
+```@raw html
 <Gallery :images="examples" />
 ```
 

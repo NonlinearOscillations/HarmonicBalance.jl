@@ -1,9 +1,9 @@
-# [Introduction: linear response](@id linresp_ex)
+# [Linear response](@id linresp_ex)
 
 In HarmonicBalance.jl, the [stability and linear response](@ref linresp_background) are treated using the [`LinearResponse`](@ref linresp_man) module. 
 
 Here we calculate the white noise response of a simple nonlinear system. A set of reference results may be found in Huber et al. in [Phys. Rev. X 10, 021066 (2020)](https://doi.org/10.1103/PhysRevX.10.021066).
-We start by [defining the Duffing oscillator](https://nonlinearoscillations.github.io/HarmonicBalance.jl/stable/examples/simple_Duffing/#The-code)
+We start by defining the [Duffing oscillator](@ref Duffing)
 ```@example linresp
 using HarmonicBalance, Plots
 using Plots.Measures: mm
@@ -21,41 +21,64 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 
 ### Linear regime
 
-When driven weakly, the Duffing resonator behaves quasi-linearly, i.e, its response to noise is independent of the applied drive. We see that for weak driving, $F = 10^{-6}$, the amplitude is a Lorentzian. 
+When driven weakly, the Duffing resonator behaves quasi-linearly, i.e, its response to noise is independent of the applied drive. We see that for weak driving, $F = 10^{-4}$, the amplitude is a Lorentzian. 
 ```@example linresp
-fixed = (α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-6)   # fixed parameters
-varied = ω => range(0.9, 1.1, 100)           # range of parameter values
+fixed = (α => 1, ω0 => 1.0, γ => 0.005, F => 0.0001)   # fixed parameters
+varied = ω => range(0.95, 1.05, 100)           # range of parameter values
 result = get_steady_states(harmonic_eq, varied, fixed)
 
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
-The linear response is obtained with [`plot_linear_response`](@ref linresp_man), note that the branch number and the variable (here `x`) must be specified. The response has a peak at $\omega_0$, irrespective of $\omega$ :
+To find the fluctuation on the top of the steady state one often employs a [Bogoliubov-de Gennes analyses](https://en.wikipedia.org/wiki/Linear_dynamical_system). Here, we compute the eigenvalues $\lambda_k$ of the Jacobian matrix at the steady state. The imaginary part of the eigenvalues gives characteristic frequencies of the "quasi-particle excitations". The real part gives the lifetime of these excitations.
+
+One can plot the eigenvalues as follows
 ```@example linresp
-plot_linear_response(result, x, Ω_range=range(0.9,1.1,300), branch=1, logscale=true)
+plot(
+    plot_eigenvalues(result, branch=1),
+    plot_eigenvalues(result, branch=1, type=:real, ylims=(-0.003, 0)),
+)
 ```
-Note the slight "bending" of the noise peak with $\omega$ - this is given by the failure of the first-order calculation to capture response far-detuned from the drive frequency. More on this point will follow in a future example.
+We find a single pair of complex conjugate eigenvalues linearly changing with the driving frequency. Both real parts are negative, indicating stability.
+
+As discussed in [background section on linear response](@ref linresp_background), the excitation manifest itself as a lorentenzian peak in a power spectral density (PSD) measurement. The PSD can be plotted using [`plot_linear_response`](@ref linresp_man):
+```@example linresp
+plot_linear_response(result, x, Ω_range=range(0.95, 1.05, 300), branch=1, logscale=true)
+```
+The response has a peak at $\omega_0$, irrespective of the driving frequency $\omega$. Indeed, the eigenvalues shown before where plotted in the rotating frame at the frequency of the drive $\omega$. Hence, the imaginary part of eigenvalues shows the frequency (energy) needed to excite the system at it natural frequency (The frequency its want to be excited at.)
+
+Note the slight "bending" of the noise peak with $\omega$ - this is given by the failure of the first-order calculation to capture response far-detuned from the drive frequency.
 
 ### Nonlinear regime
 
-For strong driving, matters get more complicated. Let us now use a drive $F = 10^{-2}$ :
+For strong driving, matters get more complicated. Let us now use a drive $F = 2*10^{-3}$ :
 
 ```@example linresp
-fixed = (α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-2)   # fixed parameters
-swept = ω => range(0.9, 1.1, 100)           # range of parameter values
-result = get_steady_states(harmonic_eq, swept, fixed)
+fixed = (α => 1, ω0 => 1.0, γ => 0.005, F => 0.002)   # fixed parameters
+varied = ω => range(0.95, 1.05, 100)           # range of parameter values
+result = get_steady_states(harmonic_eq, varied, fixed)
 
 plot(result, x="ω", y="sqrt(u1^2 + v1^2)");
 ```
-
-The amplitude is the well-known Duffing curve. Let's see the linear response of the two stable branches, 1 and 2.
+The amplitude is the well-known Duffing curve. Let's look at the eigenvalues of the two stable branches, 1 and 2.
 ```@example linresp
 plot(
-  plot_linear_response(result, x, branch=1, Ω_range=range(0.9,1.1,300), logscale=true),
+    plot_eigenvalues(result, branch=1),
+    plot_eigenvalues(result, branch=1, type=:real, ylims=(-0.003, 0)),
+    plot_eigenvalues(result, branch=2),
+    plot_eigenvalues(result, branch=2, type=:real, ylims=(-0.003, 0)),
+)
+```
+Again every branch gives a single pair of complex conjugate eigenvalues. However, for branch 1, the characteristic frequencies due not change linearly with the driving frequency around $\omega=\omega_0$. This is a sign of steady state becoming nonlinear at large amplitudes.
+
+The same can be seen in the PSD:
+```@example linresp
+plot(
+  plot_linear_response(result, x, branch=1, Ω_range=range(0.95,1.1,300), logscale=true),
   plot_linear_response(result, x, branch=2, Ω_range=range(0.9,1.1,300), logscale=true),
     size=(600, 250), margin=3mm
 )
 ```
-In branch 1 the linear response to white noise shows _more than one peak_. This is a distinctly nonlinear phenomenon, manifesting primarily at large amplitudes. Branch 2 is again quasi-linear, which stems from its low amplitude.
+In branch 1 the linear response to white noise shows _more than one peak_. This is a distinctly nonlinear phenomenon, indicitive if the squeezing of the steady state. Branch 2 is again quasi-linear, which stems from its low amplitude.
 
 Following [Huber et al.](https://doi.org/10.1103/PhysRevX.10.021066), we may also fix $\omega = \omega_0$ and plot the linear response as a function of $F$. The response turns out to be single-valued over a large range of driving strengths. Using a log scale for the x-axis:
 
@@ -70,7 +93,7 @@ plot(
   size=(600, 250), margin=3mm
 )
 ```
-We see that for low $F$, quasi-linear behaviour with a single Lorentzian response occurs, while for larger $F$, two peaks form in the noise response. The two peaks are strongly unequal in magnitude, which is an example of internal squeezing.
+We see that for low $F$, quasi-linear behaviour with a single Lorentzian response occurs, while for larger $F$, two peaks form in the noise response. The two peaks are strongly unequal in magnitude, which is an example of internal squeezing (See supplemental material of [Huber et al.](https://doi.org/10.1103/PhysRevX.10.021066)).
 
 
 

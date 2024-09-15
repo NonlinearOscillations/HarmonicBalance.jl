@@ -90,17 +90,18 @@ export default defineConfig({
       },
       "/tutorials/": {
         text: 'Tutorials', collapsed: false, items: [
-          { text: 'Steady states', link: '/tutorials/duffing' },
-          { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
-          { text: 'Classifying solutions', link: '/tutorials/parametron' },
+          { text: 'Steady states', link: '/tutorials/steady_states' },
+          { text: 'Classifying solutions', link: '/tutorials/classification' },
           { text: 'Linear response', link: '/tutorials/linear_response' },
-          { text: 'Limit cycle', link: '/tutorials/limit_cycles' },
+          { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
+          { text: 'Limit cycles', link: '/tutorials/limit_cycles' },
         ]
       },
       "/examples/": {
         text: 'Examples', collapsed: false, items: [
           { text: 'Wave mixing', link: '/examples/wave_mixing' },
           { text: 'Parametric three wave mixing', link: '/examples/parametric_via_three_wave_mixing' },
+          { text: 'Parametric oscillator', link: '/examples/parametron' },
         ]
       },
       "/manual/": {

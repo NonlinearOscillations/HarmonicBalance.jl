@@ -1,6 +1,6 @@
-# Limit cycles
+# [Limit cycles](@id limit_cycles)
 
-In contrast to the previous examples, limit cycle problems feature harmonic(s) whose numerical value is not imposed externally. We shall construct our `HarmonicEquation` as usual, but identify this harmonic as an extra variable, rather than a fixed parameter.
+In contrast to the previous tutorials, limit cycle problems feature harmonic(s) whose numerical value is not imposed externally. We shall construct our `HarmonicEquation` as usual, but identify this harmonic as an extra variable, rather than a fixed parameter.
 
 ## Non-driven system - the van der Pol oscillator
 

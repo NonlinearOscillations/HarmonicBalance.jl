@@ -275,6 +275,22 @@ julia> sweep[a](200)
 # do the same, varying two parameters simultaneously
 julia> sweep = ParameterSweep([a => [0.,1.], b => [0., 1.]], (0,100))
 ```
+Successive sweeps can be combined,
+```julia-repl
+sweep1 = ParameterSweep(ω => [0.95, 1.0], (0, 2e4))
+sweep2 = ParameterSweep(λ => [0.05, 0.01], (2e4, 4e4))
+sweep = sweep1 + sweep2
+```
+multiple parameters can be swept simultaneously,
+```julia-repl
+sweep = ParameterSweep([ω => [0.95;1.0], λ => [5e-2;1e-2]], (0, 2e4))
+```
+and custom sweep functions may be used.
+```julia-repl
+ωfunc(t) = cos(t)
+sweep = ParameterSweep(ω => ωfunc)
+```
+
 """
 struct ParameterSweep
     """Maps each swept parameter to a function."""

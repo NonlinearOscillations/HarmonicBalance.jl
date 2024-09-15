@@ -4,13 +4,13 @@ import Gallery from "../components/Gallery.vue";
 
 const beginner = [
   {
-    href: "duffing",
+    href: "steady_states",
     src: "https://raw.githubusercontent.com/NonlinearOscillations/HarmonicBalance.jl/gh-pages/v0.10.2/assets/simple_Duffing/response_single.png",
     caption: "Steady states",
     desc: "How to get the steady states of the harmonic equations."
   },
   {
-    href: "parametron",
+    href: "classification",
     src: "https://raw.githubusercontent.com/NonlinearOscillations/HarmonicBalance.jl/gh-pages/v0.10.2/assets/parametron/2d_phase_diagram.png",
     caption: "Classifying solutions",
     desc: "Learn how to add different types of drives."
@@ -37,10 +37,12 @@ const beginner = [
 
 
 </script>
+```
 
 # Tutorials
 
-We show the capabilities of the package by providing a series of tutorials. Here we use the duffing oscillator as a typical example. Examples of other systems can be found in the example tab.
+We show the capabilities of the package by providing a series of tutorials. Examples of other systems can be found in the [examples](@ref examples) tab.
 
+```@raw html
 <Gallery :images="beginner" />
 ```

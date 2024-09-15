@@ -23,9 +23,9 @@ hero:
 
 features:
   - title: Non-equilibrium steady states
-    details: Compute the all stationary states in a one or two-dimensional parameter sweep.
+    details: Compute all stationary states in a one or two-dimensional parameter sweep.
   - title: Linear Response
-    details: Explore the fluctuations on top of the steady states.
+    details: Explore the fluctuations on top of the non-equilibrium steady states.
   - title: Limit Cycles
     details: Find limit cycles involving many frequencies.
 ---

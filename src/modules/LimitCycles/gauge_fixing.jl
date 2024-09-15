@@ -3,6 +3,7 @@ function add_pairs!(eom::DifferentialEquation, ω_lc::Num)
         add_harmonic!(eom, var, ω + ω_lc)
         add_harmonic!(eom, var, ω - ω_lc)
     end
+    return nothing
 end
 
 """
@@ -11,8 +12,12 @@ end
 Add a limit cycle harmonic `ω_lc` to the system
 Equivalent to adding `n` pairs of harmonics ω +- ω_lc for each existing ω.
 """
-add_pairs!(eom::DifferentialEquation; ω_lc::Num, n::Int) =
-    [add_pairs!(eom, ω_lc) for k in 1:n]
+function add_pairs!(eom::DifferentialEquation; ω_lc::Num, n::Int)
+    foreach(1:n) do k
+        add_pairs!(eom, ω_lc)
+    end
+    return nothing
+end
 
 """
 $(TYPEDSIGNATURES)

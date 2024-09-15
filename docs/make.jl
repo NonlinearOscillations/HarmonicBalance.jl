@@ -52,6 +52,6 @@ if CI
         devbranch="master",
         target="build",
         branch="gh-pages",
-        push_preview=true,
+        push_preview=false,
     )
 end

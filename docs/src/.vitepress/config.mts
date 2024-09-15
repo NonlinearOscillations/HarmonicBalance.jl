@@ -39,7 +39,7 @@ export default defineConfig({
     //         gtag('js', new Date());
     //         gtag('config', 'G-Q8GYTEVTZ2');`,
     //   ],
-    ['link', { rel: 'icon', href: 'REPLACE_ME_DOCUMENTER_VITEPRESS_FAVICON' }],
+    ['link', { rel: 'icon', href: '/HarmonicBalance.jl/dev/favicon.ico' }],
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],
   ],
 

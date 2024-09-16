@@ -119,8 +119,8 @@ export default defineConfig({
     ],
 
     footer: {
-      message: 'Made with <a href="https://documenter.juliadocs.org/stable/" target="_blank"><strong>Documenter.jl</strong></a>, <a href="https://vitepress.dev" target="_blank"><strong>VitePress</strong></a> and <a href="https://luxdl.github.io/DocumenterVitepress.jl/stable" target="_blank"><strong>DocumenterVitepress.jl</strong></a><br>Released under the MIT License. Powered by the <a href="https://www.julialang.org">Julia Programming Language</a>.<br>',
-      copyright: `© Copyright ${new Date().getUTCFullYear()}.`
+      message: 'Made with <a href="https://documenter.juliadocs.org/" target="_blank"><strong>Documenter.jl</strong></a>, <a href="https://vitepress.dev" target="_blank"><strong>VitePress</strong></a> and <a href="https://luxdl.github.io/DocumenterVitepress.jl/" target="_blank"><strong>DocumenterVitepress.jl</strong>',
+      copyright: `© Copyright ${new Date().getUTCFullYear()}. Released under the MIT License.`
     },
   }
 })

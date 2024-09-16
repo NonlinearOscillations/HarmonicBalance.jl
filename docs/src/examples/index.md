@@ -5,19 +5,19 @@ import Gallery from "../components/Gallery.vue";
 const examples = [
   {
     href: "wave_mixing",
-    src: "thumbnails/Four_wave_upconversion.jpg",
+    src: "https://nonlinearoscillations.github.io/HarmonicBalance.jl/assets/example_thumbnails/Four_wave_upconversion.jpg",
     caption: "Wave mixing",
     desc: "Understand three and four wave mixing."
   },
   {
     href: "parametric_via_three_wave_mixing",
-    src: "../assets/HB_thumbnail.png",
+    src: "https://nonlinearoscillations.github.io/HarmonicBalance.jl/assets/example_thumbnails/HB_thumbnail.png",
     caption: "Parametric three wave mixing",
     desc: "Parametric excitation through three wave mixing."
   },
   {
     href: "parametron",
-    src: "../assets/HB_thumbnail.png",
+    src: "https://nonlinearoscillations.github.io/HarmonicBalance.jl/assets/example_thumbnails/HB_thumbnail.png",
     caption: "Parametric oscillator",
     desc: "Introduction to the parametric oscillator."
   }

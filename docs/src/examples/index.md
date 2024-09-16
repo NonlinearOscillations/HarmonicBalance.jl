@@ -5,19 +5,19 @@ import Gallery from "../components/Gallery.vue";
 const examples = [
   {
     href: "wave_mixing",
-    src: "",
+    src: "thumbnails/Four_wave_upconversion.jpg",
     caption: "Wave mixing",
     desc: "Understand three and four wave mixing."
   },
   {
     href: "parametric_via_three_wave_mixing",
-    src: "",
+    src: "../assets/HB_thumbnail.png",
     caption: "Parametric three wave mixing",
     desc: "Parametric excitation through three wave mixing."
   },
   {
     href: "parametron",
-    src: "",
+    src: "../assets/HB_thumbnail.png",
     caption: "Parametric oscillator",
     desc: "Introduction to the parametric oscillator."
   }

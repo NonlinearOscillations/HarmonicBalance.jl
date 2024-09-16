@@ -1,4 +1,0 @@
-[submodule "examples"]
-	path = examples
-	url = https://github.com/NonlinearOscillations/HarmonicBalance_examples.git
-	branch = master

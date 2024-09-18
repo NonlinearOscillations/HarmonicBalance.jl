@@ -76,8 +76,8 @@ export default defineConfig({
     sidebar: {
       "/introduction/": [
         { text: 'Introduction', link: '/index' },
-        { text: 'Overview', link: '/introduction/overview' },
-        { text: 'Tutorials', link: '/tutorials/index' },
+        // { text: 'Overview', link: '/introduction/overview' },
+        // { text: 'Tutorials', link: '/tutorials/index' },
         { text: 'Citation', link: '/introduction/citation' }
       ],
       "/background/": [

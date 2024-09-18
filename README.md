@@ -10,7 +10,7 @@
 [![JET](https://img.shields.io/badge/%E2%9C%88%EF%B8%8F%20tested%20with%20-%20JET.jl%20-%20red)](https://github.com/aviatesk/JET.jl)
 
 
-**HarmonicBalance.jl** is a Julia package for solving nonlinear differential equations using the method of harmonic balance.
+**HarmonicBalance.jl** is a Julia package for solving periodic differential equations using the method of harmonic balance.
 
 ## Installation
 

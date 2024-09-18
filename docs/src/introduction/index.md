@@ -40,9 +40,9 @@ fixed = (α => 1.0, ω0 => 1.0, F => 0.01, η => 0.1)   # fixed parameters
 varied = ω => range(0.9, 1.2, 100)           # range of parameter values
 result = get_steady_states(harmonic_eq, varied, fixed)
 ```
-The found steady states can be plotted as a function of the driving frequency:
+The obtained steady states can be plotted as a function of the driving frequency:
 ```@example getting_started
-# using Plots # hide
-# theme(:dark) # hide
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
+
+If you want learn more on what you can do with HarmonicBalance.jl, check out the [tutorials](@ref tutorials). We also have collected some [examples](@ref examples) of different physical systems.

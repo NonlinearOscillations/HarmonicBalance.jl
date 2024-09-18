@@ -39,7 +39,7 @@ const beginner = [
 </script>
 ```
 
-# Tutorials
+# [Tutorials](@id tutorials)
 
 We show the capabilities of the package by providing a series of tutorials. Examples of other systems can be found in the [examples](@ref examples) tab.
 

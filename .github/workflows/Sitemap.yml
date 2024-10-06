@@ -19,7 +19,7 @@ jobs:
     - name: Generate the sitemap
       uses: cicirello/generate-sitemap@v1
       with:
-        base-url-path: https://www.example.com/
+        base-url-path: https://nonlinearoscillations.github.io/HarmonicBalance.jl/
 
     - name: Commit and push
       run: |

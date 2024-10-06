@@ -46,11 +46,28 @@ mutable struct DifferentialEquation
         return DifferentialEquation(exprs .~ Int(0), vars)
     end
 
-    function DifferentialEquation(arg1, arg2)
-        return DifferentialEquation(
-            arg1 isa Vector ? arg1 : [arg1], arg2 isa Vector ? arg2 : [arg2]
+    function DifferentialEquation(eq::Equation, var::Num)
+        typerhs = typeof(eq.rhs)
+        typelhs = typeof(eq.lhs)
+        if eq.rhs isa AbstractVector || eq.lhs isa AbstractVector
+            throw(
+                ArgumentError(
+                    "The equation is of the form $(typerhs)~$(typelhs) is not supported. Commenly one forgot to broadcast the equation symbol `~`.",
+                ),
+            )
+        end
+        return DifferentialEquation([eq], [var])
+    end
+    function DifferentialEquation(eq::Equation, vars::Vector{Num})
+        typerhs = typeof(eq.rhs)
+        typelhs = typeof(eq.lhs)
+        throw(
+            ArgumentError(
+                "The variables are of type $(typeof(vars)). Whereas you gave one equation of type $(typerhs)~$(typelhs). Commenly one forgot to broadcast the equation symbol `~`.",
+            ),
         )
     end
+    DifferentialEquation(lhs::Num, var::Num) = DifferentialEquation([lhs ~ Int(0)], [var])
 end
 
 function Base.show(io::IO, diff_eq::DifferentialEquation)

@@ -33,6 +33,10 @@ end
 end
 
 @testset "Symbolics customised" begin
+    include("API.jl")
+end
+
+@testset "Symbolics customised" begin
     include("powers.jl")
     include("harmonics.jl")
     include("fourier.jl")

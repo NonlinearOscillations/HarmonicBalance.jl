@@ -12,18 +12,21 @@ jobs:
 
     steps:
     - name: Checkout the repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0 
 
     - name: Generate the sitemap
-      id: sitemap
       uses: cicirello/generate-sitemap@v1
       with:
-        base-url-path: https://nonlinearoscillations.github.io/HarmonicBalance.jl/
+        base-url-path: https://www.example.com/
 
-    - name: Output stats
+    - name: Commit and push
       run: |
-        echo "sitemap-path = ${{ steps.sitemap.outputs.sitemap-path }}"
-        echo "url-count = ${{ steps.sitemap.outputs.url-count }}"
-        echo "excluded-count = ${{ steps.sitemap.outputs.excluded-count }}"
+        if [[ `git status --porcelain sitemap.xml` ]]; then
+          git config --global user.name 'github-actions'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sitemap.xml
+          git commit -m "Automated sitemap update" sitemap.xml
+          git push
+        fi

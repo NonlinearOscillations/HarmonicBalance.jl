@@ -14,7 +14,8 @@ using ModelingToolkit:
     varmap_to_vars,
     parameters,
     @parameters,
-    @mtkbuild
+    @mtkbuild,
+    @independent_variables
 
 swapsides(eq::Equation) = Equation(eq.rhs, eq.lhs)
 
@@ -30,7 +31,7 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
         eom = rearrange_standard(eom)
     end
 
-    slow_time = (@variables T; T)
+    slow_time = (@independent_variables T; T)
     par_names = declare_parameter.(eom.parameters)
     vars = get_variables(eom)
 

@@ -29,7 +29,7 @@ export default defineConfig({
   head: [
       [
         "script",
-        { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-B15Z6PR1K0" },
+        { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-RE962QZ6DQ" },
       ],
       [
         "script",
@@ -37,7 +37,7 @@ export default defineConfig({
         `window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-B15Z6PR1K0');`,
+            gtag('config', 'G-RE962QZ6DQ');`,
       ],
     ['link', { rel: 'icon', href: '/HarmonicBalance.jl/dev/favicon.ico' }],
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],

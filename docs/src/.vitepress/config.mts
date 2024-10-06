@@ -27,18 +27,18 @@ export default defineConfig({
   },
 
   head: [
-    //   [
-    //     "script",
-    //     { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-Q8GYTEVTZ2" },
-    //   ],
-    //   [
-    //     "script",
-    //     {},
-    //     `window.dataLayer = window.dataLayer || [];
-    //         function gtag(){dataLayer.push(arguments);}
-    //         gtag('js', new Date());
-    //         gtag('config', 'G-Q8GYTEVTZ2');`,
-    //   ],
+      [
+        "script",
+        { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-B15Z6PR1K0" },
+      ],
+      [
+        "script",
+        {},
+        `window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-B15Z6PR1K0');`,
+      ],
     ['link', { rel: 'icon', href: '/HarmonicBalance.jl/dev/favicon.ico' }],
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],
   ],

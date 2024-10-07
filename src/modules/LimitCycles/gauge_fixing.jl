@@ -1,3 +1,10 @@
+"""
+add_pairs!(eom::DifferentialEquation, ω_lc::Num)
+
+Adds harmonic sidebands to the equation of motion (EOM) for each variable (frequency `ω`), shifting its current harmonics by `±ω_lc`. 
+For each variable in the equation of motion (`eom`), it adds two new harmonics by shifting the existing harmonics `ω` by `+ω_lc` and `-ω_lc`. 
+These sidebands are essential for studying systems with periodic forcing or resonances, where limit cycles can appear as additional frequency components around a central harmonic.
+"""
 function add_pairs!(eom::DifferentialEquation, ω_lc::Num)
     for var in get_variables(eom), ω in eom.harmonics[var]
         add_harmonic!(eom, var, ω + ω_lc)

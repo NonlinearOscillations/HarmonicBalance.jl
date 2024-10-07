@@ -1,6 +1,6 @@
 get_equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
-# TODO: check the degree of the eom
+#TODO: check the degree of the eom
 function is_rearranged_standard(eom::DifferentialEquation, degree=2)
     tvar = get_independent_variables(eom)[1]
     D = Differential(tvar)^degree
@@ -36,6 +36,21 @@ function first_order_transform!(diff_eom::DifferentialEquation, time)
 end
 
 # taken from ModelingToolkit.jl
+"""
+ode_order_lowering(equations, iv, harmonics)
+
+Transforms higher-order ODEs into a system of first-order ODEs by introducing auxiliary variables.
+
+### Arguments
+- `equations`: A dictionary of higher-order ODEs.
+- `iv`: The independent variable (e.g., time).
+- `harmonics`: A mapping of state variables to their harmonic frequencies.
+
+### Returns
+- A tuple `(diff_eqs, diff_vars)`:
+  - `diff_eqs`: New first-order differential equations.
+  - `diff_vars`: Mapping of introduced variables to their harmonics.
+"""
 function ode_order_lowering(equations, iv, harmonics)
     states = unwrap.(collect(keys(harmonics)))
     eqs = unwrap.(collect(values(equations)))

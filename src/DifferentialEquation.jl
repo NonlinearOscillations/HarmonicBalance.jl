@@ -4,7 +4,7 @@ Add the harmonic `ω` to the harmonic ansatz used to expand the variable `var` i
 
 ## Example
 
-# define the simple harmonic oscillator and specify that x(t) oscillates with frequency ω
+# write down the driven harmonic oscillator equation and specify that x(t) oscillates with frequency ω
 ```julia-repl
 julia> @variables t, x(t), y(t), ω0, ω, F, k;
 julia> diff_eq = DifferentialEquation(d(x,t,2) + ω0^2 * x ~ F * cos(ω*t), x);

@@ -40,6 +40,7 @@ end
     include("powers.jl")
     include("harmonics.jl")
     include("fourier.jl")
+    include("symbolic_utils.jl")
 end
 
 @testset "IO" begin

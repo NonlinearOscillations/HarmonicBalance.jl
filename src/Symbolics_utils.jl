@@ -23,7 +23,14 @@ end
 "Return the name of a variable (excluding independent variables)"
 function var_name(x::Num)
     var = Symbolics._toexpr(x)
-    return var isa Expr ? String(var.args[1]) : String(var)
+    while var isa Expr
+        try
+            var = var.args[1]
+        catch
+            break
+        end
+    end
+    return String(var)
 end
 #  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
 var_name(x::Sym) = String(x.name)

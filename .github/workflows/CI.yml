@@ -25,9 +25,8 @@ jobs:
       matrix:
         version:
           - 'pre'
-          - '1.10'
-          # - '1.9'
-          # - 'nightly'
+          - 'lts'
+          - '1'
         os:
           - ubuntu-latest
         arch:

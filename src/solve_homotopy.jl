@@ -342,7 +342,10 @@ function _get_raw_solution(
         result_full = Array{Vector{Any},1}(undef, length(parameter_values))
         if show_progress
             bar = Progress(
-                length(parameter_values), 1, "Solving via $method homotopy ...", 50
+                length(parameter_values);
+                dt=1,
+                desc="Solving via $method homotopy ...",
+                barlen=50,
             )
         end
         for i in eachindex(parameter_values) # do NOT thread this

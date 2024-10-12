@@ -1,4 +1,4 @@
-using OrdinaryDiffEq: ODEProblem, solve, ODESolution
+using OrdinaryDiffEqTsit5: ODEProblem, solve, ODESolution
 
 """
     ODEProblem(
@@ -9,11 +9,11 @@ using OrdinaryDiffEq: ODEProblem, solve, ODESolution
             timespan::Tuple
             )
 
-Creates an ODEProblem object used by OrdinaryDiffEq.jl from the equations in `eom` to simulate time-evolution within `timespan`.
+Creates an ODEProblem object used by OrdinaryDiffEqTsit5.jl from the equations in `eom` to simulate time-evolution within `timespan`.
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
 If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
-function OrdinaryDiffEq.ODEProblem(
+function OrdinaryDiffEqTsit5.ODEProblem(
     eom::HarmonicEquation,
     fixed_parameters;
     sweep::ParameterSweep=ParameterSweep(),

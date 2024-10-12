@@ -21,7 +21,7 @@ Parametric plot of f[1] against f[2]
 Also callable as plot!
 """
 function Plots.plot(
-    soln::OrdinaryDiffEq.ODESolution, funcs, harm_eq::HarmonicEquation; add=false, kwargs...
+    soln::OrdinaryDiffEqTsit5.ODESolution, funcs, harm_eq::HarmonicEquation; add=false, kwargs...
 )
 
     # start a new plot if needed
@@ -51,7 +51,7 @@ function Plots.plot(
     end
 end
 
-function Plots.plot!(soln::OrdinaryDiffEq.ODESolution, varargs...; kwargs...)
+function Plots.plot!(soln::OrdinaryDiffEqTsit5.ODESolution, varargs...; kwargs...)
     return plot(soln, varargs...; add=true, kwargs...)
 end
 

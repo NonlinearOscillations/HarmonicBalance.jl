@@ -7,7 +7,7 @@ using DocumenterCitations
 
 # extentions
 using ModelingToolkit
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 using SteadyStateDiffEq
 
 bib = CitationBibliography(

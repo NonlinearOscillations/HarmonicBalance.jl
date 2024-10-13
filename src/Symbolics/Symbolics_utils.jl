@@ -63,26 +63,15 @@ function substitute_all(
     end
     return substitute(x, rules)
 end
-
 "Variable substitution - dictionary"
 function substitute_all(dict::Dict, rules::Dict)::Dict
     new_keys = substitute_all.(keys(dict), rules)
     new_values = substitute_all.(values(dict), rules)
     return Dict(zip(new_keys, new_values))
 end
-
-function substitute_all(
-    v::Union{Array{Num},Array{Equation}}, rules::Union{Dict,Pair,Vector}
-)
-    return [substitute_all(x, rules) for x in v]
-end
-function substitute_all(x::Union{Num,Equation}, rules::Union{Pair,Vector,OrderedDict})
-    return substitute_all(x, Dict(rules))
-end
-function substitute_all(x::Complex{Num}, rules::Union{Pair,Vector,OrderedDict,Dict})
-    return substitute_all(Num(x.re.val.arguments[1]), rules)
-end
-substitute_all(x, rules) = substitute_all(Num(x), rules)
+Collections = Union{Dict,Pair,Vector,OrderedDict}
+substitute_all(v::AbstractArray, rules) = [substitute_all(x, rules) for x in v]
+substitute_all(x::Union{Num,Equation}, rules::Collections) = substitute_all(x, Dict(rules))
 
 
 get_independent(x::Num, t::Num) = get_independent(x.val, t)

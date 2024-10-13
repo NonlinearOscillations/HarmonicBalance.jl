@@ -11,7 +11,6 @@ function trig_reduce(x)
     return simplify_fractions(x) # (a*c^2 + b*c)/c^2 = (a*c + b)/c
 end
 
-
 "Return true if `f` is a sin or cos."
 function is_trig(f::Num)
     f = ispow(f.val) ? f.val.base : f.val

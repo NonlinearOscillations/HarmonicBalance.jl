@@ -9,13 +9,15 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    frac_maketerm, #, @compactified
+    frac_maketerm,
+    @compactified,
     issym
 
 using Symbolics:
     Symbolics,
     Num,
     unwrap,
+    wrap,
     get_variables,
     simplify,
     expand_derivatives,
@@ -60,28 +62,15 @@ expand_all(x::Complex{Num}) = expand_all(x.re) + im * expand_all(x.im)
 expand_all(x::Num) = Num(expand_all(x.val))
 
 "Apply a function f on every member of a sum or a product"
-_apply_termwise(f, x) = f(x)
 function _apply_termwise(f, x::BasicSymbolic)
-    if isadd(x)
-        return sum([f(arg) for arg in arguments(x)])
-    elseif ismul(x)
-        return prod([f(arg) for arg in arguments(x)])
-    elseif isdiv(x)
-        return _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
-    else
-        return f(x)
+    @compactified x::BasicSymbolic begin
+    Add  => sum([f(arg) for arg in arguments(x)])
+    Mul  => prod([f(arg) for arg in arguments(x)])
+    Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
+    _    => f(x)
     end
 end
-# We could use @compactified to do the achive thing wit a speed-up. Neverthless, it yields less readable code.
-# @compactified is what SymbolicUtils uses internally
-# function _apply_termwise(f, x::BasicSymbolic)
-#     @compactified x::BasicSymbolic begin
-#     Add  => sum([f(arg) for arg in arguments(x)])
-#     Mul  => prod([f(arg) for arg in arguments(x)])
-#     Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
-#     _    => f(x)
-#     end
-# end
+_apply_termwise(f, x::Num) = wrap(_apply_termwise(f, unwrap(x)))
 
 simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im * x.im
 simplify_complex(x) = x

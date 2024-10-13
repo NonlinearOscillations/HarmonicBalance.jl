@@ -35,7 +35,8 @@ Random.seed!(SEED)
             ambiguities=false,
             piracies=false,
             stale_deps=false,
-            project_extras=false
+            project_extras=false,
+            persistent_tasks=false
         )
     end
 end

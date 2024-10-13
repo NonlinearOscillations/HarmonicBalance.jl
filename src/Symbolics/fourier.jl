@@ -77,10 +77,10 @@ function trig_to_exp(x::Num)
     end
 
     result = Symbolics.substitute(x, Dict(rules))
-    #result = result isa Complex ? Num(first(result.re.val.arguments)) : result
-    result = Num(result)
-    return result
+    return convert_to_Num(result)
 end
+convert_to_Num(x::Complex{Num})::Num = Num(first(x.re.val.arguments))
+convert_to_Num(x::Num)::Num = x
 
 function exp_to_trig(x::BasicSymbolic)
     if isadd(x) || isdiv(x) || ismul(x)

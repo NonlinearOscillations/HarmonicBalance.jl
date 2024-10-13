@@ -5,24 +5,23 @@ using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-# @testset "Code quality" begin
-#     using ExplicitImports, Aqua
-#     ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
+@testset "Code quality" begin
+    using ExplicitImports, Aqua
+    ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
 
-#     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
-#     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
-#     Aqua.test_ambiguities(HarmonicBalance)
-#     Aqua.test_all(
-#         HarmonicBalance;
-#         deps_compat=(
-#             ignore=ignore_deps,
-#             check_extras=(ignore=ignore_deps,),
-#             check_weakdeps=(ignore=ignore_deps,),
-#         ),
-#         piracies=(treat_as_own=[HarmonicBalance.Num],),
-#         ambiguities=false,
-#     )
-# end
+    @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
+    @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
+    Aqua.test_ambiguities(HarmonicBalance)
+    Aqua.test_all(
+        HarmonicBalance;
+        deps_compat=(
+            ignore=ignore_deps,
+            check_extras=(ignore=ignore_deps,),
+            check_weakdeps=(ignore=ignore_deps,),
+        ),
+        ambiguities=false,
+    )
+end
 
 @testset "Code linting" begin
     using JET
@@ -34,7 +33,7 @@ end
 end
 
 @testset "Symbolics customised" begin
-    include("Symbolics.jl")
+    include("symbolics.jl")
 end
 
 @testset "IO" begin

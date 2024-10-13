@@ -31,20 +31,6 @@ function simplify_complex(x::BasicSymbolic)
     end
 end
 
-# sometimes, expressions get stored as Complex{Num} with no way to decode what real(x) and imag(x)
-# this overloads the Num constructor to return a Num if x.re and x.im have similar arguments
-function Num(x::Complex{Num})::Num
-    if x.re.val isa Float64 && x.im.val isa Float64
-        return Num(x.re.val)
-    else
-        if isequal(x.re.val.arguments, x.im.val.arguments)
-            Num(first(x.re.val.arguments))
-        else
-            error("Cannot convert Complex{Num} " * string(x) * " to Num")
-        end
-    end
-end
-# ^ This function commits type-piracy with Symbolics.jl. We should change this.
 
 """
 $(TYPEDSIGNATURES)
@@ -52,9 +38,8 @@ $(TYPEDSIGNATURES)
 Perform substitutions in `rules` on `x`.
 `include_derivatives=true` also includes all derivatives of the variables of the keys of `rules`.
 """
-function substitute_all(
-    x::T, rules::Dict; include_derivatives=true
-)::T where {T<:Union{Equation,Num}}
+subtype=Union{Num,Equation,BasicSymbolic}
+function substitute_all(x::subtype, rules::Dict; include_derivatives=true)
     if include_derivatives
         rules = merge(
             rules,
@@ -71,7 +56,24 @@ function substitute_all(dict::Dict, rules::Dict)::Dict
 end
 Collections = Union{Dict,Pair,Vector,OrderedDict}
 substitute_all(v::AbstractArray, rules) = [substitute_all(x, rules) for x in v]
-substitute_all(x::Union{Num,Equation}, rules::Collections) = substitute_all(x, Dict(rules))
+substitute_all(x::subtype, rules::Collections) = substitute_all(x, Dict(rules))
+# Collections = Union{Dict,OrderedDict}
+# function substitute_all(x, rules::Collections; include_derivatives=true)
+#     if include_derivatives
+#         rules = merge(
+#             rules,
+#             Dict([Differential(var) => Differential(rules[var]) for var in keys(rules)]),
+#         )
+#     end
+#     return substitute(x, rules)
+# end
+# "Variable substitution - dictionary"
+# function substitute_all(dict::Dict, rules::Dict)::Dict
+#     new_keys = substitute_all.(keys(dict), rules)
+#     new_values = substitute_all.(values(dict), rules)
+#     return Dict(zip(new_keys, new_values))
+# end
+# substitute_all(v::AbstractArray, rules::Collections) = [substitute_all(x, rules) for x in v]
 
 
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
@@ -124,7 +126,6 @@ end
 
 is_harmonic(x::Equation, t::Num) = is_harmonic(x.lhs, t) && is_harmonic(x.rhs, t)
 is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
-
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))

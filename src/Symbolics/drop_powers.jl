@@ -22,7 +22,6 @@ function drop_powers(expr::Num, vars::Vector{Num}, deg::Int)
     removal = Dict([ϵ^d => Num(0) for d in deg:max_deg])
     res = substitute_all(substitute_all(subs_expr, removal), Dict(ϵ => Num(1)))
     return Symbolics.expand(res)
-    #res isa Complex ? Num(res.re.val.arguments[1]) : res
 end
 
 function drop_powers(expr::Vector{Num}, var::Vector{Num}, deg::Int)

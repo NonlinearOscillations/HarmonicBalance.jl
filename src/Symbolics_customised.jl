@@ -34,7 +34,7 @@ using Symbolics:
     substitute,
     term,
     expand,
-    operation,
+    # operation,
     _iszero
 
 # ∨ Complex{Num} can contain

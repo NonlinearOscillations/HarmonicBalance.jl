@@ -40,7 +40,8 @@ function get_Jacobian(eqs::Vector{Num}, vars::Vector{Num})
 end
 
 function get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num})
-    return get_Jacobian(Num.(getfield.(eqs, :lhs) .- getfield.(eqs, :rhs)), vars)
+    expr = Num[getfield(eq, :lhs) - getfield(eq, :rhs) for eq in eqs]
+    return get_Jacobian(expr, vars)
 end
 
 """

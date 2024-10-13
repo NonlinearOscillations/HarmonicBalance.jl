@@ -24,8 +24,44 @@ function set_imaginary_tolerance(x::Float64)
     @eval(IM_TOL::Float64 = $x)
 end
 
-include("Symbolics_customised.jl")
-include("Symbolics_utils.jl")
+using SymbolicUtils:
+    SymbolicUtils,
+    Postwalk,
+    Sym,
+    BasicSymbolic,
+    isterm,
+    ispow,
+    isadd,
+    isdiv,
+    ismul,
+    add_with_div,
+    frac_maketerm,
+    @compactified,
+    issym
+
+using Symbolics:
+    Symbolics,
+    Num,
+    unwrap,
+    wrap,
+    get_variables,
+    simplify,
+    expand_derivatives,
+    build_function,
+    Equation,
+    Differential,
+    @variables,
+    arguments,
+    simplify_fractions,
+    substitute,
+    term,
+    expand,
+    operation
+
+include("Symbolics/Symbolics_utils.jl")
+include("Symbolics/exponentials.jl")
+include("Symbolics/fourier.jl")
+include("Symbolics/drop_powers.jl")
 
 include("modules/extention_functions.jl")
 include("utils.jl")
@@ -74,14 +110,14 @@ export get_krylov_equations
 include("modules/FFTWExt.jl")
 using .FFTWExt
 
-@setup_workload begin
-    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-    # precompile file and potentially make loading faster.
-    @compile_workload begin
-        # all calls in this block will be precompiled, regardless of whether
-        # they belong to your package or not (on Julia 1.8 and higher)
-        include("precompilation.jl")
-    end
-end
+# @setup_workload begin
+#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+#     # precompile file and potentially make loading faster.
+#     @compile_workload begin
+#         # all calls in this block will be precompiled, regardless of whether
+#         # they belong to your package or not (on Julia 1.8 and higher)
+#         include("precompilation.jl")
+#     end
+# end
 
 end # module

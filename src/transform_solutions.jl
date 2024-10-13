@@ -100,8 +100,8 @@ function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
-        val = unwrap(substitute_all(_remove_brackets(var), soln))
-        ω = unwrap(substitute_all(var.ω, soln))
+        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
+        ω = real(unwrap(substitute_all(var.ω, soln)))
         if var.type == "u"
             timetrace .+= val * cos.(ω * times)
         elseif var.type == "v"

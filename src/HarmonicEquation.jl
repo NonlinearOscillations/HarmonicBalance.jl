@@ -63,7 +63,8 @@ function slow_flow!(eom::HarmonicEquation; fast_time::Num, slow_time::Num, degre
     drop = [d(var, fast_time, degree) => 0 for var in get_variables(eom)]
 
     eom.equations = substitute_all(substitute_all(eom.equations, drop), replace)
-    return eom.variables = substitute_all(eom.variables, replace)
+    eom.variables = substitute_all(eom.variables, replace)
+    return nothing
 end
 
 """

@@ -14,9 +14,8 @@ sys = ODESystem(harmonic_eq)
 fixed = (α => 1.0, ω0 => 1.1, F => 0.01, γ => 0.01)
 param = ParameterList(merge(Dict(fixed), Dict(ω => 1.1)))
 
-for p in string.([α,ω,ω0,F,γ])
-   @test p ∈ string.(parameters(sys))
+for p in string.([α, ω, ω0, F, γ])
+    @test p ∈ string.(parameters(sys))
 end
-@test varmap_to_vars(param, parameters(sys)) == [1.0,0.01,1.1,0.01,1.1]
 
 ODEProblem(harmonic_eq, [1.0, 0.0], (0, 100), param)

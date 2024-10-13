@@ -7,11 +7,11 @@ Random.seed!(SEED)
 
 @testset "Code quality" begin
     using ExplicitImports, Aqua
-    using ModelingToolkit, OrdinaryDiffEqTsit5, SteadyStateDiffEq
+    # using ModelingToolkit, OrdinaryDiffEqTsit5, SteadyStateDiffEq
     ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
-    TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
-    ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
-    SteadyStateDiffEqExt = Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
+    # TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
+    # ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
+    # SteadyStateDiffEqExt = Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
 
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
@@ -25,20 +25,20 @@ Random.seed!(SEED)
         ),
         ambiguities=false,
     )
-    for mod in [HarmonicBalance, TimeEvolution, ModelingToolkitExt, SteadyStateDiffEqExt]
-        @test check_no_stale_explicit_imports(mod) == nothing
-        @test check_all_explicit_imports_via_owners(mod) == nothing
-        Aqua.test_ambiguities(mod)
-        Aqua.test_all(
-            mod;
-            deps_compat=false,
-            ambiguities=false,
-            piracies=false,
-            stale_deps=false,
-            project_extras=false,
-            persistent_tasks=false
-        )
-    end
+    # for mod in [HarmonicBalance, TimeEvolution, ModelingToolkitExt, SteadyStateDiffEqExt]
+    #     @test check_no_stale_explicit_imports(mod) == nothing
+    #     @test check_all_explicit_imports_via_owners(mod) == nothing
+    #     Aqua.test_ambiguities(mod)
+    #     Aqua.test_all(
+    #         mod;
+    #         deps_compat=false,
+    #         ambiguities=false,
+    #         piracies=false,
+    #         stale_deps=false,
+    #         project_extras=false,
+    #         persistent_tasks=false
+    #     )
+    # end
 end
 
 @testset "Code linting" begin

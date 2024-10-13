@@ -13,9 +13,10 @@ macro eqtest(expr)
 end
 
 @testset "exp(x)^n => exp(x*n)" begin
-    using HarmonicBalance: expand_all
+    using HarmonicBalance: expand_all, expand_exp_power
     @variables a n
 
+    @eqtest expand_exp_power(exp(a)^3) == exp(3 * a)
     @eqtest simplify(exp(a)^3) == exp(3 * a)
     @eqtest simplify(exp(a)^n) == exp(n * a)
     @eqtest expand_all(exp(a)^3) == exp(3 * a)

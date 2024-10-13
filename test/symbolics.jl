@@ -1,5 +1,29 @@
-using HarmonicBalance: drop_powers, max_power, is_harmonic
-using HarmonicBalance.Symbolics: expand
+using Test
+using Symbolics
+using HarmonicBalance
+using SymbolicUtils: Fixpoint, Postwalk, PassThrough, @rule
+
+macro eqtest(expr)
+    @assert expr.head == :call && expr.args[1] in [:(==), :(!=)]
+    return esc(
+        if expr.args[1] == :(==)
+            :(@test isequal($(expr.args[2]), $(expr.args[3])))
+        else
+            :(@test !isequal($(expr.args[2]), $(expr.args[3])))
+        end,
+    )
+end
+
+@testset "exp(x)^n => exp(x*n)" begin
+    using HarmonicBalance: expand_all
+    @variables a n
+
+    @eqtest simplify(exp(a)^3) == exp(3 * a)
+    @eqtest simplify(exp(a)^n) == exp(n * a)
+    @eqtest expand_all(exp(a)^3) == exp(3 * a)
+    @eqtest expand_all(exp(a)^3) == exp(3 * a)
+    @eqtest expand_all(im * exp(a)^5) == im * exp(5 * a)
+end
 
 @testset "powers" begin
     using HarmonicBalance: drop_powers, max_power

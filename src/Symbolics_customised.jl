@@ -1,3 +1,4 @@
+using Symbolics
 using SymbolicUtils:
     SymbolicUtils,
     Postwalk,
@@ -9,9 +10,9 @@ using SymbolicUtils:
     isdiv,
     ismul,
     add_with_div,
-    frac_maketerm, #, @compactified
-    issym
-
+    frac_maketerm,
+    @rule,
+    issym #, @compactified
 using Symbolics:
     Symbolics,
     Num,
@@ -30,34 +31,38 @@ using Symbolics:
     expand,
     operation
 
-"Returns true if expr is an exponential"
-is_exp(expr) = isterm(expr) && expr.f == exp
+# "Returns true if expr is an exponential"
+# is_exp(expr) = isterm(expr) && expr.f == exp
 
-"Expand powers of exponential such that exp(x)^n => exp(x*n) "
-expand_exp_power(expr) =
-    ispow(expr) && is_exp(expr.base) ? exp(expr.base.arguments[1] * expr.exp) : expr
-expand_exp_power_add(expr) = sum([expand_exp_power(arg) for arg in arguments(expr)])
-expand_exp_power_mul(expr) = prod([expand_exp_power(arg) for arg in arguments(expr)])
-expand_exp_power(expr::Num) = expand_exp_power(expr.val)
+# "Expand powers of exponential such that exp(x)^n => exp(x*n) "
+# expand_exp_power(expr) =
+#     ispow(expr) && is_exp(expr.base) ? exp(expr.base.arguments[1] * expr.exp) : expr
+# expand_exp_power_add(expr) = sum([expand_exp_power(arg) for arg in arguments(expr)])
+# expand_exp_power_mul(expr) = prod([expand_exp_power(arg) for arg in arguments(expr)])
+# expand_exp_power(expr::Num) = expand_exp_power(expr.val)
 
-function expand_exp_power(expr::BasicSymbolic)
-    if isadd(expr)
-        return expand_exp_power_add(expr)
-    elseif ismul(expr)
-        return expand_exp_power_mul(expr)
-    else
-        return if ispow(expr) && is_exp(expr.base)
-            exp(expr.base.arguments[1] * expr.exp)
-        else
-            expr
-        end
-    end
-end
+# function expand_exp_power(expr::BasicSymbolic)
+#     if isadd(expr)
+#         return expand_exp_power_add(expr)
+#     elseif ismul(expr)
+#         return expand_exp_power_mul(expr)
+#     else
+#         return if ispow(expr) && is_exp(expr.base)
+#             exp(expr.base.arguments[1] * expr.exp)
+#         else
+#             expr
+#         end
+#     end
+# end
 
 "Expands using SymbolicUtils.expand and expand_exp_power (changes exp(x)^n to exp(x*n)"
+const expand_exp_power = @rule(exp(~x)^(~y) => exp(~x * ~y))
 expand_all(x) = Postwalk(expand_exp_power)(SymbolicUtils.expand(x))
-expand_all(x::Complex{Num}) = expand_all(x.re) + im * expand_all(x.im)
-expand_all(x::Num) = Num(expand_all(x.val))
+function expand_all(x::Complex{Num})
+    re_val = x.re.val === false ? 0.0 : expand_all(x.re)
+    im_val = x.im.val === false ? 0.0 : expand_all(x.im)
+    return re_val + im * im_val
+end # This code is stupid, we can just use simplify.
 
 "Apply a function f on every member of a sum or a product"
 _apply_termwise(f, x) = f(x)

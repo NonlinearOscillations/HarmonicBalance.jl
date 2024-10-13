@@ -51,3 +51,33 @@ Symbolics.get_variables(var::HarmonicVariable)::Num = Num(first(get_variables(va
 
 Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable)::Bool =
     isequal(v1.symbol, v2.symbol)
+
+    "The derivative of f w.r.t. x of degree deg"
+function d(f::Num, x::Num, deg=1)::Num
+    return isequal(deg, 0) ? f : (Differential(x)^deg)(f)
+end
+d(funcs::Vector{Num}, x::Num, deg=1) = Num[d(f, x, deg) for f in funcs]
+
+"Declare a variable in the the currently active namespace"
+function declare_variable(name::String)
+    var_sym = Symbol(name)
+    @eval($(var_sym) = first(Symbolics.@variables $var_sym))
+    return eval(var_sym)
+end
+
+"Declare a variable that is a function of another variable in the the current namespace"
+function declare_variable(name::String, independent_variable::Num)
+    # independent_variable = declare_variable(independent_variable) convert string into Num
+    var_sym = Symbol(name)
+    new_var = Symbolics.@variables $var_sym(independent_variable)
+    @eval($(var_sym) = first($new_var)) # store the variable under "name" in this namespace
+    return eval(var_sym)
+end
+
+"Return the name of a variable (excluding independent variables)"
+function var_name(x::Num)
+    var = Symbolics._toexpr(x)
+    return var isa Expr ? String(var.args[1]) : String(var)
+end
+#  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
+var_name(x::Sym) = String(x.name)

@@ -58,9 +58,8 @@ using Symbolics:
     expand,
     operation
 
-include("Symbolics/Symbolics_customised.jl")
-include("Symbolics/exponentials.jl")
 include("Symbolics/Symbolics_utils.jl")
+include("Symbolics/exponentials.jl")
 include("Symbolics/fourier.jl")
 include("Symbolics/drop_powers.jl")
 

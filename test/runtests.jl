@@ -29,7 +29,7 @@ Random.seed!(SEED)
     JET.test_package(HarmonicBalance; target_defined_modules=true)
 end
 
-@testset "Symbolics customised" begin
+@testset "API" begin
     include("API.jl")
 end
 

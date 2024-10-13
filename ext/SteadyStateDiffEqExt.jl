@@ -5,7 +5,7 @@ using HarmonicBalance: HarmonicBalance, steady_state_sweep
 
 using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS, remake
 using LinearAlgebra: norm, eigvals
-using SteadyStateDiffEq.SciMLBase.SciMLStructures: isscimlstructure, Tunable, replace
+using SteadyStateDiffEq.SciMLBase.SciMLStructures: Tunable, replace
 
 function HarmonicBalance.steady_state_sweep(
     prob::SteadyStateProblem, alg::DynamicSS; varied::Pair, kwargs...

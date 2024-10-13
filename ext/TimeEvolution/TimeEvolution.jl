@@ -28,10 +28,9 @@ include("ODEProblem.jl")
 include("hysteresis_sweep.jl")
 include("plotting.jl")
 
-export FFT
 export ParameterSweep
-export transform_solutions, plot, plot!, is_stable
+export transform_solutions, plot, plot!
 export ODEProblem, solve
-export plot_1D_solutions_branch, follow_branch
+export follow_branch
 
 end

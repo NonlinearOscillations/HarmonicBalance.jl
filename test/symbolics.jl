@@ -32,7 +32,6 @@ end
     @eqtest simplify_exp_products(im * exp(3a) * exp(4b)) == im * exp(3a+4b)
 end
 
-
 @testset "simplify_complex" begin
     using HarmonicBalance: simplify_complex, is_not_complex
     @variables a b
@@ -68,15 +67,23 @@ end
     @eqtest drop_powers((a + b)^3 + (a + b)^5, [a, b], 4) == expand((a + b)^3)
 end
 
-@testset "trig_to_exp" begin
-    using HarmonicBalance: expand_all, trig_to_exp, unwrap
-    using SymbolicUtils.Code: toexpr
+@testset "trig_to_exp and trig_to_exp" begin
+    using HarmonicBalance: expand_all, trig_to_exp, exp_to_trig
     @variables f t
-    cos_euler(x) = (exp(im*x)+exp(-im*x))/2
-    sin_euler(x) = (exp(im*x)-exp(-im*x))/(2*im)
-    @eqtest string(trig_to_exp(cos(f*t))) == "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))"
-    @eqtest string(trig_to_exp(sin(f*t))) == "(0.0 - 0.5im)*(-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))"
-    @eqtest string(trig_to_exp(sin(f*t)^2 + cos(f*t))) == "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t)) + (-0.25 - 0.0im)((-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))^2)"
+    cos_euler(x) = (exp(im * x) + exp(-im * x)) / 2
+    sin_euler(x) = (exp(im * x) - exp(-im * x)) / (2 * im)
+
+    trigs = [cos(f * t), sin(f * t), sin(f * t)^2 + cos(f * t)]
+    exp_string = [
+        "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))",
+        "(0.0 - 0.5im)*(-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))",
+        "(1//2)*(exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t)) + (-0.25 - 0.0im)((-exp((0 - 1im)*f*t) + exp((0 + 1im)*f*t))^2)",
+    ]
+    for (i, trig) in pairs(trigs)
+        z = trig_to_exp(trig)
+        @eqtest string(z) == exp_string[i]
+        @eqtest exp_to_trig(z) == trig
+    end
 end
 
 @testset "harmonic" begin

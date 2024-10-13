@@ -34,6 +34,8 @@ Random.seed!(SEED)
             deps_compat=false,
             ambiguities=false,
             piracies=false,
+            stale_deps=false,
+            project_extras=false
         )
     end
 end

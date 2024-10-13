@@ -7,6 +7,7 @@ Random.seed!(SEED)
 
 @testset "Code quality" begin
     using ExplicitImports, Aqua
+    using ModelingToolkit, OrdinaryDiffEqTsit5, SteadyStateDiffEq
     ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
     TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
     ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)

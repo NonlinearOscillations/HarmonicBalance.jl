@@ -24,7 +24,7 @@ function FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     return (fft_u / length(fft_f), 2 * pi * fft_f)
 end
 
-# function HarmonicBalance.FFT(soln::OrdinaryDiffEq.ODESolution; window=DSP.Windows.hanning)
+# function HarmonicBalance.FFT(soln::OrdinaryDiffEqTsit5.ODESolution; window=DSP.Windows.hanning)
 #     return HarmonicBalance.FFT(soln.u, soln.t; window=window)
 # end
 

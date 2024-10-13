@@ -59,7 +59,7 @@ function HarmonicBalance.follow_branch(
             end
 
             problem_t = ODEProblem(res.problem.eom, sol_dict; timespan=(0, tf))
-            res_t = solve(problem_t, OrdinaryDiffEq.Tsit5(); saveat=tf)
+            res_t = solve(problem_t, OrdinaryDiffEqTsit5.Tsit5(); saveat=tf)
 
             # closest branch to final state
             followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index)

@@ -1,4 +1,4 @@
-using HarmonicBalance, OrdinaryDiffEq
+using HarmonicBalance, OrdinaryDiffEqTsit5
 
 @variables α ω ω0 F γ η t x(t); # declare constant variables and a function x(t)
 

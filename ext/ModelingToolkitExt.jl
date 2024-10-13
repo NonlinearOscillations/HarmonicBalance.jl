@@ -4,7 +4,7 @@ export ODESystem, ODEProblem, SteadyStateProblem, NonlinearProblem
 
 using HarmonicBalance:
     HarmonicEquation, is_rearranged, rearrange_standard, get_variables, ParameterList
-using Symbolics: simplify, Equation, substitute, Num, @variables, expand
+using Symbolics: simplify, Equation, substitute, Num, @variables, expand, unwrap, arguments
 using ModelingToolkit:
     ModelingToolkit,
     ODESystem,
@@ -31,9 +31,14 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
         eom = rearrange_standard(eom)
     end
 
-    slow_time = (@independent_variables T; T)
-    par_names = declare_parameter.(eom.parameters)
     vars = get_variables(eom)
+    slow_times = arguments.(unwrap.(vars))
+    @assert all(isone.(length.(slow_times))) "Only one argument for the variables are allowed."
+    slow_time = unique(first.(slow_times))
+    @assert isone(length(slow_time)) "The argument of the variables are not the same."
+    slow_time_ivp = @eval @independent_variables $(Symbol(first(slow_time)))
+
+    par_names = declare_parameter.(eom.parameters)
 
     eqs = deepcopy(eom.equations)
     eqs = swapsides.(eqs)
@@ -41,7 +46,8 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
     eqs = substitute(eqs, Dict(zip(eom.parameters, par_names)))
 
     # compute jacobian for performance
-    @mtkbuild sys = ODESystem(eqs, slow_time, vars, par_names) #mtk v9 need @mtkbuild
+    # ∨ mtk v9 need @mtkbuild
+    @mtkbuild sys = ODESystem(eqs, first(slow_time_ivp), vars, par_names)
     return sys
 end
 

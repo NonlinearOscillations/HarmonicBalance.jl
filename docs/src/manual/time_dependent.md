@@ -11,7 +11,7 @@ ParameterSweep
 ## Plotting
 
 ```@docs
-HarmonicBalance.plot(::OrdinaryDiffEq.ODESolution, ::Any, ::HarmonicEquation)
+HarmonicBalance.plot(::OrdinaryDiffEqTsit5.ODESolution, ::Any, ::HarmonicEquation)
 ```
 
 ## Miscellaneous

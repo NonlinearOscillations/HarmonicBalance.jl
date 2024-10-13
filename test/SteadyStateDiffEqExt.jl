@@ -1,5 +1,10 @@
 
-using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, NonlinearSolve
+using HarmonicBalance,
+    ModelingToolkit,
+    SteadyStateDiffEq,
+    OrdinaryDiffEqRosenbrock,
+    LinearAlgebra,
+    NonlinearSolve
 
 @testset "Steady state sweeps" begin
     @testset "one variable ODE" begin
@@ -54,11 +59,7 @@ using ModelingToolkit, SteadyStateDiffEq, OrdinaryDiffEq, LinearAlgebra, Nonline
         @named model = ODESystem(eqs, t, [u1, v1], [α, ω, ω0, F, γ])
         model = structural_simplify(model)
 
-        force = 0.01
-        omega0 = 1.0
-        alpha = 1.0
-        gamma = 0.01
-        param = [alpha, 1.2, omega0, force, gamma]
+        param = [α, ω, ω0, F, γ] .=> [1.0, 1.2, 1.0, 0.01, 0.01]
         x0 = [1.0, 0.0]
         prob_ss = SteadyStateProblem{true}(model, x0, param; jac=true)
         prob_np = NonlinearProblem(prob_ss)

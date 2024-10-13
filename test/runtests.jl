@@ -1,9 +1,6 @@
 using HarmonicBalance
 using Test
 
-# WARNING: Method definition (::Type{Symbolics.Num})(Base.Complex{Symbolics.Num}) in module HarmonicBalance at E:\HarmonicBalance.jl\src\Symbolics_customised.jl:165 overwritten in module HarmonicBalance on the same line (check for duplicate calls to `include`).
-# WARNING: Method definition (::Type{HomotopyContinuation.ModelKit.Variable})(Symbolics.Num) in module HC_wrapper at E:\HarmonicBalance.jl\src\modules\HC_wrapper\homotopy_interface.jl:2 overwritten in module HC_wrapper on the same line (check for duplicate calls to `include`).
-
 using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)

@@ -101,7 +101,7 @@ According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.01
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
 ```@example lc
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 initial_state = result[1][1]
 
 T = 2e6

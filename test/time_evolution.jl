@@ -1,5 +1,5 @@
 using HarmonicBalance
-using Symbolics, OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 using Test
 
 @variables Ω, γ, λ, F, x, θ, η, α, ω0, ω, t, T, ψ

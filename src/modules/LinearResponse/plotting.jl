@@ -9,10 +9,10 @@ function get_jacobian_response(
 
     if show_progress
         bar = Progress(
-            length(CartesianIndices(C)),
-            1,
-            "Diagonalizing the Jacobian for each solution ... ",
-            50,
+            length(CartesianIndices(C));
+            dt=1,
+            desc="Diagonalizing the Jacobian for each solution ... ",
+            barlen=50,
         )
     end
     # evaluate the Jacobians for the different values of noise frequency Ω
@@ -38,10 +38,10 @@ function get_jacobian_response(
 
     if show_progress
         bar = Progress(
-            length(CartesianIndices(C)),
-            1,
-            "Diagonalizing the Jacobian for each solution ... ",
-            50,
+            length(CartesianIndices(C));
+            dt=1,
+            desc="Diagonalizing the Jacobian for each solution ... ",
+            barlen=50,
         )
     end
     # evaluate the Jacobians for the different values of noise frequency Ω
@@ -64,10 +64,10 @@ function get_linear_response(
     # note: this could be optimized by not grabbing the entire huge dictionary every time
     if show_progress
         bar = Progress(
-            length(C),
-            1,
-            "Solving the linear response ODE for each solution and input frequency ... ",
-            50,
+            length(C);
+            dt=1,
+            desc="Solving the linear response ODE for each solution and input frequency ... ",
+            barlen=50,
         )
     end
     for j in findall(stable)
@@ -92,10 +92,10 @@ function get_rotframe_jacobian_response(
 
     if show_progress
         bar = Progress(
-            length(C),
-            1,
-            "Solving the linear response ODE for each solution and input frequency ... ",
-            50,
+            length(C);
+            dt=1,
+            desc="Solving the linear response ODE for each solution and input frequency ... ",
+            barlen=50,
         )
     end
 

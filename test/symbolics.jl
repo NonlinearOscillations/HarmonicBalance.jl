@@ -161,3 +161,17 @@ end
     @eqtest get_all_terms(a^2 / b^2) == [a^2, b^2]
     @eqtest get_all_terms(2* b^2) == [2, b^2]
 end
+
+@testset "get_independent" begin
+    using HarmonicBalance: get_independent
+    @variables a, b, c, t
+
+    @eqtest get_independent(a + b + c, t) == a + b + c
+    @eqtest get_independent(a * b * c, t) == a * b * c
+    @eqtest get_independent(a / b, t) == a / b
+    @eqtest get_independent(a^2 + b^2 + c^2, t) == a^2 + b^2 + c^2
+    @eqtest get_independent(a^2 / b^2, t) == a^2 / b^2
+    @eqtest get_independent(2 * b^2, t) == 2 * b^2
+    @eqtest get_independent(cos(t), t) == 0
+    @eqtest get_independent(cos(t)^2 + 5, t) == 5
+end

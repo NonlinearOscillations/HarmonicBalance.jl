@@ -40,3 +40,33 @@ function drop_powers(eqs::Vector{Equation}, var::Vector{Num}, deg::Int)
 end
 drop_powers(expr, var::Num, deg::Int) = drop_powers(expr, [var], deg)
 drop_powers(x, vars, deg::Int) = drop_powers(Num(x), vars, deg)
+
+
+"Return the highest power of `y` occuring in the term `x`."
+function max_power(x::Num, y::Num)
+    terms = get_all_terms(x)
+    powers = power_of.(terms, y)
+    return maximum(powers)
+end
+
+max_power(x::Vector{Num}, y::Num) = maximum(max_power.(x, y))
+max_power(x::Complex, y::Num) = maximum(max_power.([x.re, x.im], y))
+max_power(x, t) = max_power(Num(x), Num(t))
+
+"Return the power of `y` in the term `x`"
+function power_of(x::Num, y::Num)
+    issym(y.val) ? nothing : error("power of " * string(y) * " is ambiguous")
+    return power_of(x.val, y.val)
+end
+
+function power_of(x::BasicSymbolic, y::BasicSymbolic)
+    if ispow(x) && issym(y)
+        return isequal(x.base, y) ? x.exp : 0
+    elseif issym(x) && issym(y)
+        return isequal(x, y) ? 1 : 0
+    else
+        return 0
+    end
+end
+
+power_of(x, y) = 0

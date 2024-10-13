@@ -27,6 +27,9 @@ function fourier_cos_term(x, ω, t)
     return _fourier_term(x, ω, t, cos)
 end
 
+"Simplify fraction a/b + c/d = (ad + bc)/bd"
+add_div(x) = wrap(Postwalk(add_with_div; maketerm=frac_maketerm)(unwrap(x)))
+
 """
 $(TYPEDSIGNATURES)
 Returns the coefficient of sin(ωt) in `x`.

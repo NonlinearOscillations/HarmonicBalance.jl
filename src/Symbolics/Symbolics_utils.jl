@@ -93,18 +93,14 @@ get_independent(v::Vector{Num}, t::Num) = [get_independent(el, t) for el in v]
 get_independent(x, t::Num) = x
 
 function get_independent(x::BasicSymbolic, t::Num)
-    if isadd(x)
-        return sum([get_independent(arg, t) for arg in arguments(x)])
-    elseif ismul(x)
-        return prod([get_independent(arg, t) for arg in arguments(x)])
-    elseif ispow(x)
-        return !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
-    elseif isdiv(x)
-        return !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
-    elseif isterm(x) || issym(x)
-        return !is_function(x, t) ? x : 0
-    else
-        return x
+    @compactified x::BasicSymbolic begin
+    Add => sum([get_independent(arg, t) for arg in arguments(x)])
+    Mul => prod([get_independent(arg, t) for arg in arguments(x)])
+    Div => !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
+    Pow => !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
+    Term => !is_function(x, t) ? x : 0
+    Sym => !is_function(x, t) ? x : 0
+    _    => x
     end
 end
 
@@ -143,36 +139,3 @@ is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))
-
-
-"Simplify fraction a/b + c/d = (ad + bc)/bd"
-add_div(x) = Num(Postwalk(add_with_div; maketerm=frac_maketerm)(unwrap(x)))
-
-"Return the highest power of `y` occuring in the term `x`."
-function max_power(x::Num, y::Num)
-    terms = get_all_terms(x)
-    powers = power_of.(terms, y)
-    return maximum(powers)
-end
-
-max_power(x::Vector{Num}, y::Num) = maximum(max_power.(x, y))
-max_power(x::Complex, y::Num) = maximum(max_power.([x.re, x.im], y))
-max_power(x, t) = max_power(Num(x), Num(t))
-
-"Return the power of `y` in the term `x`"
-function power_of(x::Num, y::Num)
-    issym(y.val) ? nothing : error("power of " * string(y) * " is ambiguous")
-    return power_of(x.val, y.val)
-end
-
-function power_of(x::BasicSymbolic, y::BasicSymbolic)
-    if ispow(x) && issym(y)
-        return isequal(x.base, y) ? x.exp : 0
-    elseif issym(x) && issym(y)
-        return isequal(x, y) ? 1 : 0
-    else
-        return 0
-    end
-end
-
-power_of(x, y) = 0

@@ -139,3 +139,25 @@ end
     @eqtest _apply_termwise(x -> x^2, a * b * c) == a^2 * b^2 * c^2
     @eqtest _apply_termwise(x -> x^2, a / b) == a^2 / b^2
 end
+
+@testset "simplify_complex" begin
+    using HarmonicBalance: simplify_complex
+    @variables a, b, c
+    z = Complex{Num}(a)
+    @test simplify_complex(z) isa Num
+
+    z = Complex{Num}(1+0*im)
+    @test simplify_complex(z) isa Num
+end
+
+@testset "get_all_terms" begin
+    using HarmonicBalance: get_all_terms
+    @variables a, b, c
+
+    @eqtest get_all_terms(a + b + c) == [a, b, c]
+    @eqtest get_all_terms(a * b * c) == [a, b, c]
+    @eqtest get_all_terms(a / b) == [a, b]
+    @eqtest get_all_terms(a^2 + b^2 + c^2) == [b^2, a^2, c^2]
+    @eqtest get_all_terms(a^2 / b^2) == [a^2, b^2]
+    @eqtest get_all_terms(2* b^2) == [2, b^2]
+end

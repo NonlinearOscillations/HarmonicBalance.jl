@@ -85,10 +85,6 @@ end
 substitute_all(x, rules) = substitute_all(Num(x), rules)
 
 
-###
-# STUFF BELOW IS MAINLY FOR FOURIER-TRANSFORMING
-###
-
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
 function get_independent(x::Complex{Num}, t::Num)
     return get_independent(x.re, t) + im * get_independent(x.im, t)
@@ -117,30 +113,15 @@ get_all_terms(x::Num) = unique(_get_all_terms(Symbolics.expand(x).val))
 function get_all_terms(x::Equation)
     return unique(cat(get_all_terms(Num(x.lhs)), get_all_terms(Num(x.rhs)); dims=1))
 end
-
-_get_all_terms_mul(x) = Num.(SymbolicUtils.arguments(x))
-_get_all_terms_div(x) = Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
-_get_all_terms(x) = Num(x)
-
-function _get_all_terms_add(x)::Vector{Num}
-    list = []
-    for term in keys(x.dict)
-        list = cat(list, _get_all_terms(term); dims=1)
-    end
-    return list
-end
-
 function _get_all_terms(x::BasicSymbolic)
-    if isadd(x)
-        return _get_all_terms_add(x)
-    elseif ismul(x)
-        return _get_all_terms_mul(x)
-    elseif isdiv(x)
-        return _get_all_terms_div(x)
-    else
-        return Num(x)
+    @compactified x::BasicSymbolic begin
+    Add => vcat([_get_all_terms(term) for term in SymbolicUtils.arguments(x)]...)
+    Mul => Num.(SymbolicUtils.arguments(x))
+    Div => Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
+    _   => Num(x)
     end
 end
+_get_all_terms(x) = Num(x)
 
 function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)

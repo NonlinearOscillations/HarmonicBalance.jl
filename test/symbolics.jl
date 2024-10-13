@@ -5,11 +5,13 @@ using SymbolicUtils: Fixpoint, Prewalk, PassThrough
 
 macro eqtest(expr)
     @assert expr.head == :call && expr.args[1] in [:(==), :(!=)]
-    return esc(if expr.args[1] == :(==)
-        :(@test isequal($(expr.args[2]), $(expr.args[3])))
-    else
-        :(@test !isequal($(expr.args[2]), $(expr.args[3])))
-    end)
+    return esc(
+        if expr.args[1] == :(==)
+            :(@test isequal($(expr.args[2]), $(expr.args[3])))
+        else
+            :(@test !isequal($(expr.args[2]), $(expr.args[3])))
+        end,
+    )
 end
 
 @testset "exp(x)^n => exp(x*n)" begin
@@ -146,7 +148,7 @@ end
     z = Complex{Num}(a)
     @test simplify_complex(z) isa Num
 
-    z = Complex{Num}(1+0*im)
+    z = Complex{Num}(1 + 0 * im)
     @test simplify_complex(z) isa Num
 end
 
@@ -159,7 +161,7 @@ end
     @eqtest get_all_terms(a / b) == [a, b]
     @eqtest get_all_terms(a^2 + b^2 + c^2) == [b^2, a^2, c^2]
     @eqtest get_all_terms(a^2 / b^2) == [a^2, b^2]
-    @eqtest get_all_terms(2* b^2) == [2, b^2]
+    @eqtest get_all_terms(2 * b^2) == [2, b^2]
 end
 
 @testset "get_independent" begin

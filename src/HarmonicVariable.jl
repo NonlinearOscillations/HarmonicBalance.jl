@@ -52,7 +52,7 @@ Symbolics.get_variables(var::HarmonicVariable)::Num = Num(first(get_variables(va
 Base.isequal(v1::HarmonicVariable, v2::HarmonicVariable)::Bool =
     isequal(v1.symbol, v2.symbol)
 
-    "The derivative of f w.r.t. x of degree deg"
+"The derivative of f w.r.t. x of degree deg"
 function d(f::Num, x::Num, deg=1)::Num
     return isequal(deg, 0) ? f : (Differential(x)^deg)(f)
 end

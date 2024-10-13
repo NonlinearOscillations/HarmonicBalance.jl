@@ -63,7 +63,6 @@ include("Symbolics/exponentials.jl")
 include("Symbolics/fourier.jl")
 include("Symbolics/drop_powers.jl")
 
-
 include("modules/extention_functions.jl")
 include("utils.jl")
 include("types.jl")

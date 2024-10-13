@@ -12,25 +12,23 @@ expand_all(x::Complex{Num}) = expand_all(x.re) + im * expand_all(x.im)
 "Apply a function f on every member of a sum or a product"
 function _apply_termwise(f, x::BasicSymbolic)
     @compactified x::BasicSymbolic begin
-    Add  => sum([f(arg) for arg in arguments(x)])
-    Mul  => prod([f(arg) for arg in arguments(x)])
-    Div  =>  _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
-    _    => f(x)
+        Add => sum([f(arg) for arg in arguments(x)])
+        Mul => prod([f(arg) for arg in arguments(x)])
+        Div => _apply_termwise(f, x.num) / _apply_termwise(f, x.den)
+        _   => f(x)
     end
 end
-
 
 simplify_complex(x::Complex) = isequal(x.im, 0) ? x.re : x.re + im * x.im
 simplify_complex(x) = x
 function simplify_complex(x::BasicSymbolic)
     @compactified x::BasicSymbolic begin
-    Add => _apply_termwise(simplify_complex, x)
-    Mul => _apply_termwise(simplify_complex, x)
-    Div => _apply_termwise(simplify_complex, x)
-    _   => x
+        Add => _apply_termwise(simplify_complex, x)
+        Mul => _apply_termwise(simplify_complex, x)
+        Div => _apply_termwise(simplify_complex, x)
+        _   => x
     end
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -38,7 +36,7 @@ $(TYPEDSIGNATURES)
 Perform substitutions in `rules` on `x`.
 `include_derivatives=true` also includes all derivatives of the variables of the keys of `rules`.
 """
-subtype=Union{Num,Equation,BasicSymbolic}
+subtype = Union{Num,Equation,BasicSymbolic}
 function substitute_all(x::subtype, rules::Dict; include_derivatives=true)
     if include_derivatives
         rules = merge(
@@ -75,7 +73,6 @@ substitute_all(x::subtype, rules::Collections) = substitute_all(x, Dict(rules))
 # end
 # substitute_all(v::AbstractArray, rules::Collections) = [substitute_all(x, rules) for x in v]
 
-
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
 function get_independent(x::Complex{Num}, t::Num)
     return get_independent(x.re, t) + im * get_independent(x.im, t)
@@ -85,13 +82,13 @@ get_independent(x, t::Num) = x
 
 function get_independent(x::BasicSymbolic, t::Num)
     @compactified x::BasicSymbolic begin
-    Add => sum([get_independent(arg, t) for arg in arguments(x)])
-    Mul => prod([get_independent(arg, t) for arg in arguments(x)])
-    Div => !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
-    Pow => !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
-    Term => !is_function(x, t) ? x : 0
-    Sym => !is_function(x, t) ? x : 0
-    _    => x
+        Add  => sum([get_independent(arg, t) for arg in arguments(x)])
+        Mul  => prod([get_independent(arg, t) for arg in arguments(x)])
+        Div  => !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
+        Pow  => !is_function(x.base, t) && !is_function(x.exp, t) ? x : 0
+        Term => !is_function(x, t) ? x : 0
+        Sym  => !is_function(x, t) ? x : 0
+        _    => x
     end
 end
 
@@ -102,10 +99,10 @@ function get_all_terms(x::Equation)
 end
 function _get_all_terms(x::BasicSymbolic)
     @compactified x::BasicSymbolic begin
-    Add => vcat([_get_all_terms(term) for term in SymbolicUtils.arguments(x)]...)
-    Mul => Num.(SymbolicUtils.arguments(x))
-    Div => Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
-    _   => Num(x)
+        Add => vcat([_get_all_terms(term) for term in SymbolicUtils.arguments(x)]...)
+        Mul => Num.(SymbolicUtils.arguments(x))
+        Div => Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
+        _   => Num(x)
     end
 end
 _get_all_terms(x) = Num(x)

@@ -42,7 +42,7 @@ Given $\mathbf{u}(T_0)$, what is $\mathbf{u}(T)$ at future times?
 
 For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref ODEProblem). The syntax is similar to DifferentialEquations.jl :
 ```@example time_dependent
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 x0 = [0.; 0.] # initial condition
 fixed = (ω0 => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3,  α => 1.0, η => 0.3, θ => 0, ω => 1.0) # parameter values
 

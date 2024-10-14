@@ -109,7 +109,7 @@ sweep = ParameterSweep(F0 => (0.002, 0.011), (0,T))
 
 # start from initial_state, use sweep, total time is 2*T
 time_problem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2*T))
-time_evo = solve(time_problem, saveat=100);
+time_evo = solve(time_problem, Tsit5(), saveat=100);
 nothing # hide
 ```
 Inspecting the amplitude as a function of time,

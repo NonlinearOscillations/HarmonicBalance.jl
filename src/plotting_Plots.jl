@@ -136,7 +136,7 @@ function plot1D(
     branches=1:branch_count(res),
     add=false,
     kwargs...,
-)
+)::Plots.Plot
     if class == "default"
         args = [:x => x, :y => y, :branches => branches]
         if not_class == [] # plot stable full, unstable dashed
@@ -202,7 +202,7 @@ function plot2D(
     not_class=[],
     add=false,
     kwargs...,
-)
+)::Plots.Plot
     X, Y = values(res.swept_parameters)
     Z =
         getindex.(

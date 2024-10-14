@@ -63,14 +63,14 @@ function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
 
     rule(u) = Dict(zip(vars, u))
 
-    transformed = map(x -> unwrap(substitute_all(expr, rule(x))), soln)
+    transformed = map(x -> Symbolics.unwrap(substitute_all(expr, rule(x))), soln)
     return convert(typeof(soln[1]), transformed)
 end
 
 """ Parse `expr` into a Symbolics.jl expression, substitute with `rules` and build a function taking free_symbols """
 function _build_substituted(expr::String, rules, free_symbols)
     subbed = substitute_all(_parse_expression(expr), rules)
-    comp_func = build_function(subbed, free_symbols)
+    comp_func = Symbolics.build_function(subbed, free_symbols)
 
     return eval(comp_func)
 end
@@ -100,8 +100,8 @@ function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
-        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
-        ω = real(unwrap(substitute_all(var.ω, soln)))
+        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
+        ω = real(Symbolics.unwrap(substitute_all(var.ω, soln)))
         if var.type == "u"
             timetrace .+= val * cos.(ω * times)
         elseif var.type == "v"
@@ -127,8 +127,8 @@ function to_lab_frame_velocity(soln, res, times)
     timetrace = zeros(length(times))
 
     for var in res.problem.eom.variables
-        val = real(unwrap(substitute_all(_remove_brackets(var), soln)))
-        ω = real(unwrap(real(substitute_all(var.ω, soln))))
+        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
+        ω = real(real(Symbolics.unwrap(substitute_all(var.ω, soln))))
         if var.type == "u"
             timetrace .+= -ω * val * sin.(ω * times)
         elseif var.type == "v"

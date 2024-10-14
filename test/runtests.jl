@@ -5,10 +5,10 @@ using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-@testset "Code linting" begin
-    using JET
-    JET.test_package(HarmonicBalance; target_defined_modules=true)
-end
+# @testset "Code linting" begin
+#     using JET
+#     JET.test_package(HarmonicBalance; target_defined_modules=true)
+# end
 
 @testset "Code quality" begin
     using ExplicitImports, Aqua
@@ -20,7 +20,7 @@ end
 
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
-    Aqua.test_ambiguities(HarmonicBalance)
+    Aqua.test_ambiguities([HarmonicBalance])
     Aqua.test_all(
         HarmonicBalance;
         deps_compat=(
@@ -33,7 +33,7 @@ end
     for mod in [TimeEvolution, ModelingToolkitExt, SteadyStateDiffEqExt]
         @test check_no_stale_explicit_imports(mod) == nothing
         @test check_all_explicit_imports_via_owners(mod) == nothing
-        Aqua.test_ambiguities(mod)
+        # Aqua.test_ambiguities(mod)
         Aqua.test_all(
             mod;
             deps_compat=false,

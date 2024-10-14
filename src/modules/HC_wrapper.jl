@@ -1,7 +1,7 @@
 module HC_wrapper
 
 using DocStringExtensions
-using Symbolics: Num, @variables
+using Symbolics: Num, @variables, expand_derivatives, get_variables
 using Symbolics.SymbolicUtils: isterm
 using LinearAlgebra: LinearAlgebra
 
@@ -9,10 +9,9 @@ using HarmonicBalance:
     HarmonicBalance,
     HarmonicEquation,
     _remove_brackets,
-    expand_derivatives,
     var_name,
-    get_variables,
     Problem
+
 using HomotopyContinuation
 using HomotopyContinuation: Variable, System
 

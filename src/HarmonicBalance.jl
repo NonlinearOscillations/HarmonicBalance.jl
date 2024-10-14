@@ -16,6 +16,16 @@ const HC = HomotopyContinuation
 using Plots: Plots, plot, plot!, savefig, heatmap, Plot
 using Latexify: Latexify, latexify
 
+using Symbolics:
+    Symbolics,
+    Num,
+    Equation,
+    @variables,
+    expand_derivatives,
+    get_variables,
+    Differential
+using SymbolicUtils: SymbolicUtils
+
 using PrecompileTools: @setup_workload, @compile_workload
 
 # default global settings
@@ -24,44 +34,8 @@ function set_imaginary_tolerance(x::Float64)
     @eval(IM_TOL::Float64 = $x)
 end
 
-using SymbolicUtils:
-    SymbolicUtils,
-    Postwalk,
-    Sym,
-    BasicSymbolic,
-    isterm,
-    ispow,
-    isadd,
-    isdiv,
-    ismul,
-    add_with_div,
-    frac_maketerm,
-    @compactified,
-    issym
-
-using Symbolics:
-    Symbolics,
-    Num,
-    unwrap,
-    wrap,
-    get_variables,
-    simplify,
-    expand_derivatives,
-    build_function,
-    Equation,
-    Differential,
-    @variables,
-    arguments,
-    simplify_fractions,
-    substitute,
-    term,
-    expand,
-    operation
-
-include("Symbolics/Symbolics_utils.jl")
-include("Symbolics/exponentials.jl")
-include("Symbolics/fourier.jl")
-include("Symbolics/drop_powers.jl")
+include("modules/ExprUtils/ExprUtils.jl")
+using .ExprUtils: is_harmonic, substitute_all, drop_powers
 
 include("modules/extention_functions.jl")
 include("utils.jl")

@@ -211,7 +211,7 @@ Substitute the values according to `fixed_parameters` and compile into a functio
 """
 function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
     J = substitute_all.(mat, Ref(rules))
-    matrix = build_function(J, variables)
+    matrix = Symbolics.build_function(J, variables)
     matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
     m(vals::Vector) = postproc(matrix(vals))
     m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI

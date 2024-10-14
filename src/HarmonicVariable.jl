@@ -24,11 +24,11 @@ end
 ###
 
 # when HV is used for substitute, substitute its symbol
-function substitute_all(eq::Union{Num,Equation}, rules::Dict{HarmonicVariable})
+function ExprUtils.substitute_all(eq::Union{Num,Equation}, rules::Dict{HarmonicVariable})
     return substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
 end
 
-function substitute_all(var::HarmonicVariable, rules)
+function ExprUtils.substitute_all(var::HarmonicVariable, rules)
     sym, freq = var.symbol, var.ω
     return HarmonicVariable(
         substitute_all(sym, rules),
@@ -39,7 +39,7 @@ function substitute_all(var::HarmonicVariable, rules)
     )
 end
 
-function substitute_all(vars::Vector{HarmonicVariable}, rules)
+function ExprUtils.substitute_all(vars::Vector{HarmonicVariable}, rules)
     return [substitute_all(var, rules) for var in vars]
 end
 
@@ -80,4 +80,4 @@ function var_name(x::Num)
     return var isa Expr ? String(var.args[1]) : String(var)
 end
 #  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
-var_name(x::Sym) = String(x.name)
+var_name(x::SymbolicUtils.Sym) = String(x.name)

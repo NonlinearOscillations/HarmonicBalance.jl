@@ -13,13 +13,13 @@ using HarmonicBalance:
     _free_symbols,
     _symidx,
     _is_physical,
-    get_all_terms,
     substitute_all,
     var_name
 using HarmonicBalance.LinearResponse: get_implicit_Jacobian
+using HarmonicBalance.ExprUtils: get_all_terms
 
-include("LimitCycles/gauge_fixing.jl")
-include("LimitCycles/analysis.jl")
+include("gauge_fixing.jl")
+include("analysis.jl")
 
 export get_cycle_variables, get_limit_cycles, add_pairs!
 

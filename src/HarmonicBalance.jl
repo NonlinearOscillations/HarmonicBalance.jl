@@ -1,5 +1,11 @@
 module HarmonicBalance
 
+# default global settings
+IM_TOL::Float64 = 1E-6
+function set_imaginary_tolerance(x::Float64)
+    @eval(IM_TOL::Float64 = $x)
+end
+
 using DocStringExtensions
 using JLD2: JLD2
 using DelimitedFiles: DelimitedFiles, writedlm
@@ -16,54 +22,14 @@ const HC = HomotopyContinuation
 using Plots: Plots, plot, plot!, savefig, heatmap, Plot
 using Latexify: Latexify, latexify
 
-using PrecompileTools: @setup_workload, @compile_workload
-
-# default global settings
-IM_TOL::Float64 = 1E-6
-function set_imaginary_tolerance(x::Float64)
-    @eval(IM_TOL::Float64 = $x)
-end
-
-using SymbolicUtils:
-    SymbolicUtils,
-    Postwalk,
-    Sym,
-    BasicSymbolic,
-    isterm,
-    ispow,
-    isadd,
-    isdiv,
-    ismul,
-    add_with_div,
-    frac_maketerm,
-    @compactified,
-    issym
-
 using Symbolics:
-    Symbolics,
-    Num,
-    unwrap,
-    wrap,
-    get_variables,
-    simplify,
-    expand_derivatives,
-    build_function,
-    Equation,
-    Differential,
-    @variables,
-    arguments,
-    simplify_fractions,
-    substitute,
-    term,
-    expand,
-    operation
+    Symbolics, Num, Equation, @variables, expand_derivatives, get_variables, Differential
+using SymbolicUtils: SymbolicUtils
 
-include("Symbolics/Symbolics_utils.jl")
-include("Symbolics/exponentials.jl")
-include("Symbolics/fourier.jl")
-include("Symbolics/drop_powers.jl")
+include("ExprUtils/ExprUtils.jl")
+using .ExprUtils: is_harmonic, substitute_all, drop_powers
 
-include("modules/extention_functions.jl")
+include("extention_functions.jl")
 include("utils.jl")
 include("types.jl")
 
@@ -90,34 +56,36 @@ export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 export ParameterSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
-include("modules/HC_wrapper.jl")
+include("HC_wrapper/HC_wrapper.jl")
 using .HC_wrapper
 
-include("modules/LinearResponse.jl")
+include("LinearResponse/LinearResponse.jl")
 using .LinearResponse
 export plot_linear_response, plot_rotframe_jacobian_response, get_Jacobian, plot_eigenvalues
 export transform_solutions
 
-include("modules/LimitCycles.jl")
+include("LimitCycles/LimitCycles.jl")
 using .LimitCycles
 export get_cycle_variables, get_limit_cycles, add_pairs!
 
-include("modules/KrylovBogoliubov.jl")
+include("KrylovBogoliubov/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
 export get_krylov_equations
 
-include("modules/FFTWExt.jl")
+include("FFTWExt.jl")
 using .FFTWExt
 
-# @setup_workload begin
-#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-#     # precompile file and potentially make loading faster.
-#     @compile_workload begin
-#         # all calls in this block will be precompiled, regardless of whether
-#         # they belong to your package or not (on Julia 1.8 and higher)
-#         include("precompilation.jl")
-#     end
-# end
+using PrecompileTools: @setup_workload, @compile_workload
+
+@setup_workload begin
+    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+    # precompile file and potentially make loading faster.
+    @compile_workload begin
+        # all calls in this block will be precompiled, regardless of whether
+        # they belong to your package or not (on Julia 1.8 and higher)
+        include("precompilation.jl")
+    end
+end
 
 end # module

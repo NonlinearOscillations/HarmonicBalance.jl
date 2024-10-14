@@ -29,7 +29,7 @@ Return the dependent variables of `diff_eom`.
 Symbolics.get_variables(diff_eom::DifferentialEquation)::Vector{Num} =
     collect(keys(diff_eom.equations))
 
-is_harmonic(diff_eom::DifferentialEquation, t::Num)::Bool =
+ExprUtils.is_harmonic(diff_eom::DifferentialEquation, t::Num)::Bool =
     all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
 
 "Pretty printing of the newly defined types"

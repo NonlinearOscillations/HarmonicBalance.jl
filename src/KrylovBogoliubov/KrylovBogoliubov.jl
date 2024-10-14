@@ -11,20 +11,21 @@ using HarmonicBalance
 using HarmonicBalance:
     rearrange!,
     flatten,
-    is_harmonic,
     _create_harmonic_variable,
+    slow_flow,
+    _remove_brackets,
+    get_variables_nums
+
+using HarmonicBalance.ExprUtils:
+    get_all_terms,
+    substitute_all,
     trig_reduce,
     get_independent,
     simplify_complex,
     is_trig,
-    substitute_all,
-    slow_flow,
-    _remove_brackets,
-    get_all_terms,
-    get_variables_nums
-
-include("KrylovBogoliubov/first_order_transform.jl")
-include("KrylovBogoliubov/KrylovEquation.jl")
+    is_harmonic
+include("first_order_transform.jl")
+include("KrylovEquation.jl")
 
 export first_order_transform!,
     is_rearranged_standard, rearrange_standard!, get_equations, get_krylov_equations

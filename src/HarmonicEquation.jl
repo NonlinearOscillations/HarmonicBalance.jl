@@ -82,7 +82,7 @@ function slow_flow(
 end
 
 #   Drop powers of `var` of degree >= `deg` from the equation set in `eom`.
-function drop_powers(eom::HarmonicEquation, terms::Vector{Num}, deg::Int)
+function ExprUtils.drop_powers(eom::HarmonicEquation, terms::Vector{Num}, deg::Int)
     new_eom = deepcopy(eom)
     new_eom.equations = drop_powers(eom.equations, terms, deg)
     return new_eom
@@ -157,7 +157,9 @@ end
 ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
-function substitute_all(eom::HarmonicEquation, rules::Union{Dict,Pair})::HarmonicEquation
+function ExprUtils.substitute_all(
+    eom::HarmonicEquation, rules::Union{Dict,Pair}
+)::HarmonicEquation
     new_eom = deepcopy(eom)
     new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
     return new_eom
@@ -205,11 +207,11 @@ function fourier_transform!(eom::HarmonicEquation, time::Num)
         eq = eom.equations[eq_idx]
         # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
         if hvar.type == "u"
-            avg_eqs[i] = fourier_cos_term(eq, hvar.ω, time)
+            avg_eqs[i] = ExprUtils.fourier_cos_term(eq, hvar.ω, time)
         elseif hvar.type == "v"
-            avg_eqs[i] = fourier_sin_term(eq, hvar.ω, time)
+            avg_eqs[i] = ExprUtils.fourier_sin_term(eq, hvar.ω, time)
         elseif hvar.type == "a"
-            avg_eqs[i] = fourier_cos_term(eq, 0, time) # pick out the constants
+            avg_eqs[i] = ExprUtils.fourier_cos_term(eq, 0, time) # pick out the constants
         end
     end
     eom.equations = avg_eqs

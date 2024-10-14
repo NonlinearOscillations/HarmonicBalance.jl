@@ -15,7 +15,7 @@ using HarmonicBalance:
 using HomotopyContinuation
 using HomotopyContinuation: Variable, System
 
-include("HC_wrapper/homotopy_interface.jl")
+include("homotopy_interface.jl")
 
 export Problem
 

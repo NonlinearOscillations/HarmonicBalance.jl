@@ -1,5 +1,11 @@
 module HarmonicBalance
 
+# default global settings
+IM_TOL::Float64 = 1E-6
+function set_imaginary_tolerance(x::Float64)
+    @eval(IM_TOL::Float64 = $x)
+end
+
 using DocStringExtensions
 using JLD2: JLD2
 using DelimitedFiles: DelimitedFiles, writedlm
@@ -26,18 +32,10 @@ using Symbolics:
     Differential
 using SymbolicUtils: SymbolicUtils
 
-using PrecompileTools: @setup_workload, @compile_workload
-
-# default global settings
-IM_TOL::Float64 = 1E-6
-function set_imaginary_tolerance(x::Float64)
-    @eval(IM_TOL::Float64 = $x)
-end
-
-include("modules/ExprUtils/ExprUtils.jl")
+include("ExprUtils/ExprUtils.jl")
 using .ExprUtils: is_harmonic, substitute_all, drop_powers
 
-include("modules/extention_functions.jl")
+include("extention_functions.jl")
 include("utils.jl")
 include("types.jl")
 
@@ -64,25 +62,27 @@ export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 export ParameterSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
-include("modules/HC_wrapper.jl")
+include("HC_wrapper/HC_wrapper.jl")
 using .HC_wrapper
 
-include("modules/LinearResponse.jl")
+include("LinearResponse/LinearResponse.jl")
 using .LinearResponse
 export plot_linear_response, plot_rotframe_jacobian_response, get_Jacobian, plot_eigenvalues
 export transform_solutions
 
-include("modules/LimitCycles.jl")
+include("LimitCycles/LimitCycles.jl")
 using .LimitCycles
 export get_cycle_variables, get_limit_cycles, add_pairs!
 
-include("modules/KrylovBogoliubov.jl")
+include("KrylovBogoliubov/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
 export get_krylov_equations
 
-include("modules/FFTWExt.jl")
+include("FFTWExt.jl")
 using .FFTWExt
+
+using PrecompileTools: @setup_workload, @compile_workload
 
 # @setup_workload begin
 #     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the

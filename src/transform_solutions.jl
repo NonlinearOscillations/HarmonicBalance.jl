@@ -90,7 +90,7 @@ function _similar(type, res::Result; branches=1:branch_count(res))
     return [type(undef, length(branches)) for k in res.solutions]
 end
 
-## move masks here
+## TODO move masks here
 
 ###
 # TRANSFORMATIONS TO THE LAB frame

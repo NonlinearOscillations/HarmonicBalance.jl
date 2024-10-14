@@ -32,12 +32,12 @@ using HarmonicBalance:
     is_rearranged
 using ..HC_wrapper
 
-include("LinearResponse/types.jl")
-include("LinearResponse/utils.jl")
-include("LinearResponse/jacobians.jl")
-include("LinearResponse/Lorentzian_spectrum.jl")
-include("LinearResponse/response.jl")
-include("LinearResponse/plotting.jl")
+include("types.jl")
+include("utils.jl")
+include("jacobians.jl")
+include("Lorentzian_spectrum.jl")
+include("response.jl")
+include("plotting.jl")
 
 export get_Jacobian, get_response, show
 export plot_linear_response, plot_rotframe_jacobian_response, plot_eigenvalues

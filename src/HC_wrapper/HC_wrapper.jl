@@ -6,11 +6,7 @@ using Symbolics.SymbolicUtils: isterm
 using LinearAlgebra: LinearAlgebra
 
 using HarmonicBalance:
-    HarmonicBalance,
-    HarmonicEquation,
-    _remove_brackets,
-    var_name,
-    Problem
+    HarmonicBalance, HarmonicEquation, _remove_brackets, var_name, Problem
 
 using HomotopyContinuation
 using HomotopyContinuation: Variable, System

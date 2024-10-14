@@ -18,7 +18,6 @@ using HarmonicBalance:
 using HarmonicBalance.LinearResponse: get_implicit_Jacobian
 using HarmonicBalance.ExprUtils: get_all_terms
 
-
 include("gauge_fixing.jl")
 include("analysis.jl")
 

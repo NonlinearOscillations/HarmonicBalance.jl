@@ -157,7 +157,9 @@ end
 ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
-function ExprUtils.substitute_all(eom::HarmonicEquation, rules::Union{Dict,Pair})::HarmonicEquation
+function ExprUtils.substitute_all(
+    eom::HarmonicEquation, rules::Union{Dict,Pair}
+)::HarmonicEquation
     new_eom = deepcopy(eom)
     new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
     return new_eom

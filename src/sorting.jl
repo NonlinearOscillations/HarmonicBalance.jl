@@ -79,7 +79,7 @@ reference[1] and to_sort[i1] belong to the same branch
 function align_pair(reference, to_sort::Vector{SteadyState})
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
-    sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]
+    sorted_cartesians = CartesianIndices(distances)[sortperm(distances, dims=1)] #julia 1.9
 
     matched = falses(n)
     matched_ref = falses(n)

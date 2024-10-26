@@ -19,6 +19,11 @@ add_harmonic!(diff_eom, x, ω) # x will rotate at ω
 harmonic_eq1 = get_krylov_equations(diff_eom; order=1)
 harmonic_eq2 = get_krylov_equations(diff_eom; order=2)
 
+@testset "show method" begin
+    print_variable = HB._show_ansatz(harmonic_eq1)
+    @test !(occursin("xˍt(t)", print_variable))
+end
+
 fixed = (ω0 => 1.0, γ => 0.005, α => 1.0, η => 0, F => 0.0, ψ => 0.0, θ => 0.0)
 varied = (ω => range(0.99, 1.01, 5), λ => range(1e-6, 0.05, 5))
 

@@ -177,3 +177,12 @@ end
     @eqtest get_independent(cos(t), t) == 0
     @eqtest get_independent(cos(t)^2 + 5, t) == 5
 end
+
+@testset "count_derivatives" begin
+    using HarmonicBalance.ExprUtils: count_derivatives
+    @variables t x(t) y(t)
+    @test count_derivatives(x) == 0
+    @test count_derivatives(d(x, t)) == 1
+    @test count_derivatives(d(d(x, t), t)) == 2
+    @test_throws ErrorException count_derivatives(d(d(5 * x, t), t))
+end

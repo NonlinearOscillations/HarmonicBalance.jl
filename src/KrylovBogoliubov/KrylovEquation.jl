@@ -111,6 +111,7 @@ function van_der_Pol(eom::DifferentialEquation, t::Num)
             nvar, ω, t, "v"; new_symbol="v" * string(uv_idx)
         )
         rule = rule_u - rule_v
+        # ~ this is a choice, we use u*cos(ωt) + v*sin(ωt) as the ansatz
         rules[nvar] = rule
 
         D = Differential(t)

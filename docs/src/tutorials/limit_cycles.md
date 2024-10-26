@@ -105,7 +105,7 @@ using OrdinaryDiffEqTsit5
 initial_state = result[1][1]
 
 T = 2e6
-sweep = ParameterSweep(F0 => (0.002, 0.011), (0,T))
+sweep = AdiabaticSweep(F0 => (0.002, 0.011), (0,T))
 
 # start from initial_state, use sweep, total time is 2*T
 time_problem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2*T))

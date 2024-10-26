@@ -90,7 +90,8 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int, force=false)
         for pair in _get_uv_pairs(hvars)
             u, v = hvars[pair]
             eigvec_2d = eigvec[pair] # fetch the relevant part of the Jacobian eigenvector
-            ωnum = real(unwrap(substitute(u.ω, solution_dict))) # the harmonic (numerical now) associated to this harmonic variable
+            ωnum = real(unwrap(Symbolics.substitute(u.ω, solution_dict)))
+            # ^ the harmonic (numerical now) associated to this harmonic variable
 
             # eigvec_2d is associated to a natural variable -> this variable gets Lorentzian peaks
             peaks = norm(eigvec_2d) * _pair_to_peaks(λ, eigvec_2d; ω=ωnum)

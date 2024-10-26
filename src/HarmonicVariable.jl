@@ -25,7 +25,9 @@ end
 
 # when HV is used for substitute, substitute its symbol
 function ExprUtils.substitute_all(eq::Union{Num,Equation}, rules::Dict{HarmonicVariable})
-    return substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
+    return Symbolics.substitute(
+        eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules)))
+    )
 end
 
 function ExprUtils.substitute_all(var::HarmonicVariable, rules)

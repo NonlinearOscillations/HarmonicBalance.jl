@@ -1,6 +1,6 @@
 using HarmonicBalance
 
-@testset begin
+@testset "Equation{Vector}" begin
     # define equation of motion
     @variables ω1, ω2, t, ω, F, γ, α1, α2, k, x(t), y(t)
     rhs = [
@@ -26,4 +26,21 @@ end
     varied = ω => range(0.7, 1.3, 100)
     @test_throws MethodError get_steady_states(harmonic_eq, varied, threading=true)
     @test_throws ArgumentError get_steady_states(harmonic_eq, Dict(varied), threading=true)
+end
+
+@testset "forgot variable" begin
+    @variables Ω γ λ F x θ η α ω0 ω t T ψ
+    @variables x(t) y(t)
+
+    natural_equation = [
+        d(d(x, t), t) + γ * d(x, t) + Ω^2 * x + α * x^3 ~ F * cos(ω * t),
+        d(d(y, t), t) + γ * d(y, t) + Ω^2 * y + α * y^3 ~ 0,
+    ]
+    dEOM = DifferentialEquation(natural_equation, [x, y])
+
+    @test_throws ErrorException get_harmonic_equations(dEOM)
+
+    add_harmonic!(dEOM, x, ω)
+    # add_harmonic!(dEOM, y, ω)
+    @test_throws ErrorException get_harmonic_equations(dEOM)
 end

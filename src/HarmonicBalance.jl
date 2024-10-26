@@ -23,11 +23,19 @@ using Plots: Plots, plot, plot!, savefig, heatmap, Plot
 using Latexify: Latexify, latexify
 
 using Symbolics:
-    Symbolics, Num, Equation, @variables, expand_derivatives, get_variables, Differential
+    Symbolics,
+    Num,
+    Equation,
+    @variables,
+    expand_derivatives,
+    get_variables,
+    Differential,
+    unwrap,
+    wrap
 using SymbolicUtils: SymbolicUtils
 
 include("ExprUtils/ExprUtils.jl")
-using .ExprUtils: is_harmonic, substitute_all, drop_powers
+using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives
 
 include("extention_functions.jl")
 include("utils.jl")
@@ -53,7 +61,7 @@ export rearrange_standard
 
 export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 
-export ParameterSweep, steady_state_sweep
+export AdiabaticSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
 include("HC_wrapper/HC_wrapper.jl")

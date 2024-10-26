@@ -255,15 +255,22 @@ function plot2D_cut(
         end
     end
 
-    # the swept params are ranges and thus a sorted search can be performed
     cut_par, cut_value = cut
-    cut_par_index = searchsortedfirst(res.swept_parameters[cut_par], cut_value)
-
     # compare strings beacuse type Num cannot be compared
     swept_pars = res.swept_parameters.keys
     x_index = findfirst(sym -> string(sym) != string(cut_par), swept_pars)
     isnothing(x_index) && error("The variable $cut_par was not swept over.")
     x = swept_pars[x_index]
+
+    # the swept params are ranges and thus a sorted search can be performed
+    cut_par_index = searchsortedfirst(res.swept_parameters[cut_par], cut_value)
+    if !(cut_par_index ∈ 1:length(res.swept_parameters[cut_par]))
+        throw(
+            ArgumentError(
+                "The value $cut_value is not found in the swept range of $cut_par."
+            ),
+        )
+    end
 
     X = res.swept_parameters[x]
     Y = _apply_mask(

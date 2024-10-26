@@ -33,3 +33,4 @@ res = get_steady_states(harmonic_eq, varied, fixed; show_progress=false, seed=SE
 plot_phase_diagram(res);
 plot(res, "√(u1^2+v1^2)"; branch=1);
 plot(res; y="√(u1^2+v1^2)", cut=λ => 0.03);
+@test_throws ArgumentError plot(res; y="√(u1^2+v1^2)", cut=λ => 0.1);

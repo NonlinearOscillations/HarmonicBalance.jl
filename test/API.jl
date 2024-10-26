@@ -38,6 +38,8 @@ end
     ]
     dEOM = DifferentialEquation(natural_equation, [x, y])
 
+    @test_throws ErrorException get_harmonic_equations(dEOM)
+
     add_harmonic!(dEOM, x, ω)
     # add_harmonic!(dEOM, y, ω)
     @test_throws ErrorException get_harmonic_equations(dEOM)

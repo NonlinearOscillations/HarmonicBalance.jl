@@ -126,3 +126,14 @@ is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))
+
+"""
+Counts the number of derivatives of a symbolic variable.
+"""
+function count_derivatives(x::Symbolics.BasicSymbolic)
+    (Symbolics.isterm(x) || Symbolics.issym(x)) ||
+        error("The input is not a single term or symbol")
+    bool = Symbolics.is_derivative(x)
+    return bool ? 1 + count_derivatives(first(arguments(x))) : 0
+end
+count_derivatives(x::Num) = count_derivatives(Symbolics.unwrap(x))

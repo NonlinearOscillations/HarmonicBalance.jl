@@ -138,7 +138,7 @@ function plot_linear_response(
     kwargs...,
 )
     length(size(res.solutions)) != 1 &&
-        error("1D plots of not-1D datasets are usually a bad idea.")
+        error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = classify_branch(res, branch, "stable") # boolean array
 
     X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
@@ -177,7 +177,7 @@ function plot_linear_response(
     kwargs...,
 )
     length(size(res.solutions)) != 1 &&
-        error("1D plots of not-1D datasets are usually a bad idea.")
+        error("The results are two dimensional. Consider using the `cut` keyword.")
 
     X = Vector{Float64}(collect(first(values(res.swept_parameters))))
 
@@ -230,7 +230,7 @@ function plot_rotframe_jacobian_response(
     kwargs...,
 )
     length(size(res.solutions)) != 1 &&
-        error("1D plots of not-1D datasets are usually a bad idea.")
+        error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = classify_branch(res, branch, "stable") # boolean array
 
     Ω_range = vcat(Ω_range)
@@ -277,14 +277,22 @@ function plot_eigenvalues(
     filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
-    dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    dim(res) != 1 &&
+        error("The results are two dimensional. Consider using the `cut` keyword.")
     x = string(first(keys(res.swept_parameters)))
     varied = Vector{Float64}(collect(first(values(res.swept_parameters))))
 
-    eigenvalues = [
-        eigvals(res.jacobian(get_single_solution(res; branch=branch, index=i))) for
-        i in eachindex(varied)
-    ]
+    eigenvalues = map(eachindex(varied)) do i
+        jac = res.jacobian(get_single_solution(res; branch=branch, index=i))
+        if any(isnan, jac)
+            throw(
+                ErrorException(
+                    "The branch contains NaN values. Likely, the branch has non-physical solutions in the parameter sweep",
+                ),
+            )
+        end
+        eigvals(jac)
+    end
     eigenvalues_filtered = map(.*, eigenvalues, filter_branch)
 
     eigenvectors = [

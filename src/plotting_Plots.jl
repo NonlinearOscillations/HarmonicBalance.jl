@@ -159,7 +159,8 @@ function plot1D(
         end
     end
 
-    dim(res) != 1 && error("1D plots of not-1D datasets are usually a bad idea.")
+    dim(res) != 1 &&
+        error("The results are two dimensional. Consider using the `cut` keyword.")
     x = x == "default" ? string(first(keys(res.swept_parameters))) : x
     X = transform_solutions(res, x; branches=branches)
     Y = transform_solutions(res, y; branches=branches, realify=true)

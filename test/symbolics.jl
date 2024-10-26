@@ -177,3 +177,10 @@ end
     @eqtest get_independent(cos(t), t) == 0
     @eqtest get_independent(cos(t)^2 + 5, t) == 5
 end
+
+@testset "expand_fraction" begin
+    using HarmonicBalance.ExprUtils: expand_fraction
+    @variables a, b, c
+
+    @eqtest expand_fraction((a + b) / c) == a / c + b / c
+end

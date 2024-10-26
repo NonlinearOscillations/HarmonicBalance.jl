@@ -60,8 +60,8 @@ using HarmonicBalance,
         model = structural_simplify(model)
 
         param = [α, ω, ω0, F, γ] .=> [1.0, 1.2, 1.0, 0.01, 0.01]
-        x0 = [1.0, 0.0]
-        prob_ss = SteadyStateProblem{true}(model, x0, param; jac=true)
+        u0 = [1.0, 0.0]
+        prob_ss = SteadyStateProblem{true}(model, u0, param; jac=true)
         prob_np = NonlinearProblem(prob_ss)
 
         ω_span = (0.9, 1.5)

@@ -22,8 +22,8 @@ varied = ω => range(0.9, 1.1, 10)
 res = get_steady_states(p, varied, fixed; show_progress=false, seed=SEED)
 
 tspan = (0.0, 10)
-sweep = AdiabaticSweep(ω => (0.9, 1.1), tspan) # linearly interpolate between two values at two times
-ode_problem = ODEProblem(harmonic_eq, fixed; sweep=sweep, x0=[0.01; 0.0], timespan=tspan)
+sweep = ParameterSweep(ω => (0.9, 1.1), tspan) # linearly interpolate between two values at two times
+ode_problem = ODEProblem(harmonic_eq, fixed; sweep=sweep, u0=[0.01; 0.0], timespan=tspan)
 time_soln = solve(ode_problem, Tsit5(); saveat=1);
 
 transform_solutions(time_soln, "sqrt(u1^2+v1^2)", harmonic_eq)

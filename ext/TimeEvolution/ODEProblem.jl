@@ -4,20 +4,20 @@ using OrdinaryDiffEqTsit5: ODEProblem, solve, ODESolution
     ODEProblem(
             eom::HarmonicEquation;
             fixed_parameters,
-            x0::Vector,
-            sweep::AdiabaticSweep,
+            u0::Vector,
+            sweep::ParameterSweep,
             timespan::Tuple
             )
 
 Creates an ODEProblem object used by OrdinaryDiffEqTsit5.jl from the equations in `eom` to simulate time-evolution within `timespan`.
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).
-If `x0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
+If `u0` is specified, it is used as an initial condition; otherwise the values from `fixed_parameters` are used.
 """
 function OrdinaryDiffEqTsit5.ODEProblem(
     eom::HarmonicEquation,
     fixed_parameters;
-    sweep::AdiabaticSweep=AdiabaticSweep(),
-    x0::Vector=[],
+    sweep::ParameterSweep=ParameterSweep(),
+    u0::Vector=[],
     timespan::Tuple,
     perturb_initial=0.0,
     kwargs...,
@@ -54,11 +54,11 @@ function OrdinaryDiffEqTsit5.ODEProblem(
         end
     end
 
-    # the initial condition is x0 if specified, taken from fixed_parameters otherwise
-    initial = if isempty(x0)
+    # the initial condition is u0 if specified, taken from fixed_parameters otherwise
+    initial = if isempty(u0)
         real.(collect(values(fixed_parameters))[1:length(vars)]) * (1 - perturb_initial)
     else
-        x0
+        u0
     end
 
     return ODEProblem(f!, initial, timespan; kwargs...)

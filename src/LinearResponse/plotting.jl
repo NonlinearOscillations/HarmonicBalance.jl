@@ -282,10 +282,13 @@ function plot_eigenvalues(
     x = string(first(keys(res.swept_parameters)))
     varied = Vector{Float64}(collect(first(values(res.swept_parameters))))
 
-    eigenvalues = [
-        eigvals(res.jacobian(get_single_solution(res; branch=branch, index=i))) for
-        i in eachindex(varied)
-    ]
+    eigenvalues = map(eachindex(varied)) do i
+        jac = res.jacobian(get_single_solution(res; branch=branch, index=i))
+        if any(isnan, jac)
+            throw(ErrorException("The branch contains NaN values. Likely, the branch has non-physical solutions in the parameter sweep"))
+        end
+        eigvals(jac)
+    end
     eigenvalues_filtered = map(.*, eigenvalues, filter_branch)
 
     eigenvectors = [

@@ -176,7 +176,7 @@ end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
     return get_steady_states(Problem(eom), swept, fixed; kwargs...)
 end
-function get_steady_states(p, pairs; kwargs...)
+function get_steady_states(p, pairs::Dict; kwargs...)
     return get_steady_states(
         p,
         filter(x -> length(x[2]) > 1, pairs),

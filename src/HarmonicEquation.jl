@@ -266,7 +266,9 @@ function get_harmonic_equations(
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
 
-    all(isempty.(values(diff_eom.harmonics))) && error("No harmonics specified!")
+    for pair in diff_eom.harmonics
+        isempty(pair[2]) && error("No harmonics specified for the variable $(pair[1])!")
+    end
     eom = harmonic_ansatz(diff_eom, fast_time) # substitute trig functions into the differential equation
     eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree) # drop 2nd order time derivatives
     fourier_transform!(eom, fast_time) # perform averaging over the frequencies originally specified in dEOM

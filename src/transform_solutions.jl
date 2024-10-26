@@ -96,12 +96,54 @@ end
 # TRANSFORMATIONS TO THE LAB frame
 ###
 
-function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
+"""
+    to_lab_frame(res::Result, x::Num, times; index::Int, branch::Int)
+    to_lab_frame(soln::OrderedDict, res::Result, nat_var::Num, times)
+
+Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for the natural variable `x` for `times`. You can also compute the velocity by passing `d(x,t)` for the natural variable `x`.
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
+"""
+function to_lab_frame(soln::OrderedDict, res::Result, nat_var::Num, times)
+    count_derivatives(nat_var) > 2 &&
+        throw(ArgumentError("Only the first derivative is supported"))
+
+    var = if Symbolics.is_derivative(unwrap(nat_var))
+        wrap(first(Symbolics.arguments(unwrap(nat_var))))
+    else
+        nat_var
+    end
+    vars = filter(x -> isequal(x.natural_variable, var), res.problem.eom.variables)
+
+    return if Symbolics.is_derivative(unwrap(nat_var))
+        _to_lab_frame_velocity(soln, vars, times)
+    else
+        _to_lab_frame(soln, vars, times)
+    end
+end
+function to_lab_frame(res::Result, nat_var::Num, times; index::Int, branch::Int)
+    return to_lab_frame(res[index][branch], res, nat_var, times)
+end
+
+function _to_lab_frame_velocity(soln, vars, times)
+    timetrace = zeros(length(times))
+    for var in vars
+        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
+        ω = real(real(unwrap(substitute_all(var.ω, soln))))
+        if var.type == "u"
+            timetrace .+= -ω * val * sin.(ω * times)
+        elseif var.type == "v"
+            timetrace .+= ω * val * cos.(ω * times)
+        end
+    end
+    return timetrace
+end
+
+function _to_lab_frame(soln, vars, times)::Vector{AbstractFloat}
     timetrace = zeros(length(times))
 
-    for var in res.problem.eom.variables
-        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
-        ω = real(Symbolics.unwrap(substitute_all(var.ω, soln)))
+    for var in vars
+        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
+        ω = real(unwrap(substitute_all(var.ω, soln)))
         if var.type == "u"
             timetrace .+= val * cos.(ω * times)
         elseif var.type == "v"
@@ -112,38 +154,3 @@ function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
     end
     return timetrace
 end
-
-"""
-    to_lab_frame(res::Result, times; index::Int, branch::Int)
-    to_lab_frame(soln::OrderedDict, res::Result, times)
-
-Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
-"""
-to_lab_frame(res::Result, times; index::Int, branch::Int) =
-    to_lab_frame(res[index][branch], res, times)
-
-function to_lab_frame_velocity(soln, res, times)
-    timetrace = zeros(length(times))
-
-    for var in res.problem.eom.variables
-        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
-        ω = real(real(Symbolics.unwrap(substitute_all(var.ω, soln))))
-        if var.type == "u"
-            timetrace .+= -ω * val * sin.(ω * times)
-        elseif var.type == "v"
-            timetrace .+= ω * val * cos.(ω * times)
-        end
-    end
-    return timetrace
-end
-
-"""
-    to_lab_frame_velocity(res::Result, times; index::Int, branch::Int)
-    to_lab_frame_velocity(soln::OrderedDict, res::Result, times)
-
-Transform a solution's velocity into the lab frame (i.e., invert the harmonic ansatz for dx/dt ) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
-"""
-to_lab_frame_velocity(res::Result, times; index, branch) =
-    to_lab_frame_velocity(res[index][branch], res, times)

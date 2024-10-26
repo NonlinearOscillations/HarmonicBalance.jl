@@ -28,7 +28,7 @@ include("ODEProblem.jl")
 include("hysteresis_sweep.jl")
 include("plotting.jl")
 
-export ParameterSweep
+export AdiabaticSweep
 export transform_solutions, plot, plot!
 export ODEProblem, solve
 export follow_branch

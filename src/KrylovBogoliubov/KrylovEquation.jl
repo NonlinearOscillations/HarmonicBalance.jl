@@ -116,7 +116,7 @@ function van_der_Pol(eom::DifferentialEquation, t::Num)
         D = Differential(t)
         nvar_t = diff2term(D(unwrap(nvar)))
         vdP_rules = Dict(D(hvar_u.symbol) => 0, D(hvar_v.symbol) => 0)
-        rules[nvar_t] = substitute(expand_derivatives(D(rule)), vdP_rules)
+        rules[nvar_t] = Symbolics.substitute(expand_derivatives(D(rule)), vdP_rules)
 
         uv_idx += 1
         push!(vars, hvar_u, hvar_v)

@@ -167,7 +167,7 @@ end
 
 "Simplify the equations in HarmonicEquation."
 function simplify!(eom::HarmonicEquation)
-    return eom.equations = [simplify(eq) for eq in eom.equations]
+    return eom.equations = [Symbolics.simplify(eq) for eq in eom.equations]
 end
 
 """

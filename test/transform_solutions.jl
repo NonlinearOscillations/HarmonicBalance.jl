@@ -14,7 +14,7 @@ natural_equation = [
 dEOM = DifferentialEquation(natural_equation, [x, y])
 
 add_harmonic!(dEOM, x, ω)
-add_harmonic!(dEOM, x, ω)
+add_harmonic!(dEOM, y, ω)
 harmonic_eq = get_harmonic_equations(dEOM);
 
 fixed = (Ω => 1.0, γ => 1e-2, F => 1e-3, α => 1.0)
@@ -29,6 +29,7 @@ transform_solutions(res, "√(u1^2+v1^2)"; realify=true)
     @variables z(t)
     times = 0:1:10
     @test to_lab_frame(res, x, times; index=1, branch=1) != zeros(length(times))
-    @test to_lab_frame(res, z, times; index=1, branch=1) == zeros(length(times))
+    @test all(isapprox.(to_lab_frame(res, y, times; index=1, branch=1),0.0, atol=1e-10))
+    @test all(to_lab_frame(res, z, times; index=1, branch=1) .≈ zeros(length(times)))
     @test to_lab_frame(res, d(x, t), times; index=1, branch=1) != zeros(length(times))
 end

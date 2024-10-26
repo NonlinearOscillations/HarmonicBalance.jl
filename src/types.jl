@@ -164,7 +164,8 @@ end
 """Gives the full harmonic ansatz used to construct `eom`."""
 function _show_ansatz(eom::HarmonicEquation)
     output = ""
-    for nat_var in get_variables(eom.natural_equation)
+    vars = unique(getfield.(eom.variables, :natural_variable))
+    for nat_var in vars
         # the Hopf variable (limit cycle frequency) does not contribute a term
         harm_vars = filter(
             x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables

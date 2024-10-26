@@ -61,7 +61,7 @@ export rearrange_standard
 
 export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 
-export ParameterSweep, steady_state_sweep
+export AdiabaticSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
 include("HC_wrapper/HC_wrapper.jl")

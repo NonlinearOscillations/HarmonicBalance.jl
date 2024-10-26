@@ -76,9 +76,9 @@ Clearly when evolving from `x0 = [0.,0.]`, the system ends up in the low-amplitu
 
 Experimentally, the primary means of exploring the steady state landscape is an adiabatic sweep one or more of the system parameters. This takes the system along a solution branch. If this branch disappears or becomes unstable, a jump occurs.
 
-The object [`ParameterSweep`](@ref ParameterSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
+The object [`AdiabaticSweep`](@ref AdiabaticSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
 ```@example time_dependent
-sweep = ParameterSweep(ω => (0.9,1.1), (0, 2e4))
+sweep = AdiabaticSweep(ω => (0.9,1.1), (0, 2e4))
 ```
 The sweep linearly interpolates between $\omega = 0.9$ at time 0 and $\omega  = 1.1$ at time 2e4. For earlier/later times, $\omega$ is constant.
 

@@ -1,6 +1,6 @@
-using HarmonicBalance: ParameterSweep
+using HarmonicBalance: AdiabaticSweep
 
-function HarmonicBalance.ParameterSweep(functions::Dict, timespan::Tuple)
+function HarmonicBalance.AdiabaticSweep(functions::Dict, timespan::Tuple)
     t0, t1 = timespan[1], timespan[2]
     sweep_func = Dict{Num,Any}([])
     for swept_p in keys(functions)
@@ -8,11 +8,11 @@ function HarmonicBalance.ParameterSweep(functions::Dict, timespan::Tuple)
         tfunc = swept_function(bounds, timespan)
         setindex!(sweep_func, tfunc, swept_p)
     end
-    return ParameterSweep(sweep_func)
+    return AdiabaticSweep(sweep_func)
 end
 
-function HarmonicBalance.ParameterSweep(functions, timespan::Tuple)
-    return ParameterSweep(Dict(functions), timespan)
+function HarmonicBalance.AdiabaticSweep(functions, timespan::Tuple)
+    return AdiabaticSweep(Dict(functions), timespan)
 end
 
 function swept_function(bounds, timespan)
@@ -29,15 +29,15 @@ function swept_function(bounds, timespan)
     return f
 end
 
-# overload so that ParameterSweep can be accessed like a Dict
-Base.keys(s::ParameterSweep) = keys(s.functions)
-Base.getindex(s::ParameterSweep, i) = getindex(s.functions, i)
+# overload so that AdiabaticSweep can be accessed like a Dict
+Base.keys(s::AdiabaticSweep) = keys(s.functions)
+Base.getindex(s::AdiabaticSweep, i) = getindex(s.functions, i)
 
 # overload +
-function Base.:+(s1::ParameterSweep, s2::ParameterSweep)
+function Base.:+(s1::AdiabaticSweep, s2::AdiabaticSweep)
     common_params = intersect(keys(s1), keys(s2))
     !isempty(common_params) && error("cannot combine sweeps of the same parameter")
-    return ParameterSweep(merge(s1.functions, s2.functions))
+    return AdiabaticSweep(merge(s1.functions, s2.functions))
 
     # combine sweeps of the same parameter
     #interval_overlap(s1.timespan, s2.timespan) && error("cannot combine sweeps with overlapping timespans")

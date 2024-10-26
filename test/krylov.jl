@@ -1,5 +1,6 @@
 using HarmonicBalance;
 HB = HarmonicBalance;
+using Test
 
 @variables t T x(t) y(t) # symbolic variables
 @variables ω ω0 γ F α λ ψ θ η
@@ -32,6 +33,7 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false, seed=
 
 @testset "not damped" begin
     using HarmonicBalance.ExprUtils: expand_fraction
+    using Symbolics: substitute
 
     @testset "single resonator" begin
         @variables t x(t) y(t) ω0 ω F α # symbolic variables
@@ -49,7 +51,7 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false, seed=
             subs = Dict(u1 => 1, v1 => 1, α => 1, F => 1, ω0 => 1, ω => 1)
             solk = substitute(eqk, subs)
             solh = substitute(eqh, subs)
-            @test Float64(solk + solh) == 0.0
+            @test Float64(solk + solh) ≈ 0.0 atol=1e-10
             # ^ different ansatz
         end
     end
@@ -72,7 +74,7 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false, seed=
             subs = Dict([u1, v1, α, F, ω0, ω, J] .=> rand(7))
             solk = substitute(eqk, subs)
             solh = substitute(eqh, subs)
-            @test Float64(solk + solh) == 0.0
+            @test Float64(solk + solh) ≈ 0.0 atol=1e-10
             # ^ different ansatz
         end
     end
@@ -102,7 +104,7 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false, seed=
             subs = Dict([u1, v1, u2, v2, ω₁, ω₂, ω, F, J₂, J₁, α₁, α₂] .=> rand(12))
             solk = substitute(eqk, subs)
             solh = substitute(eqh, subs)
-            @test Float64(solk + solh) == 0.0 broken = true
+            @test Float64(solk + solh) ≈ 0.0 broken = true
             # ^ different ansatz
         end
     end

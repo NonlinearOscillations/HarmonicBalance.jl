@@ -5,7 +5,7 @@ using OrdinaryDiffEqTsit5: ODEProblem, solve, ODESolution
             eom::HarmonicEquation;
             fixed_parameters,
             u0::Vector,
-            sweep::ParameterSweep,
+            sweep::AdiabaticSweep,
             timespan::Tuple
             )
 
@@ -16,7 +16,7 @@ If `u0` is specified, it is used as an initial condition; otherwise the values f
 function OrdinaryDiffEqTsit5.ODEProblem(
     eom::HarmonicEquation,
     fixed_parameters;
-    sweep::ParameterSweep=ParameterSweep(),
+    sweep::AdiabaticSweep=AdiabaticSweep(),
     u0::Vector=[],
     timespan::Tuple,
     perturb_initial=0.0,

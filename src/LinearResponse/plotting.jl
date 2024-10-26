@@ -285,7 +285,11 @@ function plot_eigenvalues(
     eigenvalues = map(eachindex(varied)) do i
         jac = res.jacobian(get_single_solution(res; branch=branch, index=i))
         if any(isnan, jac)
-            throw(ErrorException("The branch contains NaN values. Likely, the branch has non-physical solutions in the parameter sweep"))
+            throw(
+                ErrorException(
+                    "The branch contains NaN values. Likely, the branch has non-physical solutions in the parameter sweep",
+                ),
+            )
         end
         eigvals(jac)
     end

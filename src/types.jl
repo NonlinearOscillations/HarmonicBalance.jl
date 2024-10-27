@@ -220,6 +220,11 @@ function Base.show(io::IO, p::Problem)
     return println(io, "Symbolic Jacobian: ", !(p.jacobian == false))
 end
 
+# assume this order of variables in all compiled function (transform_solutions, Jacobians)
+function _free_symbols(p::Problem, varied)
+    return cat(p.variables, collect(keys(OrderedDict(varied))); dims=1)
+end
+
 """
 $(TYPEDEF)
 
@@ -261,6 +266,11 @@ function Base.show(io::IO, r::Result)
     println(io, "   of which real:    ", sum(any.(classify_branch(r, "physical"))))
     println(io, "   of which stable:  ", sum(any.(classify_branch(r, "stable"))))
     return println(io, "\nClasses: ", join(keys(r.classes), ", "))
+end
+
+# assume this order of variables in all compiled function (transform_solutions, Jacobians)
+function _free_symbols(res::Result)
+    return cat(res.problem.variables, collect(keys(res.swept_parameters)); dims=1)
 end
 
 # overload to use [] for indexing

@@ -1,49 +1,3 @@
-# assume this order of variables in all compiled function (transform_solutions, Jacobians)
-function _free_symbols(res::Result)
-    return cat(res.problem.variables, collect(keys(res.swept_parameters)); dims=1)
-end
-function _free_symbols(p::Problem, varied)
-    return cat(p.variables, collect(keys(OrderedDict(varied))); dims=1)
-end
-_symidx(sym::Num, args...) = findfirst(x -> isequal(x, sym), _free_symbols(args...))
-
-"""
-$(TYPEDSIGNATURES)
-Return an ordered dictionary specifying all variables and parameters of the solution
-in `result` on `branch` at the position `index`.
-"""
-function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num,ComplexF64}
-
-    # check if the dimensionality of index matches the solutions
-    if length(size(res.solutions)) !== length(index)
-        # if index is a number, use linear indexing
-        index = if length(index) == 1
-            CartesianIndices(res.solutions)[index]
-        else
-            error("Index ", index, " undefined for a solution of size ", size(res.solutions))
-        end
-    else
-        index = CartesianIndex(index)
-    end
-
-    vars = OrderedDict(zip(res.problem.variables, res.solutions[index][branch]))
-
-    # collect the swept parameters required for this call
-    swept_params = OrderedDict(
-        key => res.swept_parameters[key][index[i]] for
-        (i, key) in enumerate(keys(res.swept_parameters))
-    )
-    full_solution = merge(vars, swept_params, res.fixed_parameters)
-
-    return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
-end
-
-function get_single_solution(res::Result, index)
-    return [
-        get_single_solution(res; index=index, branch=b) for b in 1:length(res.solutions[1])
-    ]
-end
-
 """
     get_steady_states(prob::Problem,
                         swept_parameters::ParameterRange,
@@ -162,14 +116,6 @@ function get_steady_states(
     return result
 end
 
-function _classify_default!(result)
-    classify_solutions!(result, _is_physical, "physical")
-    classify_solutions!(result, _is_stable(result), "stable")
-    classify_solutions!(result, _is_Hopf_unstable(result), "Hopf")
-    order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant ones first
-    return classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
-end
-
 function get_steady_states(p::Problem, swept, fixed; kwargs...)
     return get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
 end
@@ -216,33 +162,6 @@ function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
     m(vals::Vector) = postproc(matrix(vals))
     m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI
     return m
-end
-
-"Find a branch order according `classification`. Place branches where true occurs earlier first."
-function find_branch_order(classification::Vector{BitVector})
-    branches = [getindex.(classification, k) for k in 1:length(classification[1])] # array of branches
-    indices = replace(findfirst.(branches), nothing => Inf)
-    negative = findall(x -> x == Inf, indices) # branches not true anywhere - leave out
-    return order = setdiff(sortperm(indices), negative)
-end
-
-find_branch_order(classification::Array) = collect(1:length(classification[1])) # no ordering for >1D
-
-"Order the solution branches in `res` such that close classified positively by `classes` are first."
-function order_branches!(res::Result, classes::Vector{String})
-    for class in classes
-        order_branches!(res, find_branch_order(res.classes[class]))
-    end
-end
-
-order_branches!(res::Result, class::String) = order_branches!(res, [class])
-
-"Reorder the solutions in `res` to match the index permutation `order`."
-function order_branches!(res::Result, order::Vector{Int64})
-    res.solutions = _reorder_nested(res.solutions, order)
-    for key in keys(res.classes)
-        res.classes[key] = _reorder_nested(res.classes[key], order)
-    end
 end
 
 "Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
@@ -387,8 +306,6 @@ function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_val
     return padded_solutions
 end
 
-tuple_to_vector(t::Tuple) = [i for i in t]
-
 function newton(prob::Problem, soln::OrderedDict)
     vars = _convert_or_zero.(substitute_all(prob.variables, soln))
     pars = _convert_or_zero.(substitute_all(prob.parameters, soln))
@@ -405,12 +322,3 @@ Any variables/parameters not present in `soln` are set to zero.
 """
 newton(res::Result, soln::OrderedDict) = newton(res.problem, soln)
 newton(res::Result; branch, index) = newton(res, res[index][branch])
-
-function _convert_or_zero(x, t=ComplexF64)
-    try
-        convert(t, x)
-    catch ArgumentError
-        @warn string(x) * " not supplied: setting to zero"
-        return 0
-    end
-end

@@ -81,5 +81,6 @@ function var_name(x::Num)::String
     var = Symbolics._toexpr(x)
     var = var isa Expr ? String(var.args[1]) : String(var)
     return String(replace(var, r"\\mathtt\{([^}]*)\}" => s"\1"))
+    # ^ remove "\\mathtt{}" from the variable name coming from Symbolics since Symbolics v6.14.1 (Symbolics#1305)
 end
 var_name(x::SymbolicUtils.Sym) = String(x.name)

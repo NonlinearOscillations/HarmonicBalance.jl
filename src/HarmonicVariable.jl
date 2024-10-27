@@ -77,9 +77,10 @@ function declare_variable(name::String, independent_variable::Num)
 end
 
 "Return the name of a variable (excluding independent variables)"
-function var_name(x::Num)
+function var_name(x::Num)::String
     var = Symbolics._toexpr(x)
-    return var isa Expr ? String(var.args[1]) : String(var)
+    var = var isa Expr ? String(var.args[1]) : String(var)
+    return String(replace(var, r"\\mathtt\{([^}]*)\}" => s"\1"))
+    # ^ remove "\\mathtt{}" from the variable name coming from Symbolics since Symbolics v6.14.1 (Symbolics#1305)
 end
-#  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
 var_name(x::SymbolicUtils.Sym) = String(x.name)

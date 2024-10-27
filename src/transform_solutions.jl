@@ -1,4 +1,39 @@
-_parse_expression(exp) = exp isa String ? Num(eval(Meta.parse(exp))) : exp
+"""
+$(TYPEDSIGNATURES)
+Return an ordered dictionary specifying all variables and parameters of the solution
+in `result` on `branch` at the position `index`.
+"""
+function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num,ComplexF64}
+
+    # check if the dimensionality of index matches the solutions
+    if length(size(res.solutions)) !== length(index)
+        # if index is a number, use linear indexing
+        index = if length(index) == 1
+            CartesianIndices(res.solutions)[index]
+        else
+            error("Index ", index, " undefined for a solution of size ", size(res.solutions))
+        end
+    else
+        index = CartesianIndex(index)
+    end
+
+    vars = OrderedDict(zip(res.problem.variables, res.solutions[index][branch]))
+
+    # collect the swept parameters required for this call
+    swept_params = OrderedDict(
+        key => res.swept_parameters[key][index[i]] for
+        (i, key) in enumerate(keys(res.swept_parameters))
+    )
+    full_solution = merge(vars, swept_params, res.fixed_parameters)
+
+    return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
+end
+
+function get_single_solution(res::Result, index)
+    return [
+        get_single_solution(res; index=index, branch=b) for b in 1:length(res.solutions[1])
+    ]
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -90,7 +125,42 @@ function _similar(type, res::Result; branches=1:branch_count(res))
     return [type(undef, length(branches)) for k in res.solutions]
 end
 
-## TODO move masks here
+"""
+$(TYPEDSIGNATURES)
+
+Return an array of bools to mark solutions in `res` which fall into `classes` but not `not_classes`.
+Only `branches` are considered.
+"""
+function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
+    classes == "all" && return fill(trues(length(branches)), size(res.solutions))
+    bools = vcat(
+        [res.classes[c] for c in _str_to_vec(classes)],
+        [map(.!, res.classes[c]) for c in _str_to_vec(not_classes)],
+    )
+    #m = map( x -> [getindex(x, b) for b in [branches...]], map(.*, bools...))
+
+    return m = map(x -> x[[branches...]], map(.*, bools...))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Go over a solution and an equally-sized array (a "mask") of booleans.
+true  -> solution unchanged
+false -> changed to NaN (omitted from plotting)
+"""
+function _apply_mask(solns::Array{Vector{ComplexF64}}, booleans)
+    factors = replace.(booleans, 0 => NaN)
+    return map(.*, solns, factors)
+end
+function _apply_mask(solns::Vector{Vector{Vector{ComplexF64}}}, booleans)
+    Nan_vector = NaN .* similar(solns[1][1])
+    new_solns = [
+        [booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])] for
+        i in eachindex(solns)
+    ]
+    return new_solns
+end
 
 ###
 # TRANSFORMATIONS TO THE LAB frame

@@ -194,3 +194,30 @@ function sort_2D(
     end
     return sorted_solns
 end
+
+"Find a branch order according `classification`. Place branches where true occurs earlier first."
+function find_branch_order(classification::Vector{BitVector})
+    branches = [getindex.(classification, k) for k in 1:length(classification[1])] # array of branches
+    indices = replace(findfirst.(branches), nothing => Inf)
+    negative = findall(x -> x == Inf, indices) # branches not true anywhere - leave out
+    return order = setdiff(sortperm(indices), negative)
+end
+
+find_branch_order(classification::Array) = collect(1:length(classification[1])) # no ordering for >1D
+
+"Order the solution branches in `res` such that close classified positively by `classes` are first."
+function order_branches!(res::Result, classes::Vector{String})
+    for class in classes
+        order_branches!(res, find_branch_order(res.classes[class]))
+    end
+end
+
+order_branches!(res::Result, class::String) = order_branches!(res, [class])
+
+"Reorder the solutions in `res` to match the index permutation `order`."
+function order_branches!(res::Result, order::Vector{Int64})
+    res.solutions = _reorder_nested(res.solutions, order)
+    for key in keys(res.classes)
+        res.classes[key] = _reorder_nested(res.classes[key], order)
+    end
+end

@@ -67,42 +67,6 @@ Similar to `plot` but adds a plot onto an existing plot.
 function Plots.plot!(res::Result, varargs...; kwargs...)::Plots.Plot
     return plot(res, varargs...; add=true, _set_Plots_default..., kwargs...)
 end
-"""
-$(TYPEDSIGNATURES)
-
-Return an array of bools to mark solutions in `res` which fall into `classes` but not `not_classes`.
-Only `branches` are considered.
-"""
-function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
-    classes == "all" && return fill(trues(length(branches)), size(res.solutions))
-    bools = vcat(
-        [res.classes[c] for c in _str_to_vec(classes)],
-        [map(.!, res.classes[c]) for c in _str_to_vec(not_classes)],
-    )
-    #m = map( x -> [getindex(x, b) for b in [branches...]], map(.*, bools...))
-
-    return m = map(x -> x[[branches...]], map(.*, bools...))
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Go over a solution and an equally-sized array (a "mask") of booleans.
-true  -> solution unchanged
-false -> changed to NaN (omitted from plotting)
-"""
-function _apply_mask(solns::Array{Vector{ComplexF64}}, booleans)
-    factors = replace.(booleans, 0 => NaN)
-    return map(.*, solns, factors)
-end
-function _apply_mask(solns::Vector{Vector{Vector{ComplexF64}}}, booleans)
-    Nan_vector = NaN .* similar(solns[1][1])
-    new_solns = [
-        [booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])] for
-        i in eachindex(solns)
-    ]
-    return new_solns
-end
 
 """ Project the array `a` into the real axis, warning if its contents are complex. """
 function _realify(a::Array{T} where {T<:Number}; warning="")
@@ -118,9 +82,6 @@ function _realify(a::Array{T} where {T<:Number}; warning="")
     end
     return a_real
 end
-
-_str_to_vec(s::Vector) = s
-_str_to_vec(s) = [s]
 
 # return true if p already has a label for branch index idx
 function _is_labeled(p::Plot, idx::Int64)

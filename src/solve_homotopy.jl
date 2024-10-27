@@ -213,11 +213,11 @@ function filter_duplicate_parameters(sweeps, fixed_parameters)
 end
 
 "A random warmup solution is computed to use as `start_parameters` in the homotopy."
-function _solve_warmup(problem::Problem, params_1D, sweep; threading, show_progress)
+function _solve_warmup(problem::Problem, params; threading, show_progress)
     # complex perturbation of the warmup parameters
     complex_pert = [1e-5 * randn(ComplexF64) for p in problem.parameters]
-    real_pert = ones(length(params_1D[1]))
-    warmup_parameters = params_1D[end ÷ 2] .* (real_pert + complex_pert)
+    real_pert = ones(length(params[1]))
+    warmup_parameters = params[length(params) ÷ 2] .* (real_pert + complex_pert)
 
     warmup_solution = HC.solve(
         problem.system;
@@ -240,12 +240,10 @@ function _get_raw_solution(
     seed=nothing,
     kwargs...,
 )
-    # HomotopyContinuation accepts 1D arrays of parameter sets
-    params_1D = reshape(parameter_values, :, 1)
-
     if method == :warmup && !isempty(sweep)
         warmup_parameters, warmup_solution = _solve_warmup(
-            problem, params_1D, sweep; threading=threading, show_progress=show_progress
+            problem, parameter_values;
+            threading=threading, show_progress=show_progress
         )
         result_full = HC.solve(
             problem.system,

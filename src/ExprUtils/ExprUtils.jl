@@ -1,5 +1,7 @@
 module ExprUtils
 
+using DispatchDoctor: @stable, @unstable
+
 using DocStringExtensions
 using OrderedCollections: OrderedDict
 

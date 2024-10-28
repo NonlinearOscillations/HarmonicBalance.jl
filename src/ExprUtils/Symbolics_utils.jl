@@ -59,15 +59,16 @@ function substitute_all(x::Complex{Num}, rules::Collections)
     return substitute_all(x.re, rules) + im * substitute_all(x.im, rules)
 end
 
-get_independent(x::Num, t::Num) = get_independent(x.val, t)
+get_independent(x::Num, t::Num)::Num = wrap(get_independent(unwrap(x), t))
 function get_independent(x::Complex{Num}, t::Num)
     return get_independent(x.re, t) + im * get_independent(x.im, t)
 end
-get_independent(v::Vector{Num}, t::Num) = [get_independent(el, t) for el in v]
+get_independent(v::Vector{Num}, t::Num)::Vector{Num} =
+    Num[get_independent(el, t) for el in v]
 get_independent(x, t::Num) = x
 
-function get_independent(x::BasicSymbolic, t::Num)
-    @compactified x::BasicSymbolic begin
+function get_independent(x::BasicSymbolic{Real}, t::Num)::BasicSymbolic{Real}
+    @compactified x::BasicSymbolic{Real} begin
         Add  => sum([get_independent(arg, t) for arg in arguments(x)])
         Mul  => prod([get_independent(arg, t) for arg in arguments(x)])
         Div  => !is_function(x.den, t) ? get_independent(x.num, t) / x.den : 0
@@ -79,19 +80,19 @@ function get_independent(x::BasicSymbolic, t::Num)
 end
 
 "Return all the terms contained in `x`"
-get_all_terms(x::Num) = unique(_get_all_terms(Symbolics.expand(x).val))
+get_all_terms(x::Num)::Vector{Num} = wrap.(unique(_get_all_terms(unwrap(x))))
 function get_all_terms(x::Equation)
     return unique(cat(get_all_terms(Num(x.lhs)), get_all_terms(Num(x.rhs)); dims=1))
 end
-function _get_all_terms(x::BasicSymbolic)
+@unstable function _get_all_terms(x::BasicSymbolic)
     @compactified x::BasicSymbolic begin
-        Add => vcat([_get_all_terms(term) for term in SymbolicUtils.arguments(x)]...)
-        Mul => Num.(SymbolicUtils.arguments(x))
-        Div => Num.([_get_all_terms(x.num)..., _get_all_terms(x.den)...])
-        _   => Num(x)
+        Add => vcat(_get_all_terms.(SymbolicUtils.arguments(x))...)
+        Mul => SymbolicUtils.arguments(x)
+        Div => BasicSymbolic[_get_all_terms(x.num)..., _get_all_terms(x.den)...]
+        _   => x
     end
 end
-_get_all_terms(x) = Num(x)
+_get_all_terms(x) = x
 
 function is_harmonic(x::Num, t::Num)::Bool
     all_terms = get_all_terms(x)
@@ -107,7 +108,7 @@ function is_harmonic(x::Num, t::Num)::Bool
     end
 end
 
-is_harmonic(x::Equation, t::Num) = is_harmonic(x.lhs, t) && is_harmonic(x.rhs, t)
+is_harmonic(x::Equation, t::Num)::Bool = is_harmonic(x.lhs, t) && is_harmonic(x.rhs, t)
 is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
 
 "Return true if `f` is a function of `var`."

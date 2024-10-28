@@ -44,7 +44,7 @@ end
 $(TYPEDSIGNATURES)
 Return the independent dependent variables of `diff_eom`.
 """
-function get_independent_variables(diff_eom::DifferentialEquation)
+function get_independent_variables(diff_eom::DifferentialEquation)::Vector{Num}
     return Num.(flatten(unique([x.val.arguments for x in keys(diff_eom.equations)])))
 end
 

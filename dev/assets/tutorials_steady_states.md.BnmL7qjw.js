@@ -32,7 +32,7 @@ import{_ as l,c as T,j as t,a as Q,a4 as e,o as s}from"./chunks/framework.DGj8Ac
 <span class="line"><span></span></span>
 <span class="line"><span>(2//1)*Differential(T)(v1(T))*ω + Differential(T)(u1(T))*γ - u1(T)*(ω^2) + u1(T)*(ω0^2) + v1(T)*γ*ω + (3//4)*(u1(T)^3)*α + (3//4)*(u1(T)^2)*u2(T)*α + (3//2)*u1(T)*(v2(T)^2)*α + (3//2)*u1(T)*v2(T)*v1(T)*α + (3//4)*u1(T)*(v1(T)^2)*α + (3//2)*u1(T)*(u2(T)^2)*α - (3//4)*(v1(T)^2)*u2(T)*α ~ F</span></span>
 <span class="line"><span></span></span>
-<span class="line"><span>Differential(T)(v1(T))*γ - (2//1)*Differential(T)(u1(T))*ω - u1(T)*γ*ω - v1(T)*(ω^2) + v1(T)*(ω0^2) + (3//4)*(u1(T)^2)*v2(T)*α + (3//4)*(u1(T)^2)*v1(T)*α - (3//2)*u1(T)*v1(T)*u2(T)*α + (3//2)*(v2(T)^2)*v1(T)*α - (3//4)*v2(T)*(v1(T)^2)*α + (3//4)*(v1(T)^3)*α + (3//2)*v1(T)*(u2(T)^2)*α ~ 0</span></span>
+<span class="line"><span>Differential(T)(v1(T))*γ - (2//1)*Differential(T)(u1(T))*ω - u1(T)*γ*ω - v1(T)*(ω^2) + v1(T)*(ω0^2) + (3//4)*(u1(T)^2)*v2(T)*α + (3//4)*(u1(T)^2)*v1(T)*α - (3//2)*u1(T)*v1(T)*u2(T)*α + (3//2)*(v2(T)^2)*v1(T)*α - (3//4)*v2(T)*(v1(T)^2)*α + (3//4)*(v1(T)^3)*α + (3//2)*v1(T)*(u2(T)^2)*α ~ 0//1</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>Differential(T)(u2(T))*γ + (6//1)*Differential(T)(v2(T))*ω + (3//1)*v2(T)*γ*ω - (9//1)*u2(T)*(ω^2) + u2(T)*(ω0^2) + (1//4)*(u1(T)^3)*α + (3//2)*(u1(T)^2)*u2(T)*α - (3//4)*u1(T)*(v1(T)^2)*α + (3//4)*(v2(T)^2)*u2(T)*α + (3//2)*(v1(T)^2)*u2(T)*α + (3//4)*(u2(T)^3)*α ~ 0//1</span></span>
 <span class="line"><span></span></span>

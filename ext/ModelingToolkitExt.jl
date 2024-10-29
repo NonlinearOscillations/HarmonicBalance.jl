@@ -61,6 +61,7 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
 end
 
 function ModelingToolkit.ODESystem(diff_eq::DifferentialEquation)
+    diff_eq = deepcopy(diff_eq)
     if !is_rearranged_standard(diff_eq)
         rearrange_standard!(diff_eq)
     end

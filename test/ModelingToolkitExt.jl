@@ -1,11 +1,9 @@
 using HarmonicBalance
 using ModelingToolkit
-
-ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
-
 using Test
 
 @testset "Utilities" begin
+    ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
     @variables α
     check = ModelingToolkitExt.declare_parameter(α)
     @test ModelingToolkit.PARAMETER ∈ values(check.val.metadata)
@@ -25,6 +23,9 @@ end
         for p in string.([α, ω, ω0, F, γ])
             @test p ∈ string.(parameters(sys))
         end
+
+        # can run a second time without error; diff_eq unmutated
+        ODESystem(diff_eq)
     end
     @testset "ODEProblem" begin
         @variables α ω ω0 F γ t x(t)

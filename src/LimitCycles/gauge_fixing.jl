@@ -85,6 +85,26 @@ function _choose_fixed(eom, ω_lc)
     return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
+function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc, explicit_Jacobian)
+    prob = _cycle_Problem(eom, ω_lc)
+    prob.jacobian = _gaugefixed_Jacobian(
+        eom,
+        _choose_fixed(eom, ω_lc);
+        explicit=explicit_Jacobian,
+        sym_order=_free_symbols(prob, swept),
+        rules=fixed,
+    )
+    return prob
+end
+
+function get_limit_cycles(
+    prob::Problem, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...
+)
+    result = get_steady_states(prob, method, swept, fixed; kwargs...)
+    _classify_limit_cycles!(result, ω_lc)
+    return result
+end
+
 """
     get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; kwargs...)
 
@@ -95,28 +115,32 @@ Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assu
 function get_limit_cycles(
     eom::HarmonicEquation, swept, fixed, ω_lc; explicit_Jacobian=false, kwargs...
 )
-    prob = _cycle_Problem(eom, ω_lc)
-    prob.jacobian = _gaugefixed_Jacobian(
-        eom,
-        _choose_fixed(eom, ω_lc);
-        explicit=explicit_Jacobian,
-        sym_order=_free_symbols(prob, swept),
-        rules=fixed,
-    )
-
-    result = get_steady_states(
-        prob, swept, fixed; method=:warmup, threading=true, classify_default=true, kwargs...
-    )
-
-    _classify_limit_cycles!(result, ω_lc)
-
-    return result
+    prob = limit_cycle_problem(eom, swept, fixed, ω_lc, explicit_Jacobian)
+    return get_limit_cycles(prob, WarmUp(), swept, fixed, ω_lc; kwargs...)
 end
-
 function get_limit_cycles(
-    eom::HarmonicEquation, swept, fixed; limit_cycle_harmonic, kwargs...
+    eom::HarmonicEquation,
+    method::HarmonicBalanceMethod,
+    swept,
+    fixed,
+    ω_lc;
+    explicit_Jacobian=false,
+    kwargs...,
 )
-    return get_limit_cycles(eom, swept, fixed, limit_cycle_harmonic; kwargs...)
+    prob = limit_cycle_problem(eom, swept, fixed, ω_lc, explicit_Jacobian)
+    return get_limit_cycles(prob, method, swept, fixed, ω_lc; kwargs...)
+end
+function get_limit_cycles(eom::HarmonicEquation, pairs::Dict, ω_lc; kwargs...)
+    swept = filter(x -> length(x[2]) > 1, pairs)
+    fixed = filter(x -> length(x[2]) == 1, pairs)
+    return get_limit_cycles(eom, swept, fixed, ω_lc; kwargs...)
+end
+function get_limit_cycles(
+    eom::HarmonicEquation, method::HarmonicBalanceMethod, pairs::Dict, ω_lc; kwargs...
+)
+    swept = filter(x -> length(x[2]) > 1, pairs)
+    fixed = filter(x -> length(x[2]) == 1, pairs)
+    return get_limit_cycles(eom, method, swept, fixed, ω_lc; kwargs...)
 end
 
 # if abs(ω_lc) < tol, set all classifications to false

@@ -24,8 +24,8 @@ end
 
     harmonic_eq = get_harmonic_equations(diff_eq)
     varied = ω => range(0.7, 1.3, 100)
-    @test_throws MethodError get_steady_states(harmonic_eq, varied, threading=true)
-    @test_throws ArgumentError get_steady_states(harmonic_eq, Dict(varied), threading=true)
+    @test_throws MethodError get_steady_states(harmonic_eq, varied)
+    @test_throws ArgumentError get_steady_states(harmonic_eq, Dict(varied))
 end
 
 @testset "forgot variable" begin

@@ -56,98 +56,73 @@ A steady state result for 1000 parameter points
 """
 function get_steady_states(
     prob::Problem,
+    method::HarmonicBalanceMethod,
     swept_parameters::ParameterRange,
     fixed_parameters::ParameterList;
-    method=:warmup,
-    threading=Threads.nthreads() > 1,
     show_progress=true,
     sorting="nearest",
     classify_default=true,
-    seed=nothing,
-    kwargs...,
 )
-
-    # set seed if provided
-    !isnothing(seed) && Random.seed!(seed)
+    Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables; dims=1)))
-
-    # prepare an array of vectors, each representing one set of input parameters
-    # an n-dimensional sweep uses an n-dimensional array
-    unique_fixed = filter_duplicate_parameters(swept_parameters, fixed_parameters)
 
     variable_names = var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])
     any([var_name(var) ∈ variable_names for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
 
-    input_array = _prepare_input_params(prob, swept_parameters, unique_fixed)
-    # feed the array into HomotopyContinuation, get back an similar array of solutions
-    raw = _get_raw_solution(
-        prob,
-        input_array;
-        sweep=swept_parameters,
-        method=method,
-        threading=threading,
-        show_progress=show_progress,
-        seed=seed,
-        kwargs...,
+    unique_fixed, input_array = _prepare_input_params(
+        prob, swept_parameters, fixed_parameters
     )
-
-    # extract all the information we need from results
-    #rounded_solutions = unique_points.(HomotopyContinuation.solutions.(getindex.(raw, 1)); metric = EuclideanNorm(), atol=1E-14, rtol=1E-8)
-    rounded_solutions = HC.solutions.(getindex.(raw, 1))
-    all(isempty.(rounded_solutions)) ? error("No solutions found!") : nothing
-    solutions = pad_solutions(rounded_solutions)
+    solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
 
     compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
 
-    # a "raw" solution struct
     result = Result(
-        solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed
+        solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed(method)
     )
 
-    # sort into branches
     if sorting != "no_sorting"
         sort_solutions!(result; sorting=sorting, show_progress=show_progress)
-    else
-        nothing
     end
     classify_default ? _classify_default!(result) : nothing
 
     return result
 end
 
-function get_steady_states(p::Problem, swept, fixed; kwargs...)
-    return get_steady_states(p, ParameterRange(swept), ParameterList(fixed); kwargs...)
-end
-function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
-    return get_steady_states(Problem(eom), swept, fixed; kwargs...)
-end
-function get_steady_states(p, pairs::Dict; kwargs...)
+function get_steady_states(
+    p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
+)
     return get_steady_states(
-        p,
-        filter(x -> length(x[2]) > 1, pairs),
-        filter(x -> length(x[2]) == 1, pairs);
-        kwargs...,
+        p, method, ParameterRange(swept), ParameterList(fixed); kwargs...
     )
 end
-
-""" Compile the Jacobian from `prob`, inserting `fixed_parameters`.
-    Returns a function that takes a dictionary of variables and `swept_parameters` to give the Jacobian."""
-function _compile_Jacobian(
-    prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList
+function get_steady_states(
+    eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
-    if prob.jacobian isa Matrix
-        compiled_J = compile_matrix(
-            prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
-        )
-    elseif prob.jacobian == "implicit"
-        compiled_J = LinearResponse.get_implicit_Jacobian(
-            prob, swept_parameters, fixed_parameters
-        ) # leave implicit Jacobian as is
-    else
-        return prob.jacobian
-    end
-    return compiled_J
+    return get_steady_states(Problem(eom), method, swept, fixed; kwargs...)
+end
+function get_steady_states(eom::HarmonicEquation, pairs::Dict; kwargs...)
+    swept = filter(x -> length(x[2]) > 1, pairs)
+    fixed = filter(x -> length(x[2]) == 1, pairs)
+    return get_steady_states(eom, swept, fixed; kwargs...)
+end
+function get_steady_states(
+    eom::HarmonicEquation, method::HarmonicBalanceMethod, pairs::Dict; kwargs...
+)
+    swept = filter(x -> length(x[2]) > 1, pairs)
+    fixed = filter(x -> length(x[2]) == 1, pairs)
+    return get_steady_states(eom, method, swept, fixed; kwargs...)
+end
+function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
+    return get_steady_states(Problem(eom), WarmUp(), swept, fixed; kwargs...)
+end
+
+function get_solutions(prob, method, input_array; show_progress)
+    raw = _get_raw_solution(prob, method, input_array; show_progress=show_progress)
+
+    solutions = HC.solutions.(getindex.(raw, 1))
+    all(isempty.(solutions)) ? error("No solutions found!") : nothing
+    return solutions = pad_solutions(solutions)
 end
 
 """
@@ -176,7 +151,7 @@ function _prepare_input_params(
     prob::Problem, sweeps::ParameterRange, fixed_parameters::ParameterList
 )
     # sweeping takes precedence over fixed_parameters
-    fixed_parameters = filter_duplicate_parameters(sweeps, fixed_parameters)
+    unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
 
     # fixed order of parameters
     all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)); dims=1)
@@ -200,7 +175,7 @@ function _prepare_input_params(
     # order each parameter vector to match the order in prob
     input_array = getindex.(input_array, [permutation])
     # HC wants arrays, not tuples
-    return tuple_to_vector.(input_array)
+    return unique_fixed, tuple_to_vector.(input_array)
 end
 
 "Remove occurrences of `sweeps` elements from `fixed_parameters`."
@@ -213,75 +188,70 @@ function filter_duplicate_parameters(sweeps, fixed_parameters)
 end
 
 "A random warmup solution is computed to use as `start_parameters` in the homotopy."
-function _solve_warmup(problem::Problem, params; threading, show_progress)
+function _solve_warmup(problem::Problem, method::WarmUp, params; show_progress)
     # complex perturbation of the warmup parameters
-    complex_pert = [1e-5 * randn(ComplexF64) for p in problem.parameters]
-    real_pert = ones(length(params[1]))
-    warmup_parameters = params[length(params) ÷ 2] .* (real_pert + complex_pert)
+    options = alg_specific_options(method)
+    l = length(params[1])
+
+    perturbation = ones(l) + options[:perturbation_size] * randn(ComplexF64, l)
+    warmup_parameters = params[options[:index]] .* perturbation
 
     warmup_solution = HC.solve(
         problem.system;
         start_system=:total_degree,
         target_parameters=warmup_parameters,
-        threading=threading,
         show_progress=show_progress,
+        alg_default_options(method)...,
     )
     return warmup_parameters, warmup_solution
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
 function _get_raw_solution(
-    problem::Problem,
-    parameter_values;
-    sweep=ParameterRange(),
-    method=:warmup,
-    threading=false,
-    show_progress=true,
-    seed=nothing,
-    kwargs...,
+    problem::Problem, method::WarmUp, parameter_values; show_progress
 )
-    if method == :warmup && !isempty(sweep)
-        warmup_parameters, warmup_solution = _solve_warmup(
-            problem, parameter_values;
-            threading=threading, show_progress=show_progress
+    warmup_parameters, warmup_solution = _solve_warmup(
+        problem, method, parameter_values; show_progress=show_progress
+    )
+    result_full = HC.solve(
+        problem.system,
+        HC.solutions(warmup_solution);
+        start_parameters=warmup_parameters,
+        target_parameters=parameter_values,
+        show_progress=show_progress,
+        alg_default_options(method)...,
+    )
+
+    return reshape(result_full, size(parameter_values)...)
+end
+
+"Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
+function _get_raw_solution(
+    problem::Problem, method::Union{TotalDegree,Polyhedral}, parameter_values; show_progress
+)
+    result_full = Array{Vector{Any},1}(undef, length(parameter_values))
+    if show_progress
+        bar = Progress(
+            length(parameter_values);
+            dt=1,
+            desc="Solving via $method homotopy ...",
+            barlen=50,
         )
-        result_full = HC.solve(
-            problem.system,
-            HC.solutions(warmup_solution);
-            start_parameters=warmup_parameters,
-            target_parameters=parameter_values,
-            threading=threading,
-            show_progress=show_progress,
-            seed=seed,
-            kwargs...,
-        )
-    elseif method == :total_degree || method == :polyhedral
-        result_full = Array{Vector{Any},1}(undef, length(parameter_values))
-        if show_progress
-            bar = Progress(
-                length(parameter_values);
-                dt=1,
-                desc="Solving via $method homotopy ...",
-                barlen=50,
-            )
-        end
-        for i in eachindex(parameter_values) # do NOT thread this
-            p = parameter_values[i]
-            show_progress ? ProgressMeter.next!(bar) : nothing
-            result_full[i] = [
-                HC.solve(
-                    problem.system;
-                    start_system=method,
-                    target_parameters=p,
-                    threading=threading,
-                    show_progress=false,
-                    seed=seed,
-                ),
-                p,
-            ]
-        end
-    else
-        error("Unknown method: ", string(method))
+    end
+    for i in eachindex(parameter_values) # do NOT thread this
+        p = parameter_values[i]
+        show_progress ? ProgressMeter.next!(bar) : nothing
+        result_full[i] = [
+            HC.solve(
+                problem.system;
+                start_system=method,
+                target_parameters=p,
+                show_progress=false,
+                alg_default_options(method)...,
+                alg_specific_options(method)...,
+            ),
+            p,
+        ]
     end
 
     # reshape back to the original shape

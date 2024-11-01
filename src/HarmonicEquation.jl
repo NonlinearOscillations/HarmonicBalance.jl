@@ -1,3 +1,57 @@
+
+"""
+$(TYPEDEF)
+
+Holds a set of algebraic equations governing the harmonics of a `DifferentialEquation`.
+
+# Fields
+$(TYPEDFIELDS)
+"""
+mutable struct HarmonicEquation
+    """A set of equations governing the harmonics."""
+    equations::Vector{Equation}
+    """A set of variables describing the harmonics."""
+    variables::Vector{HarmonicVariable}
+    """The parameters of the equation set."""
+    parameters::Vector{Num}
+    "The natural equation (before the harmonic ansatz was used)."
+    natural_equation::DifferentialEquation
+
+    # use a self-referential constructor with _parameters
+    function HarmonicEquation(equations, variables, nat_eq)
+        return (x = new(equations, variables, Vector{Num}([]), nat_eq);
+        x.parameters = _parameters(x);
+        x)
+    end
+    function HarmonicEquation(equations, variables, parameters, natural_equation)
+        return new(equations, variables, parameters, natural_equation)
+    end
+end
+
+function Base.show(io::IO, eom::HarmonicEquation)
+    println(io, "A set of ", length(eom.equations), " harmonic equations")
+    println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
+    println(io, "Parameters: ", join(string.(eom.parameters), ", "))
+    println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
+    println(io, "\nHarmonic equations:")
+    return [println(io, "\n", eq) for eq in eom.equations]
+end
+
+"""Gives the full harmonic ansatz used to construct `eom`."""
+function _show_ansatz(eom::HarmonicEquation)
+    output = ""
+    vars = unique(getfield.(eom.variables, :natural_variable))
+    for nat_var in vars
+        # the Hopf variable (limit cycle frequency) does not contribute a term
+        harm_vars = filter(
+            x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables
+        )
+        ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
+        output *= "\n" * string(nat_var) * " = " * ansatz
+    end
+    return output
+end
+
 Base.show(eom::HarmonicEquation) = show_fields(eom)
 
 """
@@ -139,9 +193,6 @@ Get the internal symbols of the independent variables of `eom`.
 function Symbolics.get_variables(eom::HarmonicEquation)::Vector{Num}
     return get_variables.(eom.variables)
 end
-
-Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
-Symbolics.get_variables(res::Result)::Vector{Num} = get_variables(res.problem)
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"
 function _parameters(eom::HarmonicEquation)

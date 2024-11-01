@@ -121,8 +121,12 @@ function get_solutions(prob, method, input_array; show_progress)
     raw = _get_raw_solution(prob, method, input_array; show_progress=show_progress)
 
     solutions = HC.solutions.(getindex.(raw, 1))
-    all(isempty.(solutions)) ? error("No solutions found!") : nothing
-    return solutions = pad_solutions(solutions)
+    if all(isempty.(solutions))
+        @warn "No solutions found!"
+        return solutions
+    else
+        pad_solutions(solutions)
+    end
 end
 
 """

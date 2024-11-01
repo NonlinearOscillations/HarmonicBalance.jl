@@ -48,3 +48,25 @@ alg_specific_options(method::Polyhedral) = (only_non_zero=method.only_non_zero,)
 function alg_specific_options(method::WarmUp)
     return (perturbation_size=method.perturbation_size, index=method.index)
 end
+
+function Base.show(io::IO, m::WarmUp)
+    println(io, "Warm up method:")
+    println(io, "perturbation_size: ", m.perturbation_size)
+    println(io, "Threading:         ", thread(m))
+    println(io, "Compile:           ", compile(m))
+    return println(io, "Seed:              ", seed(m))
+end
+function Base.show(io::IO, m::TotalDegree)
+    println(io, "Total degree method:")
+    println(io, "Gamma:     ", m.gamma)
+    println(io, "Threading: ", thread(m))
+    println(io, "Compile:   ", compile(m))
+    return println(io, "Seed:      ", seed(m))
+end
+function Base.show(io::IO, m::Polyhedral)
+    println(io, "Polyhedral method:")
+    println(io, "Zero solutions: ", !m.only_non_zero)
+    println(io, "Threading:      ", thread(m))
+    println(io, "Compile:        ", compile(m))
+    return println(io, "Seed:           ", seed(m))
+end

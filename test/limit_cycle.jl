@@ -15,7 +15,7 @@ import HarmonicBalance.LinearResponse.plot_linear_response
 
     fixed = ()
     varied = μ => range(2, 3, 2)
-    method = HarmonicBalance.WarmUp(seed=SEED)
+    method = HarmonicBalance.WarmUp(; seed=SEED)
     result = get_limit_cycles(harmonic_eq, method, varied, fixed, ω_lc; show_progress=false)
 
     @test sum(any.(classify_branch(result, "stable"))) == 4

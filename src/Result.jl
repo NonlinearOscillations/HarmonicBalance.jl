@@ -38,8 +38,12 @@ Symbolics.get_variables(res::Result)::Vector{Num} = get_variables(res.problem)
 function Base.show(io::IO, r::Result)
     println(io, "A steady state result for ", length(r.solutions), " parameter points")
     println(io, "\nSolution branches:   ", length(r.solutions[1]))
-    println(io, "   of which real:    ", sum(any.(classify_branch(r, "physical"))))
-    println(io, "   of which stable:  ", sum(any.(classify_branch(r, "stable"))))
+    println(
+        io, "   of which real:    ", sum(push!(any.(classify_branch(r, "physical")), false))
+    )
+    println(
+        io, "   of which stable:  ", sum(push!(any.(classify_branch(r, "stable")), false))
+    )
     return println(io, "\nClasses: ", join(keys(r.classes), ", "))
 end
 

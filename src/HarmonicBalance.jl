@@ -56,7 +56,8 @@ include("saving.jl")
 include("transform_solutions.jl")
 include("plotting_Plots.jl")
 
-export show, *, @variables, d, ComplexF64, Float64, IM_TOL
+export show, *, @variables, d, IM_TOL
+export WarmUp, TotalDegree, Polyhedral
 
 export DifferentialEquation, HarmonicVariable, HarmonicEquation
 export get_steady_states, get_single_solution, get_harmonic_equations, add_harmonic!

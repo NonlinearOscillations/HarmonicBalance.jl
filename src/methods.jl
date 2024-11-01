@@ -49,6 +49,9 @@ function alg_specific_options(method::WarmUp)
     return (perturbation_size=method.perturbation_size, index=method.index)
 end
 
+method_symbol(m::Polyhedral) = :polyhedral
+method_symbol(m::TotalDegree) = :total_degree
+
 function Base.show(io::IO, m::WarmUp)
     println(io, "Warm up method:")
     println(io, "perturbation_size: ", m.perturbation_size)

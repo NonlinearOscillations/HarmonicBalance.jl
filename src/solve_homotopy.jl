@@ -248,7 +248,7 @@ function _get_raw_solution(
         result_full[i] = [
             HC.solve(
                 problem.system;
-                start_system=method,
+                start_system=method_symbol(method),
                 target_parameters=p,
                 show_progress=false,
                 alg_default_options(method)...,

@@ -17,7 +17,7 @@ end
         )
 
         fixed = (α => 1.0, ω0 => 1.1, F => 0.01, γ => 0.01)
-        param = ParameterList(merge(Dict(fixed), Dict(ω => 1.1)))
+        param = HarmonicBalance.ParameterList(merge(Dict(fixed), Dict(ω => 1.1)))
         sys = ODESystem(diff_eq)
 
         for p in string.([α, ω, ω0, F, γ])
@@ -51,7 +51,7 @@ end
     harmonic_eq = get_harmonic_equations(diff_eq)
 
     fixed = (α => 1.0, ω0 => 1.1, F => 0.01, γ => 0.01)
-    param = ParameterList(merge(Dict(fixed), Dict(ω => 1.1)))
+    param = HarmonicBalance.ParameterList(merge(Dict(fixed), Dict(ω => 1.1)))
     @testset "ODESystem" begin
         sys = ODESystem(harmonic_eq)
 

@@ -1,3 +1,57 @@
+
+"""
+$(TYPEDEF)
+
+Holds a set of algebraic equations governing the harmonics of a `DifferentialEquation`.
+
+# Fields
+$(TYPEDFIELDS)
+"""
+mutable struct HarmonicEquation
+    """A set of equations governing the harmonics."""
+    equations::Vector{Equation}
+    """A set of variables describing the harmonics."""
+    variables::Vector{HarmonicVariable}
+    """The parameters of the equation set."""
+    parameters::Vector{Num}
+    "The natural equation (before the harmonic ansatz was used)."
+    natural_equation::DifferentialEquation
+
+    # use a self-referential constructor with _parameters
+    function HarmonicEquation(equations, variables, nat_eq)
+        return (x = new(equations, variables, Vector{Num}([]), nat_eq);
+        x.parameters = _parameters(x);
+        x)
+    end
+    function HarmonicEquation(equations, variables, parameters, natural_equation)
+        return new(equations, variables, parameters, natural_equation)
+    end
+end
+
+function Base.show(io::IO, eom::HarmonicEquation)
+    println(io, "A set of ", length(eom.equations), " harmonic equations")
+    println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
+    println(io, "Parameters: ", join(string.(eom.parameters), ", "))
+    println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
+    println(io, "\nHarmonic equations:")
+    return [println(io, "\n", eq) for eq in eom.equations]
+end
+
+"""Gives the full harmonic ansatz used to construct `eom`."""
+function _show_ansatz(eom::HarmonicEquation)
+    output = ""
+    vars = unique(getfield.(eom.variables, :natural_variable))
+    for nat_var in vars
+        # the Hopf variable (limit cycle frequency) does not contribute a term
+        harm_vars = filter(
+            x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables
+        )
+        ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
+        output *= "\n" * string(nat_var) * " = " * ansatz
+    end
+    return output
+end
+
 Base.show(eom::HarmonicEquation) = show_fields(eom)
 
 """
@@ -140,9 +194,6 @@ function Symbolics.get_variables(eom::HarmonicEquation)::Vector{Num}
     return get_variables.(eom.variables)
 end
 
-Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
-Symbolics.get_variables(res::Result)::Vector{Num} = get_variables(res.problem)
-
 "Get the parameters (not time nor variables) of a HarmonicEquation"
 function _parameters(eom::HarmonicEquation)
     all_symbols = flatten([
@@ -167,7 +218,7 @@ end
 
 "Simplify the equations in HarmonicEquation."
 function simplify!(eom::HarmonicEquation)
-    return eom.equations = [simplify(eq) for eq in eom.equations]
+    return eom.equations = [Symbolics.simplify(eq) for eq in eom.equations]
 end
 
 """
@@ -266,7 +317,9 @@ function get_harmonic_equations(
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
 
-    all(isempty.(values(diff_eom.harmonics))) && error("No harmonics specified!")
+    for pair in diff_eom.harmonics
+        isempty(pair[2]) && error("No harmonics specified for the variable $(pair[1])!")
+    end
     eom = harmonic_ansatz(diff_eom, fast_time) # substitute trig functions into the differential equation
     eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree) # drop 2nd order time derivatives
     fourier_transform!(eom, fast_time) # perform averaging over the frequencies originally specified in dEOM

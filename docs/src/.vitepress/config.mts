@@ -64,6 +64,7 @@ export default defineConfig({
         text: 'Manual', items: [
           { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
           { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
+          { text: 'Computing steady states', link: '/manual/methods' },
           { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
           { text: 'Time evolution', link: '/manual/time_dependent' },
           { text: 'Linear response', link: '/manual/linear_response' },
@@ -100,6 +101,7 @@ export default defineConfig({
       "/manual/": [
         { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
         { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
+        { text: 'Computing steady states', link: '/manual/methods' },
         { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
         { text: 'Time evolution', link: '/manual/time_dependent' },
         { text: 'Linear response', link: '/manual/linear_response' },

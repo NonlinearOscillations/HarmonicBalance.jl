@@ -5,10 +5,10 @@ using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-# @testset "Code linting" begin
-#     using JET
-#     JET.test_package(HarmonicBalance; target_defined_modules=true)
-# end
+@testset "Code linting" begin
+    using JET
+    JET.test_package(HarmonicBalance; target_defined_modules=true)
+end
 
 @testset "Code quality" begin
     using ExplicitImports, Aqua
@@ -61,6 +61,7 @@ end
 @testset "Computing steady states" begin
     include("parametron.jl")
     include("krylov.jl")
+    include("methods.jl")
 end
 
 @testset "Processing solutions" begin

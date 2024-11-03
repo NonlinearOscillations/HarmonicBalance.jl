@@ -7,7 +7,7 @@ This routine cannot accept a `HarmonicEquation` since there, some time-derivativ
 
 """
 function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)::Matrix
-    @variables T, i
+    Symbolics.@variables T, i
     time = get_independent_variables(diff_eq)[1]
 
     eom = harmonic_ansatz(diff_eq, time)
@@ -20,12 +20,12 @@ function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2):
     # get the response matrix by summing the orders
     M = get_Jacobian(eom.equations, get_variables(eom))
     for n in 1:order
-        M += (i * freq)^n * get_Jacobian(eom.equations, d(get_variables(eom), T, n))
+        M += (im * freq)^n * get_Jacobian(eom.equations, d(get_variables(eom), T, n))
     end
     M = substitute_all(
         M, [var => declare_variable(var_name(var)) for var in get_variables(eom)]
     )
-    return substitute_all(expand_derivatives.(M), i => im)
+    return M
 end
 
 "Get the response matrix corresponding to `res`.
@@ -33,13 +33,17 @@ Any substitution rules not specified in `res` can be supplied in `rules`."
 function ResponseMatrix(res::Result; rules=Dict())
 
     # get the symbolic response matrix
-    @variables Δ
+    Symbolics.@variables Δ
     M = get_response_matrix(res.problem.eom.natural_equation, Δ; order=2)
     M = substitute_all(M, merge(res.fixed_parameters, rules))
     symbols = _free_symbols(res)
-    compiled_M = [Symbolics.build_function(el, cat(symbols, [Δ]; dims=1)) for el in M]
-
-    return ResponseMatrix(eval.(compiled_M), symbols, res.problem.eom.variables)
+    compiled_M = map(M) do el
+        args = cat(symbols, [Δ]; dims=1)
+        f_re = Symbolics.build_function(el.re, args; expression=Val{false})
+        f_im = Symbolics.build_function(el.im, args; expression=Val{false})
+        (args...) -> f_re(args...) + im * f_im(args...)
+    end
+    return ResponseMatrix(compiled_M, symbols, res.problem.eom.variables)
 end
 
 """Evaluate the response matrix `resp` for the steady state `s` at (lab-frame) frequency `Ω`."""

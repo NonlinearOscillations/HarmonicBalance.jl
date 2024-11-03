@@ -62,8 +62,8 @@ Here we reconstruct the results of [Zambon et al., Phys Rev. A 102, 023526 (2020
 ```@example lc
 using HarmonicBalance
 @variables γ F α ω0 F0 η ω J t x(t) y(t);
-eqs = [d(x,t,2) + γ*d(x,t) + ω0^2*x + α*x^3+ 2*J*ω0*(x-y) - F0*cos(ω*t),
-       d(y,t,2) + γ * d(y,t) + ω0^2 * y + α*y^3 + 2*J*ω0*(y-x) - η*F0*cos(ω*t)]
+eqs = [d(x,t,2) + γ*d(x,t) + ω0^2*x + α*x^3 + 2*J*ω0*(x-y) - F0*cos(ω*t),
+       d(y,t,2) + γ*d(y,t) + ω0^2*y + α*y^3 + 2*J*ω0*(y-x) - η*F0*cos(ω*t)]
 diff_eq = DifferentialEquation(eqs, [x,y])
 ```
 
@@ -82,8 +82,7 @@ fixed = (
     J => 154.1e-6,   # coupling term
     α => 3.867e-7,   # Kerr nonlinearity
     ω => 1.4507941,  # pump frequency, resonant with antisymmetric mode (in paper, ħω0 + J)
-    η => -0.08,      # pumping leaking to site 2  (F2 = ηF1)
-    F0 => 0.002       # pump amplitude (overriden in sweeps)
+    η => -0.08     # pumping leaking to site 2  (F2 = ηF1)
 )
 varied = F0 => range(0.002, 0.03, 50)
 
@@ -105,7 +104,7 @@ using OrdinaryDiffEqTsit5
 initial_state = result[1][1]
 
 T = 2e6
-sweep = ParameterSweep(F0 => (0.002, 0.011), (0,T))
+sweep = AdiabaticSweep(F0 => (0.002, 0.011), (0,T))
 
 # start from initial_state, use sweep, total time is 2*T
 time_problem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2*T))

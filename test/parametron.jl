@@ -16,6 +16,8 @@ dEOM = DifferentialEquation(natural_equation + forces, x)
 add_harmonic!(dEOM, x, ω)
 harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
 
+method = HarmonicBalance.WarmUp(; seed=SEED)
+
 @testset "undriven parametron" begin
     fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0)
     varied = ω => range(0.9, 1.1, 20)
@@ -30,11 +32,11 @@ harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
         @test length(prob.variables) == 2
         @test length(prob.parameters) == 9
         @test length(prob.system.parameters) == 9
-        res = get_steady_states(prob, varied, fixed; show_progress=false, seed=SEED)
+        res = get_steady_states(prob, method, varied, fixed; show_progress=false)
     end
 
     @testset "steady states" begin
-        res = get_steady_states(harmonic_eq, varied, fixed; show_progress=false, seed=SEED)
+        res = get_steady_states(harmonic_eq, method, varied, fixed; show_progress=false)
         @test length(res.solutions) == 20
         @test length(res.solutions[1]) == 5
         @test sum(any.(classify_branch(res, "physical"))) == 5
@@ -53,13 +55,13 @@ harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
 
     @testset "implicit jacobian" begin
         p = HarmonicBalance.Problem(harmonic_eq; Jacobian="implicit")
-        res = get_steady_states(p, varied, fixed; show_progress=false, seed=SEED)
+        res = get_steady_states(p, method, varied, fixed; show_progress=false)
     end
 
     @testset "2d sweep" begin # try to run a 2D calculation
         fixed = (Ω => 1.0, γ => 1e-2, F => 0, α => 1.0, η => 0.1, θ => 0, ψ => 0)
         varied = (ω => range(0.9, 1.1, 20), λ => range(0.01, 0.05, 20))
-        res = get_steady_states(harmonic_eq, varied, fixed; show_progress=false, seed=SEED)
+        res = get_steady_states(harmonic_eq, method, varied, fixed; show_progress=false)
     end
 end
 

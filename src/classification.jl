@@ -148,3 +148,11 @@ function filter_result!(res::Result, class::String)
         res.classes[c] = [s[bools] for s in res.classes[c]]
     end
 end
+
+function _classify_default!(result)
+    classify_solutions!(result, _is_physical, "physical")
+    classify_solutions!(result, _is_stable(result), "stable")
+    classify_solutions!(result, _is_Hopf_unstable(result), "Hopf")
+    order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant ones first
+    return classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
+end

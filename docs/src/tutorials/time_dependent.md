@@ -43,10 +43,10 @@ Given $\mathbf{u}(T_0)$, what is $\mathbf{u}(T)$ at future times?
 For constant parameters, a [`HarmonicEquation`](@ref HarmonicBalance.HarmonicEquation) object can be fed into the constructor of [`ODEProblem`](@ref ODEProblem). The syntax is similar to DifferentialEquations.jl :
 ```@example time_dependent
 using OrdinaryDiffEqTsit5
-x0 = [0.; 0.] # initial condition
+u0 = [0.; 0.] # initial condition
 fixed = (ω0 => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3,  α => 1.0, η => 0.3, θ => 0, ω => 1.0) # parameter values
 
-ode_problem = ODEProblem(harmonic_eq, fixed, x0 = x0, timespan = (0,1000))
+ode_problem = ODEProblem(harmonic_eq, fixed, u0 = u0, timespan = (0,1000))
 ```
 OrdinaryDiffEq.jl takes it from here - we only need to use `solve`.
 
@@ -55,36 +55,37 @@ time_evo = solve(ode_problem, Tsit5(), saveat=1.0);
 plot(time_evo, ["u1", "v1"], harmonic_eq)
 ```
 
-Running the above code with `x0 = [0.2, 0.2]` gives the plots
+Running the above code with `u0 = [0.2, 0.2]` gives the plots
 ```@example time_dependent
-x0 = [0.2; 0.2] # initial condition
-ode_problem = remake(ode_problem, u0 = x0)
+u0 = [0.2; 0.2] # initial condition
+ode_problem = remake(ode_problem, u0 = u0)
 time_evo = solve(ode_problem, Tsit5(), saveat=1.0);
 plot(time_evo, ["u1", "v1"], harmonic_eq)
 ```
 
 Let us compare this to the steady state diagram.
 ```@example time_dependent
+fixed = (ω0 => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3,  α => 1.0, η => 0.3, θ => 0)
 varied = ω => range(0.9, 1.1, 100)
 result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
 
-Clearly when evolving from `x0 = [0.,0.]`, the system ends up in the low-amplitude branch 2. With `x0 = [0.2, 0.2]`, the system ends up in branch 3.
+Clearly when evolving from `u0 = [0., 0.]`, the system ends up in the low-amplitude branch 2. With `u0 = [0.2, 0.2]`, the system ends up in branch 3.
 
 ## Adiabatic parameter sweeps
 
 Experimentally, the primary means of exploring the steady state landscape is an adiabatic sweep one or more of the system parameters. This takes the system along a solution branch. If this branch disappears or becomes unstable, a jump occurs.
 
-The object [`ParameterSweep`](@ref ParameterSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
+The object [`AdiabaticSweep`](@ref AdiabaticSweep) specifies a sweep, which is then used as an optional `sweep` keyword in the `ODEProblem` constructor.
 ```@example time_dependent
-sweep = ParameterSweep(ω => (0.9,1.1), (0, 2e4))
+sweep = AdiabaticSweep(ω => (0.9,1.1), (0, 2e4))
 ```
 The sweep linearly interpolates between $\omega = 0.9$ at time 0 and $\omega  = 1.1$ at time 2e4. For earlier/later times, $\omega$ is constant.
 
 Let us now define a new `ODEProblem` which incorporates `sweep` and again use `solve`:
 ```@example time_dependent
-ode_problem = ODEProblem(harmonic_eq, fixed, sweep=sweep, x0=[0.1;0.0], timespan=(0, 2e4))
+ode_problem = ODEProblem(harmonic_eq, fixed, sweep=sweep, u0=[0.1;0.0], timespan=(0, 2e4))
 time_evo = solve(ode_problem, Tsit5(), saveat=100)
 plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```

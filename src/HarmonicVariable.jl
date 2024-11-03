@@ -1,3 +1,44 @@
+"""
+$(TYPEDEF)
+
+Holds a variable stored under `symbol` describing the harmonic `ω` of `natural_variable`.
+
+# Fields
+$(TYPEDFIELDS)
+"""
+mutable struct HarmonicVariable
+    """Symbol of the variable in the HarmonicBalance namespace."""
+    symbol::Num
+    """Human-readable labels of the variable, used for plotting."""
+    name::String
+    """Type of the variable (u or v for quadratures, a for a constant, Hopf for Hopf etc.)"""
+    type::String
+    """The harmonic being described."""
+    ω::Num
+    """The natural variable whose harmonic is being described."""
+    natural_variable::Num
+end
+
+function Base.show(io::IO, hv::HarmonicVariable)
+    return println(
+        io,
+        "Harmonic variable ",
+        string.(hv.symbol) * " for harmonic ",
+        string(hv.ω),
+        " of ",
+        string(hv.natural_variable),
+    )
+end
+
+"""Gives the relation between `var` and the underlying natural variable."""
+function _show_ansatz(var::HarmonicVariable)
+    t = var.natural_variable.val.arguments
+    t = length(t) == 1 ? string(t[1]) : error("more than 1 independent variable")
+    ω = string(var.ω)
+    terms = Dict("u" => "*cos(" * ω * t * ")", "v" => "*sin(" * ω * t * ")", "a" => "")
+    return string(string(var.symbol) * terms[var.type])
+end
+
 # pretty-printing
 Base.display(var::HarmonicVariable) = display(var.name)
 Base.display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name")))
@@ -25,7 +66,9 @@ end
 
 # when HV is used for substitute, substitute its symbol
 function ExprUtils.substitute_all(eq::Union{Num,Equation}, rules::Dict{HarmonicVariable})
-    return substitute(eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules))))
+    return Symbolics.substitute(
+        eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules)))
+    )
 end
 
 function ExprUtils.substitute_all(var::HarmonicVariable, rules)
@@ -75,9 +118,10 @@ function declare_variable(name::String, independent_variable::Num)
 end
 
 "Return the name of a variable (excluding independent variables)"
-function var_name(x::Num)
+function var_name(x::Num)::String
     var = Symbolics._toexpr(x)
-    return var isa Expr ? String(var.args[1]) : String(var)
+    var = var isa Expr ? String(var.args[1]) : String(var)
+    return String(replace(var, r"\\mathtt\{([^}]*)\}" => s"\1"))
+    # ^ remove "\\mathtt{}" from the variable name coming from Symbolics since Symbolics v6.14.1 (Symbolics#1305)
 end
-#  var_name(x::Term) = String(Symbolics._toexpr(x).args[1])
 var_name(x::SymbolicUtils.Sym) = String(x.name)

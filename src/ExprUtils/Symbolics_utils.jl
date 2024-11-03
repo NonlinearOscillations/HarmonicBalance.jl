@@ -46,8 +46,8 @@ $(TYPEDSIGNATURES)
 Perform substitutions in `rules` on `x`.
 `include_derivatives=true` also includes all derivatives of the variables of the keys of `rules`.
 """
-subtype = Union{Num,Equation,BasicSymbolic}
-function substitute_all(x::subtype, rules::Dict; include_derivatives=true)
+Subtype = Union{Num,Equation,BasicSymbolic}
+function substitute_all(x::Subtype, rules::Dict; include_derivatives=true)
     if include_derivatives
         rules = merge(
             rules,
@@ -64,24 +64,10 @@ function substitute_all(dict::Dict, rules::Dict)::Dict
 end
 Collections = Union{Dict,Pair,Vector,OrderedDict}
 substitute_all(v::AbstractArray, rules) = [substitute_all(x, rules) for x in v]
-substitute_all(x::subtype, rules::Collections) = substitute_all(x, Dict(rules))
-# Collections = Union{Dict,OrderedDict}
-# function substitute_all(x, rules::Collections; include_derivatives=true)
-#     if include_derivatives
-#         rules = merge(
-#             rules,
-#             Dict([Differential(var) => Differential(rules[var]) for var in keys(rules)]),
-#         )
-#     end
-#     return substitute(x, rules)
-# end
-# "Variable substitution - dictionary"
-# function substitute_all(dict::Dict, rules::Dict)::Dict
-#     new_keys = substitute_all.(keys(dict), rules)
-#     new_values = substitute_all.(values(dict), rules)
-#     return Dict(zip(new_keys, new_values))
-# end
-# substitute_all(v::AbstractArray, rules::Collections) = [substitute_all(x, rules) for x in v]
+substitute_all(x::Subtype, rules::Collections) = substitute_all(x, Dict(rules))
+function substitute_all(x::Complex{Num}, rules::Collections)
+    return substitute_all(x.re, rules) + im * substitute_all(x.im, rules)
+end
 
 get_independent(x::Num, t::Num) = get_independent(x.val, t)
 function get_independent(x::Complex{Num}, t::Num)
@@ -136,3 +122,14 @@ is_harmonic(x, t) = is_harmonic(Num(x), Num(t))
 
 "Return true if `f` is a function of `var`."
 is_function(f, var) = any(isequal.(get_variables(f), var))
+
+"""
+Counts the number of derivatives of a symbolic variable.
+"""
+function count_derivatives(x::Symbolics.BasicSymbolic)
+    (Symbolics.isterm(x) || Symbolics.issym(x)) ||
+        error("The input is not a single term or symbol")
+    bool = Symbolics.is_derivative(x)
+    return bool ? 1 + count_derivatives(first(arguments(x))) : 0
+end
+count_derivatives(x::Num) = count_derivatives(Symbolics.unwrap(x))

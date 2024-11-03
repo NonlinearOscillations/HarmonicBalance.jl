@@ -8,13 +8,23 @@ using Plots: heatmap, theme_palette, scatter, RGB, cgrad
 using Latexify: Latexify, latexify, @L_str
 using Latexify.LaTeXStrings: LaTeXStrings
 
-using Symbolics: Num, Equation, substitute, unwrap
+using Symbolics: Symbolics, Num, Equation, unwrap
 using LinearAlgebra: norm, eigvals, eigen, eigvecs
 using OrderedCollections: OrderedDict
 
 using HarmonicBalance
 using HarmonicBalance:
+    Result,
+    HarmonicVariable,
+    HarmonicEquation,
+    DifferentialEquation,
+    StateDict,
+    get_variables,
+    get_independent_variables
+
+using HarmonicBalance:
     var_name,
+    d,
     rearrange_standard,
     _remove_brackets,
     expand_derivatives,
@@ -30,6 +40,7 @@ using HarmonicBalance:
     fourier_transform,
     declare_variable,
     is_rearranged
+
 using ..HC_wrapper
 
 include("types.jl")

@@ -1,4 +1,39 @@
-_parse_expression(exp) = exp isa String ? Num(eval(Meta.parse(exp))) : exp
+"""
+$(TYPEDSIGNATURES)
+Return an ordered dictionary specifying all variables and parameters of the solution
+in `result` on `branch` at the position `index`.
+"""
+function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num,ComplexF64}
+
+    # check if the dimensionality of index matches the solutions
+    if length(size(res.solutions)) !== length(index)
+        # if index is a number, use linear indexing
+        index = if length(index) == 1
+            CartesianIndices(res.solutions)[index]
+        else
+            error("Index ", index, " undefined for a solution of size ", size(res.solutions))
+        end
+    else
+        index = CartesianIndex(index)
+    end
+
+    vars = OrderedDict(zip(res.problem.variables, res.solutions[index][branch]))
+
+    # collect the swept parameters required for this call
+    swept_params = OrderedDict(
+        key => res.swept_parameters[key][index[i]] for
+        (i, key) in enumerate(keys(res.swept_parameters))
+    )
+    full_solution = merge(vars, swept_params, res.fixed_parameters)
+
+    return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
+end
+
+function get_single_solution(res::Result, index)
+    return [
+        get_single_solution(res; index=index, branch=b) for b in 1:length(res.solutions[1])
+    ]
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -90,18 +125,95 @@ function _similar(type, res::Result; branches=1:branch_count(res))
     return [type(undef, length(branches)) for k in res.solutions]
 end
 
-## TODO move masks here
+"""
+$(TYPEDSIGNATURES)
+
+Return an array of bools to mark solutions in `res` which fall into `classes` but not `not_classes`.
+Only `branches` are considered.
+"""
+function _get_mask(res, classes, not_classes=[]; branches=1:branch_count(res))
+    classes == "all" && return fill(trues(length(branches)), size(res.solutions))
+    bools = vcat(
+        [res.classes[c] for c in _str_to_vec(classes)],
+        [map(.!, res.classes[c]) for c in _str_to_vec(not_classes)],
+    )
+    #m = map( x -> [getindex(x, b) for b in [branches...]], map(.*, bools...))
+
+    return m = map(x -> x[[branches...]], map(.*, bools...))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Go over a solution and an equally-sized array (a "mask") of booleans.
+true  -> solution unchanged
+false -> changed to NaN (omitted from plotting)
+"""
+function _apply_mask(solns::Array{Vector{ComplexF64}}, booleans)
+    factors = replace.(booleans, 0 => NaN)
+    return map(.*, solns, factors)
+end
+function _apply_mask(solns::Vector{Vector{Vector{ComplexF64}}}, booleans)
+    Nan_vector = NaN .* similar(solns[1][1])
+    new_solns = [
+        [booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])] for
+        i in eachindex(solns)
+    ]
+    return new_solns
+end
 
 ###
 # TRANSFORMATIONS TO THE LAB frame
 ###
 
-function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
+"""
+    to_lab_frame(res::Result, x::Num, times; index::Int, branch::Int)
+    to_lab_frame(soln::OrderedDict, res::Result, nat_var::Num, times)
+
+Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for the natural variable `x` for `times`. You can also compute the velocity by passing `d(x,t)` for the natural variable `x`.
+Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
+"""
+function to_lab_frame(soln::OrderedDict, res::Result, nat_var::Num, times)
+    count_derivatives(nat_var) > 2 &&
+        throw(ArgumentError("Only the first derivative is supported"))
+
+    var = if Symbolics.is_derivative(unwrap(nat_var))
+        wrap(first(Symbolics.arguments(unwrap(nat_var))))
+    else
+        nat_var
+    end
+    vars = filter(x -> isequal(x.natural_variable, var), res.problem.eom.variables)
+
+    return if Symbolics.is_derivative(unwrap(nat_var))
+        _to_lab_frame_velocity(soln, vars, times)
+    else
+        _to_lab_frame(soln, vars, times)
+    end
+end
+function to_lab_frame(res::Result, nat_var::Num, times; index::Int, branch::Int)
+    return to_lab_frame(res[index][branch], res, nat_var, times)
+end
+
+function _to_lab_frame_velocity(soln, vars, times)
+    timetrace = zeros(length(times))
+    for var in vars
+        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
+        ω = real(real(unwrap(substitute_all(var.ω, soln))))
+        if var.type == "u"
+            timetrace .+= -ω * val * sin.(ω * times)
+        elseif var.type == "v"
+            timetrace .+= ω * val * cos.(ω * times)
+        end
+    end
+    return timetrace
+end
+
+function _to_lab_frame(soln, vars, times)::Vector{AbstractFloat}
     timetrace = zeros(length(times))
 
-    for var in res.problem.eom.variables
-        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
-        ω = real(Symbolics.unwrap(substitute_all(var.ω, soln)))
+    for var in vars
+        val = real(substitute_all(unwrap(_remove_brackets(var)), soln))
+        ω = real(unwrap(substitute_all(var.ω, soln)))
         if var.type == "u"
             timetrace .+= val * cos.(ω * times)
         elseif var.type == "v"
@@ -112,38 +224,3 @@ function to_lab_frame(soln, res, times)::Vector{AbstractFloat}
     end
     return timetrace
 end
-
-"""
-    to_lab_frame(res::Result, times; index::Int, branch::Int)
-    to_lab_frame(soln::OrderedDict, res::Result, times)
-
-Transform a solution into the lab frame (i.e., invert the harmonic ansatz) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
-"""
-to_lab_frame(res::Result, times; index::Int, branch::Int) =
-    to_lab_frame(res[index][branch], res, times)
-
-function to_lab_frame_velocity(soln, res, times)
-    timetrace = zeros(length(times))
-
-    for var in res.problem.eom.variables
-        val = real(substitute_all(Symbolics.unwrap(_remove_brackets(var)), soln))
-        ω = real(real(Symbolics.unwrap(substitute_all(var.ω, soln))))
-        if var.type == "u"
-            timetrace .+= -ω * val * sin.(ω * times)
-        elseif var.type == "v"
-            timetrace .+= ω * val * cos.(ω * times)
-        end
-    end
-    return timetrace
-end
-
-"""
-    to_lab_frame_velocity(res::Result, times; index::Int, branch::Int)
-    to_lab_frame_velocity(soln::OrderedDict, res::Result, times)
-
-Transform a solution's velocity into the lab frame (i.e., invert the harmonic ansatz for dx/dt ) for `times`.
-Either extract the solution from `res::Result` by `index` and `branch` or input `soln::OrderedDict` explicitly.
-"""
-to_lab_frame_velocity(res::Result, times; index, branch) =
-    to_lab_frame_velocity(res[index][branch], res, times)

@@ -58,7 +58,6 @@ plot(result; y="v1")
 varied = (ω => range(0.4, 0.6, 100), F => range(1e-6, 0.01, 50))
 fixed = (α => 1.0, β => 2.0, ω0 => 1.0, γ => 0.01)
 
-result = get_steady_states(
-    harmonic_eq2, varied, fixed; threading=true, method=:total_degree
-)
+method = TotalDegree()
+result = get_steady_states(harmonic_eq2, method, varied, fixed)
 plot_phase_diagram(result; class="stable")

@@ -49,5 +49,5 @@ end
 # varied = (ω => range(0.992, 0.995, 2))
 
 # # results
-# result = get_limit_cycles(harmonic_eq, varied, fixed, ω_lc; threading=true)
+# result = get_limit_cycles(harmonic_eq, varied, fixed, ω_lc)
 # end

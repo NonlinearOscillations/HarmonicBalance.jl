@@ -64,7 +64,7 @@ varied = ω => range(0.9, 1.1, 100)
 result = get_steady_states(harmonic_eq, varied, fixed)
 ````
 
-In `get_steady_states`, the default value for the keyword `method=:random_warmup` initiates the homotopy in a generalised version of the harmonic equations, where parameters become random complex numbers. A parameter homotopy then follows to each of the frequency values $\omega$ in sweep. This offers speed-up, but requires to be tested in each scenario againts the method `:total_degree`, which initializes the homotopy in a total degree system (maximum number of roots), but needs to track significantly more homotopy paths and there is slower. The `threading` keyword enables parallel tracking of homotopy paths, and it's set to `false` simply because we are using a single core computer for now.
+In `get_steady_states`, the default method `WarmUp()` initiates the homotopy in a generalised version of the harmonic equations, where parameters become random complex numbers. A parameter homotopy then follows to each of the frequency values $\omega$ in sweep. This offers speed-up, but requires to be tested in each scenario againts the method `TotalDegree`, which initializes the homotopy in a total degree system (maximum number of roots), but needs to track significantly more homotopy paths and there is slower.
 
 After solving the system, we can save the full output of the simulation and the model (e.g. symbolic expressions for the harmonic equations) into a file
 

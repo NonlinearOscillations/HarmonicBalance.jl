@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "parametron.jl"
+EditURL = "../../../examples/parametron.jl"
 ```
 
 # [Parametrically driven resonator](@id parametron)
@@ -100,6 +100,7 @@ The parametrically driven oscillator boasts a stability diagram called "Arnold's
 To perform a 2D sweep over driving frequency $\omega$ and parametric drive strength $\lambda$, we keep `fixed` from before but include 2 variables in `varied`
 
 ````@example parametron
+fixed = (ω₀ => 1.0, γ => 1e-2, F => 1e-3, α => 1.0, η => 0.3)
 varied = (ω => range(0.8, 1.2, 50), λ => range(0.001, 0.6, 50))
 result_2D = get_steady_states(harmonic_eq, varied, fixed);
 nothing #hide

@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "parametric_via_three_wave_mixing.jl"
+EditURL = "../../../examples/parametric_via_three_wave_mixing.jl"
 ```
 
 # Parametric Pumping via Three-Wave Mixing

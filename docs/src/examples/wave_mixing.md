@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "wave_mixing.jl"
+EditURL = "../../../examples/wave_mixing.jl"
 ```
 
 # Three Wave Mixing vs four wave mixing

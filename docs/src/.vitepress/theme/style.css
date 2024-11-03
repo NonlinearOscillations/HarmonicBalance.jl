@@ -28,7 +28,7 @@ https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/var
     Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
   /* Code Snippet font */
-  --vp-font-family-mono: JuliaMono-Regular, monospace;
+  --vp-font-family-mono: "Julia Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
 
 }
 

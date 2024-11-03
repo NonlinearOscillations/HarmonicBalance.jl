@@ -9,7 +9,7 @@ abstract type HarmonicBalanceMethod end
     TotalDegree
 
 The Total Degree homotopy method. Performs a homotopy ``H(x, t) = γ t G(x) + (1-t) F(x)``
-from the trivial polynomial system ``xᵢ^dᵢ +aᵢ`` with the maximal degree ``dᵢ`` determined
+from the trivial polynomial system ``xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ`` determined
 by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem). The method
 guarantees to find all solutions, however, it comes with a high computational cost. See
 [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/totaldegree/)

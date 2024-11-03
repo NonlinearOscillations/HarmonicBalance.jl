@@ -20,7 +20,7 @@ We performe a 2d sweep in the driving frequency $\omega$ and driving strength $\
 fixed = (ω₀ => 1.0, γ => 0.002, α => 1.0)
 varied = (ω => range(0.99, 1.01, 100), λ => range(1e-6, 0.03, 100))
 
-result_2D = get_steady_states(harmonic_eq, varied, fixed, threading=true)
+result_2D = get_steady_states(harmonic_eq, varied, fixed)
 ```
 By default the steady states of the system are classified by four different catogaries:
 * `physical`: Solutions that are physical, i.e., all variables are purely real.

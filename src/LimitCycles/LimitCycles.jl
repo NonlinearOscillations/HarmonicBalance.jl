@@ -6,6 +6,11 @@ using Symbolics: Symbolics, Num, expand_derivatives
 
 using HarmonicBalance
 using HarmonicBalance:
+    HarmonicBalanceMethod,
+    WarmUp,
+    Problem,
+    Result,
+    get_steady_states,
     order_branches!,
     find_branch_order,
     _remove_brackets,
@@ -15,6 +20,7 @@ using HarmonicBalance:
     _is_physical,
     substitute_all,
     var_name
+
 using HarmonicBalance.LinearResponse: get_implicit_Jacobian
 using HarmonicBalance.ExprUtils: get_all_terms
 

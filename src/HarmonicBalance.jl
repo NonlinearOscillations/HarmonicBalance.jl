@@ -13,6 +13,7 @@ using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
 using LinearAlgebra: eigvals
 using Random: Random # for setting seed
+using EndpointRanges: EndpointRanges
 
 using Distances: Distances
 using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilbert
@@ -40,21 +41,25 @@ using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives
 include("extention_functions.jl")
 include("utils.jl")
 include("types.jl")
-
 include("DifferentialEquation.jl")
 include("HarmonicVariable.jl")
 include("HarmonicEquation.jl")
+include("Problem.jl")
+include("Result.jl")
+include("methods.jl")
+
 include("solve_homotopy.jl")
 include("sorting.jl")
 include("classification.jl")
+
 include("saving.jl")
 include("transform_solutions.jl")
 include("plotting_Plots.jl")
 
-export show, *, @variables, d, ComplexF64, Float64, IM_TOL
+export show, *, @variables, d, IM_TOL
+export WarmUp, TotalDegree, Polyhedral
 
-export ParameterRange, ParameterList, StateDict, SteadyState, ParameterVector
-export DifferentialEquation, HarmonicVariable, HarmonicEquation, Problem, Result
+export DifferentialEquation, HarmonicVariable, HarmonicEquation
 export get_steady_states, get_single_solution, get_harmonic_equations, add_harmonic!
 export get_variables, get_independent_variables, classify_branch, classify_solutions!
 export rearrange_standard
@@ -86,14 +91,14 @@ using .FFTWExt
 
 using PrecompileTools: @setup_workload, @compile_workload
 
-@setup_workload begin
-    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-    # precompile file and potentially make loading faster.
-    @compile_workload begin
-        # all calls in this block will be precompiled, regardless of whether
-        # they belong to your package or not (on Julia 1.8 and higher)
-        include("precompilation.jl")
-    end
-end
+# @setup_workload begin
+#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+#     # precompile file and potentially make loading faster.
+#     @compile_workload begin
+#         # all calls in this block will be precompiled, regardless of whether
+#         # they belong to your package or not (on Julia 1.8 and higher)
+#         include("precompilation.jl")
+#     end
+# end
 
 end # module

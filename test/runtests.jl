@@ -61,6 +61,7 @@ end
 @testset "Computing steady states" begin
     include("parametron.jl")
     include("krylov.jl")
+    include("methods.jl")
 end
 
 @testset "Processing solutions" begin

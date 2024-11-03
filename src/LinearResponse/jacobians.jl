@@ -21,7 +21,7 @@ end
 
 " Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "
 function get_Jacobian(diff_eom::DifferentialEquation)
-    @variables T
+    Symbolics.@variables T
     harmonic_eq = get_harmonic_equations(
         diff_eom; slow_time=T, fast_time=first(get_independent_variables(diff_eom))
     )

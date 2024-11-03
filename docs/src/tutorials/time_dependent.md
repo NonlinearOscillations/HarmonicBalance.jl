@@ -65,6 +65,7 @@ plot(time_evo, ["u1", "v1"], harmonic_eq)
 
 Let us compare this to the steady state diagram.
 ```@example time_dependent
+fixed = (ω0 => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3,  α => 1.0, η => 0.3, θ => 0)
 varied = ω => range(0.9, 1.1, 100)
 result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result, "sqrt(u1^2 + v1^2)")

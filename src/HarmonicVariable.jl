@@ -1,3 +1,44 @@
+"""
+$(TYPEDEF)
+
+Holds a variable stored under `symbol` describing the harmonic `ω` of `natural_variable`.
+
+# Fields
+$(TYPEDFIELDS)
+"""
+mutable struct HarmonicVariable
+    """Symbol of the variable in the HarmonicBalance namespace."""
+    symbol::Num
+    """Human-readable labels of the variable, used for plotting."""
+    name::String
+    """Type of the variable (u or v for quadratures, a for a constant, Hopf for Hopf etc.)"""
+    type::String
+    """The harmonic being described."""
+    ω::Num
+    """The natural variable whose harmonic is being described."""
+    natural_variable::Num
+end
+
+function Base.show(io::IO, hv::HarmonicVariable)
+    return println(
+        io,
+        "Harmonic variable ",
+        string.(hv.symbol) * " for harmonic ",
+        string(hv.ω),
+        " of ",
+        string(hv.natural_variable),
+    )
+end
+
+"""Gives the relation between `var` and the underlying natural variable."""
+function _show_ansatz(var::HarmonicVariable)
+    t = var.natural_variable.val.arguments
+    t = length(t) == 1 ? string(t[1]) : error("more than 1 independent variable")
+    ω = string(var.ω)
+    terms = Dict("u" => "*cos(" * ω * t * ")", "v" => "*sin(" * ω * t * ")", "a" => "")
+    return string(string(var.symbol) * terms[var.type])
+end
+
 # pretty-printing
 Base.display(var::HarmonicVariable) = display(var.name)
 Base.display(var::Vector{HarmonicVariable}) = display.(getfield.(var, Symbol("name")))

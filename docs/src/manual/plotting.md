@@ -12,7 +12,7 @@ The function `plot` is multiple-dispatched to plot 1D and 2D datasets.
 In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`. 
 
 ```@docs
-HarmonicBalance.plot(::Result, varags...)
+HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
 ```
 
 

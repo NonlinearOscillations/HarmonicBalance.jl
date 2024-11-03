@@ -7,7 +7,7 @@ This routine cannot accept a `HarmonicEquation` since there, some time-derivativ
 
 """
 function get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)::Matrix
-    @variables T, i
+    Symbolics.@variables T, i
     time = get_independent_variables(diff_eq)[1]
 
     eom = harmonic_ansatz(diff_eq, time)
@@ -33,7 +33,7 @@ Any substitution rules not specified in `res` can be supplied in `rules`."
 function ResponseMatrix(res::Result; rules=Dict())
 
     # get the symbolic response matrix
-    @variables Δ
+    Symbolics.@variables Δ
     M = get_response_matrix(res.problem.eom.natural_equation, Δ; order=2)
     M = substitute_all(M, merge(res.fixed_parameters, rules))
     symbols = _free_symbols(res)

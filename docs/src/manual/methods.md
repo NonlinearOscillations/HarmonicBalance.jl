@@ -14,5 +14,5 @@ Polyhedral
 
 ## Warm Up Method
 ```@docs
-Warmup
+WarmUp
 ```

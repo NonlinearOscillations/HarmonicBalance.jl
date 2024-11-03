@@ -97,16 +97,9 @@ function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc, explici
     return prob
 end
 
-function get_limit_cycles(
-    prob::Problem, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...
-)
-    result = get_steady_states(prob, method, swept, fixed; kwargs...)
-    _classify_limit_cycles!(result, ω_lc)
-    return result
-end
-
 """
-    get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; kwargs...)
+    get_limit_cycles(
+        eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...)
 
 Variant of `get_steady_states` for a limit cycle problem characterised by a Hopf frequency (usually called ω_lc)
 
@@ -141,6 +134,13 @@ function get_limit_cycles(
     swept = filter(x -> length(x[2]) > 1, pairs)
     fixed = filter(x -> length(x[2]) == 1, pairs)
     return get_limit_cycles(eom, method, swept, fixed, ω_lc; kwargs...)
+end
+function get_limit_cycles(
+    prob::Problem, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...
+)
+    result = get_steady_states(prob, method, swept, fixed; kwargs...)
+    _classify_limit_cycles!(result, ω_lc)
+    return result
 end
 
 # if abs(ω_lc) < tol, set all classifications to false

@@ -50,7 +50,7 @@ harmonic_eq2 = get_krylov_equations(diff_eq; order=2)
 varied = (ω => range(0.4, 1.1, 500))
 fixed = (α => 1.0, β => 2.0, ω0 => 1.0, γ => 0.001, F => 0.005)
 
-result = get_steady_states(harmonic_eq2, varied, fixed; threading=true)
+result = get_steady_states(harmonic_eq2, varied, fixed)
 plot(result; y="v1")
 
 #

@@ -10,7 +10,7 @@ Once defined, a `Problem` can be solved for a set of input parameters using `get
 ```@docs
 Problem
 get_steady_states
-Result
+HarmonicBalance.Result
 ```
 
 

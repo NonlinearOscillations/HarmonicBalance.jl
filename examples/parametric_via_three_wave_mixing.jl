@@ -22,7 +22,7 @@ harmonic_eq.equations
 varied = (ω => range(0.99, 1.1, 200)) # range of parameter values
 fixed = (α => 1.0, β => 1.0, ω0 => 1.0, γ => 0.005, F => 0.0025) # fixed parameters
 
-result = get_steady_states(harmonic_eq, varied, fixed; threading=true)
+result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result; y="u1^2+v1^2")
 
 # If we set the cubic nonlinearity to zero, we recover the driven damped harmonic oscillator. Indeed, thefirst order the quadratic nonlinearity has no affect on the system.
@@ -30,7 +30,7 @@ plot(result; y="u1^2+v1^2")
 varied = (ω => range(0.99, 1.1, 100))
 fixed = (α => 0.0, β => 1.0, ω0 => 1.0, γ => 0.005, F => 0.0025)
 
-result = get_steady_states(harmonic_eq, varied, fixed; threading=true)
+result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result; y="u1^2+v1^2")
 
 # ## 2nd order Krylov expansion

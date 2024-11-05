@@ -8,8 +8,8 @@ abstract type HarmonicBalanceMethod end
 """
     TotalDegree
 
-The Total Degree homotopy method. Performs a homotopy ``H(x, t) = γ t G(x) + (1-t) F(x)``
-from the trivial polynomial system ``xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ`` determined
+The Total Degree homotopy method performs a homotopy ``H(x, t) = γ t G(x) + (1-t) F(x)``
+from the trivial polynomial system ``F(x) =xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ`` determined
 by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem). The method
 guarantees to find all solutions, however, it comes with a high computational cost. See
 [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/totaldegree/)
@@ -36,10 +36,10 @@ end
 """
     Polyhedral
 
-The Polyhedral homotopy method. This method constructs a homotopy based on the polyhedral
+The Polyhedral homotopy method constructs a homotopy based on the polyhedral
 structure of the polynomial system. It is more efficient than the Total Degree method for
 sparse systems, meaning most of the coefficients are zero. It can be especially useful if
-you don't need to find the zero solutions (`only_non_zero = true`), resulting in speed up.
+you don't need to find the zero solutions (`only_non_zero = true`), resulting in a speed up.
 See [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/polyhedral/)
 for more information.
 
@@ -64,9 +64,9 @@ end
 """
     WarmUp
 
-The Warm Up method. This method prepares a warmup system using the parameter at `index`
-perturbed by `perturbation_size` and performs a homotopy using the warmup system to all other
-systems in the parameter sweep. It is very efficient for systems with less bifurcation in the
+The Warm Up method prepares a warmup system with the Total Degree method using the parameter at `index`
+perturbed by `perturbation_size`. The warmup system is used to perform a homotopy using all other
+systems in the parameter sweep. It is very efficient for systems with minimal bifurcation in the
 parameter sweep. The Warm Up method does not guarantee to find all solutions. See
 [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/many-systems/)
 for more information.
@@ -77,7 +77,7 @@ $(TYPEDFIELDS)
 Base.@kwdef struct WarmUp <: HarmonicBalanceMethod
     """Size of the perturbation."""
     perturbation_size::ComplexF64 = 1e-6 + 1e-6 * im
-    """Index for the endpoint."""
+    """Index for the parameter set used as start system."""
     index::Union{Int,EndpointRanges.Endpoint} = EndpointRanges.iend ÷ 2
     """Boolean indicating if threading is enabled."""
     thread::Bool = Threads.nthreads() > 1

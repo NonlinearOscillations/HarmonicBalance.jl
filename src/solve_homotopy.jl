@@ -233,33 +233,24 @@ end
 function _get_raw_solution(
     problem::Problem, method::Union{TotalDegree,Polyhedral}, parameter_values; show_progress
 )
-    result_full = Array{Vector{Any},1}(undef, length(parameter_values))
-    if show_progress
-        bar = Progress(
-            length(parameter_values);
-            dt=1,
-            desc="Solving via $method homotopy ...",
-            barlen=50,
-        )
-    end
-    for i in eachindex(parameter_values) # do NOT thread this
-        p = parameter_values[i]
-        show_progress ? ProgressMeter.next!(bar) : nothing
-        result_full[i] = [
-            HC.solve(
-                problem.system;
-                start_system=method_symbol(method),
-                target_parameters=p,
-                show_progress=false,
-                alg_default_options(method)...,
-                alg_specific_options(method)...,
-            ),
-            p,
-        ]
-    end
-
-    # reshape back to the original shape
-    return reshape(result_full, size(parameter_values)...)
+    generic_parameters = randn(ComplexF64, length(parameter_values[1]))
+    R0 = HC.solve(
+        problem.system;
+        start_system=method_symbol(method),
+        target_parameters=generic_parameters,
+        threading=thread(method),
+        show_progress=show_progress,
+        alg_default_options(method)...,
+        alg_specific_options(method)...,
+    )
+    return HC.solve(
+        problem.system,
+        HC.solutions(R0);
+        start_parameters = generic_parameters,
+        target_parameters=parameter_values,
+        show_progress=show_progress,
+        alg_default_options(method)...,
+    )
 end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."

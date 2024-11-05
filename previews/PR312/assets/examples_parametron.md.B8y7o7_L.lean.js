@@ -37,17 +37,17 @@ import{_ as n,c as e,j as t,a as s,a4 as Q,o as i}from"./chunks/framework.B_61Gg
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">varied </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (ω </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=&gt;</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> range</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0.8</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">1.2</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">50</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">), λ </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=&gt;</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> range</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0.001</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0.6</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">50</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">))</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">result_2D </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> get_steady_states</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(harmonic_eq, varied, fixed);</span></span></code></pre></div><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span></span></span>
 <span class="line"><span>Solving for 2500 parameters...  50%|██████████          |  ETA: 0:00:01\x1B[K</span></span>
-<span class="line"><span>  # parameters solved:  1251\x1B[K</span></span>
-<span class="line"><span>  # paths tracked:      6255\x1B[K</span></span>
+<span class="line"><span>  # parameters solved:  1256\x1B[K</span></span>
+<span class="line"><span>  # paths tracked:      6280\x1B[K</span></span>
 <span class="line"><span>\x1B[A</span></span>
 <span class="line"><span>\x1B[A</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>\x1B[K\x1B[A</span></span>
 <span class="line"><span>\x1B[K\x1B[A</span></span>
-<span class="line"><span>Solving for 2500 parameters...  78%|███████████████▊    |  ETA: 0:00:00\x1B[K</span></span>
-<span class="line"><span>  # parameters solved:  1961\x1B[K</span></span>
-<span class="line"><span>  # paths tracked:      9805\x1B[K</span></span>
+<span class="line"><span>Solving for 2500 parameters...  79%|███████████████▉    |  ETA: 0:00:00\x1B[K</span></span>
+<span class="line"><span>  # parameters solved:  1977\x1B[K</span></span>
+<span class="line"><span>  # paths tracked:      9885\x1B[K</span></span>
 <span class="line"><span>\x1B[A</span></span>
 <span class="line"><span>\x1B[A</span></span>
 <span class="line"><span></span></span>

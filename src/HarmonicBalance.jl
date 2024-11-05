@@ -13,7 +13,6 @@ using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
 using LinearAlgebra: eigvals
 using Random: Random # for setting seed
-using EndpointRanges: EndpointRanges
 
 using Distances: Distances
 using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilbert

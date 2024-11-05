@@ -4,7 +4,7 @@
 Once a `DifferentialEquation` is defined and its harmonics specified, one can extract the harmonic equations using `get_harmonic_equations`, which itself is composed of the subroutines `harmonic_ansatz`, `slow_flow`, `fourier_transform!` and `drop_powers`. 
 
 The harmonic equations use an additional time variable specified as `slow_time` in `get_harmonic_equations`. This is essentially a label distinguishing the time dependence of the harmonic variables (expected to be slow)
-from that of the oscillating terms (expeted to be fast). When the equations are Fourier-transformed to remove oscillating terms, `slow_time` is treated as a constant. Such an approach is exact when looking for steady states. 
+from that of the oscillating terms (expected to be fast). When the equations are Fourier-transformed to remove oscillating terms, `slow_time` is treated as a constant. Such an approach is exact when looking for steady states. 
 
 ```@docs
 get_harmonic_equations

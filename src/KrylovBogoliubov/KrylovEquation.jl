@@ -45,7 +45,7 @@ function get_krylov_equations(
     diff_eom::DifferentialEquation; order, fast_time=nothing, slow_time=nothing
 )
     order < 1 && error("The order of the Krylov-Bogoliubov method must be at least 1!")
-    order > 2 && error("Krylov-Bogoliubov implemetation only supports up to second order!")
+    order > 2 && error("Krylov-Bogoliubov implementation only supports up to second order!")
 
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
@@ -53,14 +53,14 @@ function get_krylov_equations(
     harmonics = values(diff_eom.harmonics)
     all(isempty.(harmonics)) && error("No harmonics specified!")
     any(isempty.(harmonics)) &&
-        error("Krylov-Bogoliubov method needs all vairables to have a single harmonic!")
+        error("Krylov-Bogoliubov method needs all variables to have a single harmonic!")
     any(length.(harmonics) .> 1) &&
         error("Krylov-Bogoliubov method only supports a single harmonic!")
 
-    deom = deepcopy(diff_eom)
-    !is_rearranged_standard(deom) ? rearrange_standard!(deom) : nothing
-    first_order_transform!(deom, fast_time)
-    eom = van_der_Pol(deom, fast_time)
+    dEOM = deepcopy(diff_eom)
+    !is_rearranged_standard(dEOM) ? rearrange_standard!(dEOM) : nothing
+    first_order_transform!(dEOM, fast_time)
+    eom = van_der_Pol(dEOM, fast_time)
 
     eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=2)
 

@@ -61,7 +61,7 @@ function HarmonicBalance.Problem(
     system = HomotopyContinuation.System(eqs_HC; variables=conv_vars, parameters=conv_para)
     J = HarmonicBalance.get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
     return Problem(variables, parameters, system, J)
-end # TODO is this funciton still needed/used?
+end # TODO is this function still needed/used?
 
 function System(eom::HarmonicEquation)
     eqs = expand_derivatives.(_remove_brackets(eom))

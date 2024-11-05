@@ -15,7 +15,7 @@ add_harmonic!(diff_eq, x, ω);
 harmonic_eq = get_harmonic_equations(diff_eq)
 ```
 
-We performe a 2d sweep in the driving frequency $\omega$ and driving strength $\lambda$:
+We perform a 2d sweep in the driving frequency $\omega$ and driving strength $\lambda$:
 ```@example classification
 fixed = (ω₀ => 1.0, γ => 0.002, α => 1.0)
 varied = (ω => range(0.99, 1.01, 100), λ => range(1e-6, 0.03, 100))
@@ -39,7 +39,7 @@ plot(result_2D, y="√(u1^2+v1^2)", cut=λ => 0.01, class="stable") |> display
 ```@example classification
 get_single_solution(result_2D; branch=1, index=(1, 1))
 ```
-This solution becomes stable again outside the green lobe. Also called Mathieu lobe. Indeed, we can classify the zero amplitude solution by adding an extra catagory as a class:
+This solution becomes stable again outside the green lobe. Also called Mathieu lobe. Indeed, we can classify the zero amplitude solution by adding an extra category as a class:
 ```@example classification
 classify_solutions!(result_2D, "sqrt(u1^2 + v1^2) < 0.001", "zero")
 result_2D

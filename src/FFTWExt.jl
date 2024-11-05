@@ -5,7 +5,7 @@ using FFTW: fft, fftfreq, fftshift
 using Peaks: Peaks
 
 """
-Fourier transform the timeseries of a simulation in the rotating frame and calculate the quadratures and freqeuncies in the non-rotating frame.
+Fourier transform the timeseries of a simulation in the rotating frame and calculate the quadratures and frequencies in the non-rotating frame.
 """
 function FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     "Input: solution object of DifferentialEquation (positions array and corresponding time)

@@ -72,7 +72,7 @@ function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
     a_idx = 1
 
     for nvar in get_variables(diff_eom) # sum over natural variables
-        to_substitute = Num(0) # combine all the subtitution rules for var
+        to_substitute = Num(0) # combine all the substitution rules for var
         for ω in diff_eom.harmonics[nvar]
             if !isequal(ω, 0) # nonzero harmonic - create u,v
                 rule_u, hvar_u = _create_harmonic_variable(

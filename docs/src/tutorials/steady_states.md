@@ -45,7 +45,7 @@ Now everything is ready to crank the handle. `get_steady_states` solves our `har
 ```@example steady_state
 result = get_steady_states(harmonic_eq, varied, fixed)
 ```
-The algorithm has found 3 solution branches in total (out of the [hypothetically admissible](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem) ``3^{2} = 9``). All of these are real -- and thefore physically observable -- for at least some values of ``\omega``. Only 2 branches are stable under infinitesimal perturbations. The "Classes" are boolean labels classifying each solution point, which may be used to select results for plotting.
+The algorithm has found 3 solution branches in total (out of the [hypothetically admissible](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem) ``3^{2} = 9``). All of these are real -- and therefore physically observable -- for at least some values of ``\omega``. Only 2 branches are stable under infinitesimal perturbations. The "Classes" are boolean labels classifying each solution point, which may be used to select results for plotting.
 
 We now want to visualize the results. Here we plot the solution amplitude, ``\sqrt{U^2 + V^2}`` against the drive frequency ``\omega``: 
 ```@example steady_state

@@ -47,7 +47,7 @@ So far, we have largely focused on finding and analysing steady states, i.e., fi
 \end{equation}
 ```
 
-Fixed points are however merely a subset of possible solutions of Eq. \eqref{eq:harmeqfull} -- strictly speaking, solutions where $\mathbf{u}(T)$ remains time-dependent are allowed. These are quite unusual, since $\bar{\mathbf{F}} (\mathbf{u})$ [is by construction time-independent](@ref intro_hb) and Eq. \eqref{eq:harmeqfull} thus possesses _continuous time-translation symmetry_. The appearance of explicitly time-dependent solutions then consitutes spontaneous time-translation symmetry breaking.
+Fixed points are however merely a subset of possible solutions of Eq. \eqref{eq:harmeqfull} -- strictly speaking, solutions where $\mathbf{u}(T)$ remains time-dependent are allowed. These are quite unusual, since $\bar{\mathbf{F}} (\mathbf{u})$ [is by construction time-independent](@ref intro_hb) and Eq. \eqref{eq:harmeqfull} thus possesses _continuous time-translation symmetry_. The appearance of explicitly time-dependent solutions then constitutes spontaneous time-translation symmetry breaking.
 
 Such solutions, known as _limit cycles_, typically appear as closed periodic trajectories of the harmonic variables $\mathbf{u}(T)$. The simplest way to numerically characterise them is a time-dependent simulation, using a steady-state diagram as a guide.
 

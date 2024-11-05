@@ -30,7 +30,7 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 
 varied = (ω => range(0.9, 1.2, 200)) # range of parameter values
 fixed = (α => 1.0, β => 0.0, ω0 => 1.0, γ => 0.005, F => 0.0025) # fixed parameters
-result = get_steady_states(harmonic_eq, varied, fixed; threading=true)# compute steady states
+result = get_steady_states(harmonic_eq, varied, fixed)# compute steady states
 
 p1 = plot(result; y="√(u1^2+v1^2)", legend=:best)
 p2 = plot(result; y="√(u2^2+v2^2)", legend=:best, ylims=(-0.1, 0.1))
@@ -46,7 +46,7 @@ plot(p1, p2, p3; layout=(1, 3), size=(900, 300), margin=5mm)
 
 varied = (ω => range(0.9, 1.2, 200))
 fixed = (α => 0.0, β => 1.0, ω0 => 1.0, γ => 0.005, F => 0.0025)
-result = get_steady_states(harmonic_eq, varied, fixed; threading=true)
+result = get_steady_states(harmonic_eq, varied, fixed)
 
 p1 = plot(result; y="√(u1^2+v1^2)", legend=:best)
 p2 = plot(result; y="√(u2^2+v2^2)", legend=:best, ylims=(-0.1, 0.1))
@@ -62,7 +62,7 @@ plot(p1, p2, p3; layout=(1, 3), size=(900, 300), margin=5mm)
 
 varied = (ω => range(0.9, 1.2, 200))
 fixed = (α => 1.0, β => 1.0, ω0 => 1.0, γ => 0.005, F => 0.0025)
-result = get_steady_states(harmonic_eq, varied, fixed; threading=true)
+result = get_steady_states(harmonic_eq, varied, fixed)
 
 p1 = plot(result; y="√(u1^2+v1^2)", legend=:best)
 p2 = plot(result; y="√(u2^2+v2^2)", legend=:best, ylims=(-0.1, 0.1))

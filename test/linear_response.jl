@@ -12,7 +12,7 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 fixed = (α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-6)
 varied = ω => range(0.9, 1.1, 10)
 
-result = get_steady_states(harmonic_eq, varied, fixed; show_progress=false, seed=SEED)
+result = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
 
 @testset "first order" begin
     plot_linear_response(
@@ -51,9 +51,7 @@ end
 
         fixed = (γ => 0.008, ω0 => 1.0, α => 1.0, F => 0.0, ωₚ => 1.0, λ => 0.016)
         varied = (ω => range(0.995, 1.005, 20))
-        result_ω = get_steady_states(
-            harmonic_eq, varied, fixed; show_progress=false, seed=SEED
-        )
+        result_ω = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
         @test_throws ErrorException plot_eigenvalues(result_ω; branch=1)
     end
 end

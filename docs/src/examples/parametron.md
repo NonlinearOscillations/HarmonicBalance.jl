@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "parametron.jl"
+EditURL = "../../../examples/parametron.jl"
 ```
 
 # [Parametrically driven resonator](@id parametron)
@@ -64,7 +64,7 @@ varied = ω => range(0.9, 1.1, 100)
 result = get_steady_states(harmonic_eq, varied, fixed)
 ````
 
-In `get_steady_states`, the default value for the keyword `method=:random_warmup` initiates the homotopy in a generalised version of the harmonic equations, where parameters become random complex numbers. A parameter homotopy then follows to each of the frequency values $\omega$ in sweep. This offers speed-up, but requires to be tested in each scenario againts the method `:total_degree`, which initializes the homotopy in a total degree system (maximum number of roots), but needs to track significantly more homotopy paths and there is slower. The `threading` keyword enables parallel tracking of homotopy paths, and it's set to `false` simply because we are using a single core computer for now.
+In `get_steady_states`, the default method `WarmUp()` initiates the homotopy in a generalised version of the harmonic equations, where parameters become random complex numbers. A parameter homotopy then follows to each of the frequency values $\omega$ in sweep. This offers speed-up, but requires to be tested in each scenario againts the method `TotalDegree`, which initializes the homotopy in a total degree system (maximum number of roots), but needs to track significantly more homotopy paths and there is slower.
 
 After solving the system, we can save the full output of the simulation and the model (e.g. symbolic expressions for the harmonic equations) into a file
 
@@ -100,6 +100,7 @@ The parametrically driven oscillator boasts a stability diagram called "Arnold's
 To perform a 2D sweep over driving frequency $\omega$ and parametric drive strength $\lambda$, we keep `fixed` from before but include 2 variables in `varied`
 
 ````@example parametron
+fixed = (ω₀ => 1.0, γ => 1e-2, F => 1e-3, α => 1.0, η => 0.3)
 varied = (ω => range(0.8, 1.2, 50), λ => range(0.001, 0.6, 50))
 result_2D = get_steady_states(harmonic_eq, varied, fixed);
 nothing #hide

@@ -45,7 +45,7 @@ function get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num})
 end
 
 """
-Code folllows for an implicit treatment of the Jacobian. Usually we rearrange the linear response equations to have time-derivatives on one side.
+Code follows for an implicit treatment of the Jacobian. Usually we rearrange the linear response equations to have time-derivatives on one side.
     This may be extremely costly. Implicit evaluation means only solving the equations AFTER numerical values have been plugged in, giving
     a constant time cost per run.
 """

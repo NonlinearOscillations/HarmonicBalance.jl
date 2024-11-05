@@ -218,7 +218,7 @@ function plot2D_cut(
     end
 
     cut_par, cut_value = cut
-    # compare strings beacuse type Num cannot be compared
+    # compare strings because type Num cannot be compared
     swept_pars = res.swept_parameters.keys
     x_index = findfirst(sym -> string(sym) != string(cut_par), swept_pars)
     isnothing(x_index) && error("The variable $cut_par was not swept over.")

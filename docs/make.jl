@@ -5,7 +5,7 @@ using Documenter
 using DocumenterVitepress
 using DocumenterCitations
 
-# extentions
+# extensions
 using ModelingToolkit
 using OrdinaryDiffEqTsit5
 using SteadyStateDiffEq

@@ -108,7 +108,7 @@ function ModelingToolkit.NonlinearProblem(
     eom::HarmonicEquation, u0, p::ParameterList; in_place=true, kwargs...
 )
     ss_prob = SteadyStateProblem(eom, u0, p::ParameterList; in_place=in_place, kwargs...)
-    return NonlinearProblem(ss_prob) # gives warning of some internal deprication
+    return NonlinearProblem(ss_prob)
 end
 
 function ModelingToolkit.SteadyStateProblem(

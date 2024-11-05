@@ -214,7 +214,7 @@ end
 """
     plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod::Float64 = 1.0, show_progress=true, kwargs...)
 
-Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency seperately identifiable.
+Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency separately identifiable.
 
 Any kwargs are fed to Plots' gr().
 

@@ -1,6 +1,6 @@
 # [Limit cycles](@id limit_cycles_bg)
 
-We explain how HarmonicBalance.jl uses a new technique to find limit cycles in systems of nonlinear ODEs. For a more in depth overwiew see Chapter 6 in [Jan Košata's PhD theses](https://www.doi.org/10.3929/ethz-b-000589190) or [del_Pino_2024](https://www.doi.org/10.1103/PhysRevResearch.6.03318). 
+We explain how HarmonicBalance.jl uses a new technique to find limit cycles in systems of nonlinear ODEs. For a more in depth overview see Chapter 6 in [Jan Košata's PhD theses](https://www.doi.org/10.3929/ethz-b-000589190) or [del_Pino_2024](https://www.doi.org/10.1103/PhysRevResearch.6.03318). 
 
 ## Limit cycles from a Hopf bifurcation
 The end product of the [harmonic balance technique](@ref intro_hb) are what we call the harmonic equations, i.e., first-order ODEs for the harmonic variables $\mathbf{U}(T)$:

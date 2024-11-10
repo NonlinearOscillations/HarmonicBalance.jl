@@ -2,11 +2,11 @@
 @variables x(t)
 
 natural_equation =
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    Ω^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
+  d(d(x, t), t) +
+  γ * d(x, t) +
+  Ω^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
+  α * x^3 +
+  η * d(x, t) * x^2
 forces = F * cos(ω * t + θ)
 dEOM = DifferentialEquation(natural_equation + forces, x)
 add_harmonic!(dEOM, x, ω)

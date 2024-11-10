@@ -2,27 +2,27 @@ using HarmonicBalance
 import HarmonicBalance.LinearResponse.plot_linear_response
 
 @testset "van der Pol oscillator " begin
-    @variables ω_lc, t, ω0, x(t), μ
+  @variables ω_lc, t, ω0, x(t), μ
 
-    natural_equation = d(d(x, t), t) - μ * (1 - x^2) * d(x, t) + x
-    dEOM = DifferentialEquation(natural_equation, x)
+  natural_equation = d(d(x, t), t) - μ * (1 - x^2) * d(x, t) + x
+  dEOM = DifferentialEquation(natural_equation, x)
 
-    # order matters for 1*ω_lc gauge to be fixed
-    add_harmonic!(dEOM, x, [ω_lc, 3 * ω_lc])
+  # order matters for 1*ω_lc gauge to be fixed
+  add_harmonic!(dEOM, x, [ω_lc, 3 * ω_lc])
 
-    harmonic_eq = get_harmonic_equations(dEOM)
-    HarmonicBalance.LimitCycles._choose_fixed(harmonic_eq, ω_lc)
+  harmonic_eq = get_harmonic_equations(dEOM)
+  HarmonicBalance.LimitCycles._choose_fixed(harmonic_eq, ω_lc)
 
-    fixed = ()
-    varied = μ => range(2, 3, 2)
-    method = HarmonicBalance.WarmUp(; seed=SEED)
-    result = get_limit_cycles(harmonic_eq, method, varied, fixed, ω_lc; show_progress=false)
+  fixed = ()
+  varied = μ => range(2, 3, 2)
+  method = HarmonicBalance.WarmUp(; seed=SEED)
+  result = get_limit_cycles(harmonic_eq, method, varied, fixed, ω_lc; show_progress=false)
 
-    @test sum(any.(classify_branch(result, "stable"))) == 4
-    @test sum(any.(classify_branch(result, "unique_cycle"))) == 1
+  @test sum(any.(classify_branch(result, "stable"))) == 4
+  @test sum(any.(classify_branch(result, "unique_cycle"))) == 1
 
-    plot(result; y="ω_lc")
-    plot_linear_response(result, x; branch=1, Ω_range=range(2.4, 2.6, 2), order=1)
+  plot(result; y="ω_lc")
+  plot_linear_response(result, x; branch=1, Ω_range=range(2.4, 2.6, 2), order=1)
 end
 
 # takes to long

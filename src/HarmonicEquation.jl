@@ -8,48 +8,48 @@ Holds a set of algebraic equations governing the harmonics of a `DifferentialEqu
 $(TYPEDFIELDS)
 """
 mutable struct HarmonicEquation
-    """A set of equations governing the harmonics."""
-    equations::Vector{Equation}
-    """A set of variables describing the harmonics."""
-    variables::Vector{HarmonicVariable}
-    """The parameters of the equation set."""
-    parameters::Vector{Num}
-    "The natural equation (before the harmonic ansatz was used)."
-    natural_equation::DifferentialEquation
+  """A set of equations governing the harmonics."""
+  equations::Vector{Equation}
+  """A set of variables describing the harmonics."""
+  variables::Vector{HarmonicVariable}
+  """The parameters of the equation set."""
+  parameters::Vector{Num}
+  "The natural equation (before the harmonic ansatz was used)."
+  natural_equation::DifferentialEquation
 
-    # use a self-referential constructor with _parameters
-    function HarmonicEquation(equations, variables, nat_eq)
-        return (x = new(equations, variables, Vector{Num}([]), nat_eq);
-        x.parameters = _parameters(x);
-        x)
-    end
-    function HarmonicEquation(equations, variables, parameters, natural_equation)
-        return new(equations, variables, parameters, natural_equation)
-    end
+  # use a self-referential constructor with _parameters
+  function HarmonicEquation(equations, variables, nat_eq)
+    return (x = new(equations, variables, Vector{Num}([]), nat_eq);
+    x.parameters = _parameters(x);
+    x)
+  end
+  function HarmonicEquation(equations, variables, parameters, natural_equation)
+    return new(equations, variables, parameters, natural_equation)
+  end
 end
 
 function Base.show(io::IO, eom::HarmonicEquation)
-    println(io, "A set of ", length(eom.equations), " harmonic equations")
-    println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
-    println(io, "Parameters: ", join(string.(eom.parameters), ", "))
-    println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
-    println(io, "\nHarmonic equations:")
-    return [println(io, "\n", eq) for eq in eom.equations]
+  println(io, "A set of ", length(eom.equations), " harmonic equations")
+  println(io, "Variables: ", join(string.(get_variables(eom)), ", "))
+  println(io, "Parameters: ", join(string.(eom.parameters), ", "))
+  println(io, "\nHarmonic ansatz: ", _show_ansatz(eom))
+  println(io, "\nHarmonic equations:")
+  return [println(io, "\n", eq) for eq in eom.equations]
 end
 
 """Gives the full harmonic ansatz used to construct `eom`."""
 function _show_ansatz(eom::HarmonicEquation)
-    output = ""
-    vars = unique(getfield.(eom.variables, :natural_variable))
-    for nat_var in vars
-        # the Hopf variable (limit cycle frequency) does not contribute a term
-        harm_vars = filter(
-            x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables
-        )
-        ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
-        output *= "\n" * string(nat_var) * " = " * ansatz
-    end
-    return output
+  output = ""
+  vars = unique(getfield.(eom.variables, :natural_variable))
+  for nat_var in vars
+    # the Hopf variable (limit cycle frequency) does not contribute a term
+    harm_vars = filter(
+      x -> isequal(nat_var, x.natural_variable) && x.type !== "Hopf", eom.variables
+    )
+    ansatz = join([_show_ansatz(var) for var in harm_vars], " + ")
+    output *= "\n" * string(nat_var) * " = " * ansatz
+  end
+  return output
 end
 
 Base.show(eom::HarmonicEquation) = show_fields(eom)
@@ -57,68 +57,69 @@ Base.show(eom::HarmonicEquation) = show_fields(eom)
 """
     harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian")
 
-Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the time variable.
-For each harmonic of each variable, instance(s) of `HarmonicVariable` are automatically created and named.
-
+Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the
+time variable. For each harmonic of each variable, instance(s) of `HarmonicVariable` are
+automatically created and named.
 """
 function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
-    !is_harmonic(diff_eom, time) &&
-        error("The differential equation is not harmonic in ", time, " !")
-    eqs = collect(values(diff_eom.equations))
-    rules, vars = Dict(), []
+  !is_harmonic(diff_eom, time) &&
+    error("The differential equation is not harmonic in ", time, " !")
+  eqs = collect(values(diff_eom.equations))
+  rules, vars = Dict(), []
 
-    # keep count to label new variables
-    uv_idx = 1
-    a_idx = 1
+  # keep count to label new variables
+  uv_idx = 1
+  a_idx = 1
 
-    for nvar in get_variables(diff_eom) # sum over natural variables
-        to_substitute = Num(0) # combine all the substitution rules for var
-        for ω in diff_eom.harmonics[nvar]
-            if !isequal(ω, 0) # nonzero harmonic - create u,v
-                rule_u, hvar_u = _create_harmonic_variable(
-                    nvar, ω, time, "u"; new_symbol="u" * string(uv_idx)
-                )
-                rule_v, hvar_v = _create_harmonic_variable(
-                    nvar, ω, time, "v"; new_symbol="v" * string(uv_idx)
-                )
-                rule = rule_u + rule_v
-                uv_idx += 1
-                push!(vars, hvar_u, hvar_v)
-            else # zero harmonic - create a
-                rule, hvar = _create_harmonic_variable(
-                    nvar, ω, time, "a"; new_symbol="a" * string(a_idx)
-                )
-                a_idx += 1
-                push!(vars, hvar)
-            end
-            to_substitute += rule
-        end
-
-        rules[nvar] = to_substitute # total sub rule for nvar
+  for nvar in get_variables(diff_eom) # sum over natural variables
+    to_substitute = Num(0) # combine all the substitution rules for var
+    for ω in diff_eom.harmonics[nvar]
+      if !isequal(ω, 0) # nonzero harmonic - create u,v
+        rule_u, hvar_u = _create_harmonic_variable(
+          nvar, ω, time, "u"; new_symbol="u" * string(uv_idx)
+        )
+        rule_v, hvar_v = _create_harmonic_variable(
+          nvar, ω, time, "v"; new_symbol="v" * string(uv_idx)
+        )
+        rule = rule_u + rule_v
+        uv_idx += 1
+        push!(vars, hvar_u, hvar_v)
+      else # zero harmonic - create a
+        rule, hvar = _create_harmonic_variable(
+          nvar, ω, time, "a"; new_symbol="a" * string(a_idx)
+        )
+        a_idx += 1
+        push!(vars, hvar)
+      end
+      to_substitute += rule
     end
-    eqs = substitute_all(eqs, rules)
-    return HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), diff_eom)
+
+    rules[nvar] = to_substitute # total sub rule for nvar
+  end
+  eqs = substitute_all(eqs, rules)
+  return HarmonicEquation(eqs, Vector{HarmonicVariable}(vars), diff_eom)
 end
 
 function slow_flow!(eom::HarmonicEquation; fast_time::Num, slow_time::Num, degree=2)
-    eom.equations = expand_derivatives.(eom.equations) # expand all the derivatives
+  eom.equations = expand_derivatives.(eom.equations) # expand all the derivatives
 
-    # fast_time => slow_time for derivatives up to degree-1
-    vars = get_variables(eom)
-    new_vars = substitute_all.(vars, fast_time => slow_time)
-    replace0 = map(Pair, vars, new_vars) # zeroth degree derivative is separate since Differential^0 does not work
-    replace_degrees = [
-        map(Pair, d(vars, fast_time, deg), d(new_vars, slow_time, deg)) for
-        deg in 1:(degree - 1)
-    ]
-    replace = flatten([replace0, replace_degrees...])
+  # fast_time => slow_time for derivatives up to degree-1
+  vars = get_variables(eom)
+  new_vars = substitute_all.(vars, fast_time => slow_time)
+  # zeroth degree derivative is separate since Differential^0 does not work
+  replace0 = map(Pair, vars, new_vars)
+  replace_degrees = [
+    map(Pair, d(vars, fast_time, deg), d(new_vars, slow_time, deg)) for
+    deg in 1:(degree - 1)
+  ]
+  replace = flatten([replace0, replace_degrees...])
 
-    # degree derivatives are removed
-    drop = [d(var, fast_time, degree) => 0 for var in get_variables(eom)]
+  # degree derivatives are removed
+  drop = [d(var, fast_time, degree) => 0 for var in get_variables(eom)]
 
-    eom.equations = substitute_all(substitute_all(eom.equations, drop), replace)
-    eom.variables = substitute_all(eom.variables, replace)
-    return nothing
+  eom.equations = substitute_all(substitute_all(eom.equations, drop), replace)
+  eom.variables = substitute_all(eom.variables, replace)
+  return nothing
 end
 
 """
@@ -128,79 +129,84 @@ Removes all derivatives w.r.t `fast_time` (and their products) in `eom` of power
 In the remaining derivatives, `fast_time` is replaced by `slow_time`.
 """
 function slow_flow(
-    eom::HarmonicEquation; fast_time::Num, slow_time::Num, degree=2
+  eom::HarmonicEquation; fast_time::Num, slow_time::Num, degree=2
 )::HarmonicEquation
-    new_eq = deepcopy(eom)
-    slow_flow!(new_eq; fast_time=fast_time, slow_time=slow_time, degree=degree)
-    return new_eq
+  new_eq = deepcopy(eom)
+  slow_flow!(new_eq; fast_time=fast_time, slow_time=slow_time, degree=degree)
+  return new_eq
 end
 
 #   Drop powers of `var` of degree >= `deg` from the equation set in `eom`.
 function ExprUtils.drop_powers(eom::HarmonicEquation, terms::Vector{Num}, deg::Int)
-    new_eom = deepcopy(eom)
-    new_eom.equations = drop_powers(eom.equations, terms, deg)
-    return new_eom
+  new_eom = deepcopy(eom)
+  new_eom.equations = drop_powers(eom.equations, terms, deg)
+  return new_eom
 end
 
-"Rearrange an equation system such that the field equations is equal to the vector specified in new_lhs"
+"""
+Rearrange an equation system such that the field equations is equal to the vector specified
+in new_lhs
+"""
 function rearrange!(eom::HarmonicEquation, new_rhs::Vector{Num})
-    soln = Symbolics.symbolic_linear_solve(
-        eom.equations, new_rhs; simplify=false, check=true
-    )
-    eom.equations = soln .~ new_rhs
-    return nothing
+  soln = Symbolics.symbolic_linear_solve(eom.equations, new_rhs; simplify=false, check=true)
+  eom.equations = soln .~ new_rhs
+  return nothing
 end
 
 function rearrange(eom::HarmonicEquation, new_rhs::Vector{Num})
-    new_eom = deepcopy(eom)
-    rearrange!(new_eom, new_rhs)
-    return new_eom
+  new_eom = deepcopy(eom)
+  rearrange!(new_eom, new_rhs)
+  return new_eom
 end
 
 """
 $(TYPEDSIGNATURES)
-Check if `eom` is rearranged to the standard form, such that the derivatives of the variables are on one side.
+
+Check if `eom` is rearranged to the standard form, such that the derivatives of the
+variables are on one side.
 """
 function is_rearranged(eom::HarmonicEquation)
-    tvar = get_independent_variables(eom)[1]
-    dvar = d(get_variables(eom), tvar)
-    lhs = getfield.(eom.equations, :lhs)
-    rhs = getfield.(eom.equations, :rhs)
+  tvar = get_independent_variables(eom)[1]
+  dvar = d(get_variables(eom), tvar)
+  lhs = getfield.(eom.equations, :lhs)
+  rhs = getfield.(eom.equations, :rhs)
 
-    HB_bool = isequal(rhs, dvar)
-    hopf_bool = in("Hopf", getfield.(eom.variables, :type))
-    MF_bool =
-        !any([occursin(str1, str2) for str1 in string.(dvar) for str2 in string.(lhs)])
+  HB_bool = isequal(rhs, dvar)
+  hopf_bool = in("Hopf", getfield.(eom.variables, :type))
+  MF_bool = !any([occursin(str1, str2) for str1 in string.(dvar) for str2 in string.(lhs)])
 
-    # Hopf-containing equations or MF equation are arranged by construstion
-    return HB_bool || hopf_bool || MF_bool
+  # Hopf-containing equations or MF equation are arranged by construstion
+  return HB_bool || hopf_bool || MF_bool
 end
 
 """
 $(TYPEDSIGNATURES)
-Rearrange `eom` to the standard form, such that the derivatives of the variables are on one side.
+
+Rearrange `eom` to the standard form, such that the derivatives of the variables are on
+one side.
 """
 function rearrange_standard(eom::HarmonicEquation)
-    tvar = get_independent_variables(eom)[1]
-    dvars = d(get_variables(eom), tvar)
-    return rearrange(eom, dvars)
+  tvar = get_independent_variables(eom)[1]
+  dvars = d(get_variables(eom), tvar)
+  return rearrange(eom, dvars)
 end
 
 """
 $(TYPEDSIGNATURES)
+
 Get the internal symbols of the independent variables of `eom`.
 """
 function Symbolics.get_variables(eom::HarmonicEquation)::Vector{Num}
-    return get_variables.(eom.variables)
+  return get_variables.(eom.variables)
 end
 
 "Get the parameters (not time nor variables) of a HarmonicEquation"
 function _parameters(eom::HarmonicEquation)
-    all_symbols = flatten([
-        cat(get_variables(eq.lhs), get_variables(eq.rhs); dims=1) for eq in eom.equations
-    ])
-    # subtract the set of independent variables (i.e., time) from all free symbols
-    return setdiff(all_symbols, get_variables(eom), get_independent_variables(eom))
+  all_symbols = flatten([
+    cat(get_variables(eq.lhs), get_variables(eq.rhs); dims=1) for eq in eom.equations
+  ])
+  # subtract the set of independent variables (i.e., time) from all free symbols
+  return setdiff(all_symbols, get_variables(eom), get_independent_variables(eom))
 end
 
 ###
@@ -209,16 +215,16 @@ end
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
 function ExprUtils.substitute_all(
-    eom::HarmonicEquation, rules::Union{Dict,Pair}
+  eom::HarmonicEquation, rules::Union{Dict,Pair}
 )::HarmonicEquation
-    new_eom = deepcopy(eom)
-    new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
-    return new_eom
+  new_eom = deepcopy(eom)
+  new_eom.equations = expand_derivatives.(substitute_all(eom.equations, rules))
+  return new_eom
 end
 
 "Simplify the equations in HarmonicEquation."
 function simplify!(eom::HarmonicEquation)
-    return eom.equations = [Symbolics.simplify(eq) for eq in eom.equations]
+  return eom.equations = [Symbolics.simplify(eq) for eq in eom.equations]
 end
 
 """
@@ -226,59 +232,60 @@ $(TYPEDSIGNATURES)
 Return the independent variables (typically time) of `eom`.
 """
 function get_independent_variables(eom::HarmonicEquation)::Vector{Num}
-    dynamic_vars = flatten(getfield.(eom.variables, Symbol("symbol")))
-    return flatten(unique([SymbolicUtils.arguments(var.val) for var in dynamic_vars]))
+  dynamic_vars = flatten(getfield.(eom.variables, Symbol("symbol")))
+  return flatten(unique([SymbolicUtils.arguments(var.val) for var in dynamic_vars]))
 end
 
 """
 $(TYPEDSIGNATURES)
-Extract the Fourier components of `eom` corresponding to the harmonics specified in `eom.variables`.
-For each non-zero harmonic of each variable, 2 equations are generated (cos and sin Fourier coefficients).
-For each zero (constant) harmonic, 1 equation is generated
-`time` does not appear in the resulting equations anymore.
+
+Extract the Fourier components of `eom` corresponding to the harmonics specified in
+`eom.variables`. For each non-zero harmonic of each variable, 2 equations are generated
+(cos and sin Fourier coefficients). For each zero (constant) harmonic, 1 equation is
+generated `time` does not appear in the resulting equations anymore.
 
 Underlying assumption: all time-dependences are harmonic.
 """
 function fourier_transform(eom::HarmonicEquation, time::Num)
-    new_eom = deepcopy(eom)
-    fourier_transform!(new_eom, time)
-    return new_eom
+  new_eom = deepcopy(eom)
+  fourier_transform!(new_eom, time)
+  return new_eom
 end
 
 function fourier_transform!(eom::HarmonicEquation, time::Num)
-    avg_eqs = Vector{Equation}(undef, length(eom.variables))
+  avg_eqs = Vector{Equation}(undef, length(eom.variables))
 
-    # loop over the HarmonicVariables, each generates one equation
-    for (i, hvar) in enumerate(eom.variables)
-        # find the equation belonging to this variable
-        eq_idx = findfirst(
-            x -> isequal(x, hvar.natural_variable),
-            collect(keys(eom.natural_equation.equations)),
-        )
-        eq = eom.equations[eq_idx]
-        # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
-        if hvar.type == "u"
-            avg_eqs[i] = ExprUtils.fourier_cos_term(eq, hvar.ω, time)
-        elseif hvar.type == "v"
-            avg_eqs[i] = ExprUtils.fourier_sin_term(eq, hvar.ω, time)
-        elseif hvar.type == "a"
-            avg_eqs[i] = ExprUtils.fourier_cos_term(eq, 0, time) # pick out the constants
-        end
+  # loop over the HarmonicVariables, each generates one equation
+  for (i, hvar) in enumerate(eom.variables)
+    # find the equation belonging to this variable
+    eq_idx = findfirst(
+      x -> isequal(x, hvar.natural_variable), collect(keys(eom.natural_equation.equations))
+    )
+    eq = eom.equations[eq_idx]
+    # "type" is usually "u" or "v" (harmonic) or ["a"] (zero-harmonic)
+    if hvar.type == "u"
+      avg_eqs[i] = ExprUtils.fourier_cos_term(eq, hvar.ω, time)
+    elseif hvar.type == "v"
+      avg_eqs[i] = ExprUtils.fourier_sin_term(eq, hvar.ω, time)
+    elseif hvar.type == "a"
+      avg_eqs[i] = ExprUtils.fourier_cos_term(eq, 0, time) # pick out the constants
     end
-    eom.equations = avg_eqs
-    return nothing
+  end
+  eom.equations = avg_eqs
+  return nothing
 end
 
 """
-    get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+    get_harmonic_equations(
+    diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
 
 Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping
 higher-order derivatives to obtain
 a set of ODEs (the harmonic equations) governing the harmonics of `diff_eom`.
 
 The harmonics evolve in `slow_time`, the oscillating terms themselves in `fast_time`.
-If no input is used, a variable T is defined for `slow_time` and `fast_time` is taken as the independent variable
-of `diff_eom`.
+If no input is used, a variable T is defined for `slow_time` and `fast_time` is taken as
+the independent variable of `diff_eom`.
 
 By default, all products of order > 1 of `slow_time`-derivatives are dropped,
 which means the equations are linear in the time-derivatives.
@@ -312,19 +319,23 @@ Harmonic equations:
 
 """
 function get_harmonic_equations(
-    diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing, degree=2
+  diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing, degree=2
 )
-    slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
-    fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
+  slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
+  fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
 
-    for pair in diff_eom.harmonics
-        isempty(pair[2]) && error("No harmonics specified for the variable $(pair[1])!")
-    end
-    eom = harmonic_ansatz(diff_eom, fast_time) # substitute trig functions into the differential equation
-    eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree) # drop 2nd order time derivatives
-    fourier_transform!(eom, fast_time) # perform averaging over the frequencies originally specified in dEOM
-    ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2) # drop higher powers of the first-order derivatives
-    return ft_eom_simplified
+  for pair in diff_eom.harmonics
+    isempty(pair[2]) && error("No harmonics specified for the variable $(pair[1])!")
+  end
+   # substitute trig functions into the differential equation
+  eom = harmonic_ansatz(diff_eom, fast_time)
+   # drop 2nd order time derivatives
+  eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree)
+  # perform averaging over the frequencies originally specified in dEOM
+  fourier_transform!(eom, fast_time)
+  # drop higher powers of the first-order derivatives
+  ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2)
+  return ft_eom_simplified
 end
 
 "Rearrange `eq` to have zero on the right-hand-side."
@@ -335,9 +346,11 @@ _remove_brackets(var::Num) = declare_variable(var_name(var))
 _remove_brackets(vars::Vector{Num}) = _remove_brackets.(vars)
 _remove_brackets(hv::HarmonicVariable) = _remove_brackets(hv.symbol)
 
-"Returns the equation system in `eom`, dropping all argument brackets (i.e., u(T) becomes u)."
+"""
+Returns the equation system in `eom`, dropping all argument brackets (i.e., u(T) becomes u).
+"""
 function _remove_brackets(eom::HarmonicEquation)
-    variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
-    equations_lhs = Num.(getfield.(eom.equations, :lhs) - getfield.(eom.equations, :rhs))
-    return substitute_all(equations_lhs, variable_rules)
+  variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
+  equations_lhs = Num.(getfield.(eom.equations, :lhs) - getfield.(eom.equations, :rhs))
+  return substitute_all(equations_lhs, variable_rules)
 end

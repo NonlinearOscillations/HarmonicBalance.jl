@@ -11,10 +11,10 @@ _str_to_vec(s::Vector) = s
 _str_to_vec(s) = [s]
 
 function _convert_or_zero(x, t=ComplexF64)
-    try
-        convert(t, x)
-    catch ArgumentError
-        @warn string(x) * " not supplied: setting to zero"
-        return 0
-    end
+  try
+    convert(t, x)
+  catch ArgumentError
+    @warn string(x) * " not supplied: setting to zero"
+    return 0
+  end
 end

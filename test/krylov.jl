@@ -5,11 +5,11 @@ HB = HarmonicBalance;
 @variables ω ω0 γ F α λ ψ θ η
 
 eq = [
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    ω0^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2 ~ F * cos(ω * t + θ),
+  d(d(x, t), t) +
+  γ * d(x, t) +
+  ω0^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
+  α * x^3 +
+  η * d(x, t) * x^2 ~ F * cos(ω * t + θ),
 ]
 
 diff_eom = DifferentialEquation(eq, [x])
@@ -20,8 +20,8 @@ harmonic_eq1 = get_krylov_equations(diff_eom; order=1)
 harmonic_eq2 = get_krylov_equations(diff_eom; order=2)
 
 @testset "show method" begin
-    print_variable = HB._show_ansatz(harmonic_eq1)
-    @test !(occursin("xˍt(t)", print_variable))
+  print_variable = HB._show_ansatz(harmonic_eq1)
+  @test !(occursin("xˍt(t)", print_variable))
 end
 
 fixed = (ω0 => 1.0, γ => 0.005, α => 1.0, η => 0, F => 0.0, ψ => 0.0, θ => 0.0)

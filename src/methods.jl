@@ -9,28 +9,28 @@ abstract type HarmonicBalanceMethod end
     TotalDegree
 
 The Total Degree homotopy method performs a homotopy ``H(x, t) = γ t G(x) + (1-t) F(x)``
-from the trivial polynomial system ``F(x) =xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ`` determined
-by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem). The method
-guarantees to find all solutions, however, it comes with a high computational cost. See
-[HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/totaldegree/)
-for more information.
+from the trivial polynomial system ``F(x) =xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ``
+determined by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem).
+The method guarantees to find all solutions, however, it comes with a high computational
+cost. See [HomotopyContinuation.jl](
+https://www.juliahomotopycontinuation.org/guides/totaldegree/) for more information.
 
 # Fields
 $(TYPEDFIELDS)
 """
 Base.@kwdef struct TotalDegree <: HarmonicBalanceMethod
-    """Complex multiplying factor of the start system G(x) for the homotopy"""
-    gamma::Complex = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df)))
-    """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
-    """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
-    """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
-    """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
-    """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+  """Complex multiplying factor of the start system G(x) for the homotopy"""
+  gamma::Complex = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df)))
+  """Boolean indicating if threading is enabled."""
+  thread::Bool = Threads.nthreads() > 1
+  """Options for the tracker."""
+  tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+  """Options for the endgame."""
+  endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+  """Compilation options."""
+  compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+  """Seed for random number generation."""
+  seed::UInt32 = 0xd8e5d8df
 end
 
 """
@@ -47,48 +47,48 @@ for more information.
 $(TYPEDFIELDS)
 """
 Base.@kwdef struct Polyhedral <: HarmonicBalanceMethod
-    """Boolean indicating if only non-zero solutions are considered."""
-    only_non_zero::Bool = false
-    """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
-    """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
-    """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
-    """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
-    """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+  """Boolean indicating if only non-zero solutions are considered."""
+  only_non_zero::Bool = false
+  """Boolean indicating if threading is enabled."""
+  thread::Bool = Threads.nthreads() > 1
+  """Options for the tracker."""
+  tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+  """Options for the endgame."""
+  endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+  """Compilation options."""
+  compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+  """Seed for random number generation."""
+  seed::UInt32 = 0xd8e5d8df
 end
 
 """
     WarmUp
 
-The Warm Up method prepares a warmup system with the Total Degree method using the parameter at `index`
-perturbed by `perturbation_size`. The warmup system is used to perform a homotopy using all other
-systems in the parameter sweep. It is very efficient for systems with minimal bifurcation in the
-parameter sweep. The Warm Up method does not guarantee to find all solutions. See
-[HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/many-systems/)
-for more information.
+The Warm Up method prepares a warmup system with the Total Degree method using the parameter
+at `index` perturbed by `perturbation_size`. The warmup system is used to perform a homotopy
+using all other systems in the parameter sweep. It is very efficient for systems with
+minimal bifurcation in the parameter sweep. The Warm Up method does not guarantee to find
+all solutions. See [HomotopyContinuation.jl](
+https://www.juliahomotopycontinuation.org/guides/many-systems/) for more information.
 
 # Fields
 $(TYPEDFIELDS)
 """
 Base.@kwdef struct WarmUp <: HarmonicBalanceMethod
-    """Size of the perturbation."""
-    perturbation_size::ComplexF64 = 1e-6 + 1e-6 * im
-    """Index for the parameter set used as start system."""
-    index::Union{Int,EndpointRanges.Endpoint} = EndpointRanges.iend ÷ 2
-    """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
-    """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
-    """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
-    """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
-    """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+  """Size of the perturbation."""
+  perturbation_size::ComplexF64 = 1e-6 + 1e-6 * im
+  """Index for the parameter set used as start system."""
+  index::Union{Int,EndpointRanges.Endpoint} = EndpointRanges.iend ÷ 2
+  """Boolean indicating if threading is enabled."""
+  thread::Bool = Threads.nthreads() > 1
+  """Options for the tracker."""
+  tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+  """Options for the endgame."""
+  endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+  """Compilation options."""
+  compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+  """Seed for random number generation."""
+  seed::UInt32 = 0xd8e5d8df
 end
 
 """
@@ -138,13 +138,13 @@ seed(method::HarmonicBalanceMethod) = method.seed
 Returns a named tuple of default algorithm options for the given method.
 """
 function alg_default_options(method::HarmonicBalanceMethod)
-    return (
-        threading=thread(method),
-        tracker_options=tracker(method),
-        endgame_options=endgame(method),
-        compile=compile(method),
-        seed=seed(method),
-    )
+  return (
+    threading=thread(method),
+    tracker_options=tracker(method),
+    endgame_options=endgame(method),
+    compile=compile(method),
+    seed=seed(method),
+  )
 end
 
 """
@@ -167,7 +167,7 @@ alg_specific_options(method::Polyhedral) = (only_non_zero=method.only_non_zero,)
 Returns a named tuple of specific algorithm options for the Warm Up method.
 """
 function alg_specific_options(method::WarmUp)
-    return (perturbation_size=method.perturbation_size, index=method.index)
+  return (perturbation_size=method.perturbation_size, index=method.index)
 end
 
 """
@@ -190,11 +190,11 @@ method_symbol(m::TotalDegree) = :total_degree
 Displays information about the Warm Up method.
 """
 function Base.show(io::IO, m::WarmUp)
-    println(io, "Warm up method:")
-    println(io, "perturbation_size: ", m.perturbation_size)
-    println(io, "Threading:         ", thread(m))
-    println(io, "Compile:           ", compile(m))
-    return println(io, "Seed:              ", seed(m))
+  println(io, "Warm up method:")
+  println(io, "perturbation_size: ", m.perturbation_size)
+  println(io, "Threading:         ", thread(m))
+  println(io, "Compile:           ", compile(m))
+  return println(io, "Seed:              ", seed(m))
 end
 
 """
@@ -203,11 +203,11 @@ end
 Displays information about the Total Degree method.
 """
 function Base.show(io::IO, m::TotalDegree)
-    println(io, "Total degree method:")
-    println(io, "Gamma:     ", m.gamma)
-    println(io, "Threading: ", thread(m))
-    println(io, "Compile:   ", compile(m))
-    return println(io, "Seed:      ", seed(m))
+  println(io, "Total degree method:")
+  println(io, "Gamma:     ", m.gamma)
+  println(io, "Threading: ", thread(m))
+  println(io, "Compile:   ", compile(m))
+  return println(io, "Seed:      ", seed(m))
 end
 
 """
@@ -216,9 +216,9 @@ end
 Displays information about the Polyhedral method.
 """
 function Base.show(io::IO, m::Polyhedral)
-    println(io, "Polyhedral method:")
-    println(io, "Zero solutions: ", !m.only_non_zero)
-    println(io, "Threading:      ", thread(m))
-    println(io, "Compile:        ", compile(m))
-    return println(io, "Seed:           ", seed(m))
+  println(io, "Polyhedral method:")
+  println(io, "Zero solutions: ", !m.only_non_zero)
+  println(io, "Threading:      ", thread(m))
+  println(io, "Compile:        ", compile(m))
+  return println(io, "Seed:           ", seed(m))
 end

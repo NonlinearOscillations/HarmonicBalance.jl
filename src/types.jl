@@ -7,7 +7,8 @@ const ParameterVector = Vector{Float64};
 """
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.
-During a sweep, the selected parameters vary linearly over some timespan and are constant elsewhere.
+During a sweep, the selected parameters vary linearly over some timespan and are constant
+elsewhere.
 
 Sweeps of different variables can be combined using `+`.
 
@@ -45,9 +46,9 @@ sweep = AdiabaticSweep(ω => ωfunc)
 
 """
 struct AdiabaticSweep
-    """Maps each swept parameter to a function."""
-    functions::Dict{Num,Function}
+  """Maps each swept parameter to a function."""
+  functions::Dict{Num,Function}
 
-    AdiabaticSweep(functions...) = new(Dict(functions...))
-    AdiabaticSweep() = AdiabaticSweep([])
+  AdiabaticSweep(functions...) = new(Dict(functions...))
+  AdiabaticSweep() = AdiabaticSweep([])
 end

@@ -15,7 +15,7 @@ Threads.nthreads() # check number of threads
 
 @variables β α ω ω0 F γ t x(t) # declare constant variables and a function x(t)
 diff_eq = DifferentialEquation(
-    d(x, t, 2) + ω0^2 * x + β * x^2 + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+  d(x, t, 2) + ω0^2 * x + β * x^2 + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
 )
 
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)

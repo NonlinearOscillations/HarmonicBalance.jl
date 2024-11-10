@@ -14,32 +14,32 @@ using OrderedCollections: OrderedDict
 
 using HarmonicBalance
 using HarmonicBalance:
-    Result,
-    HarmonicVariable,
-    HarmonicEquation,
-    DifferentialEquation,
-    StateDict,
-    get_variables,
-    get_independent_variables
+  Result,
+  HarmonicVariable,
+  HarmonicEquation,
+  DifferentialEquation,
+  StateDict,
+  get_variables,
+  get_independent_variables
 
 using HarmonicBalance:
-    var_name,
-    d,
-    rearrange_standard,
-    _remove_brackets,
-    expand_derivatives,
-    substitute_all,
-    _free_symbols,
-    _get_mask,
-    compile_matrix,
-    _set_Plots_default,
-    dim,
-    _get_mask,
-    harmonic_ansatz,
-    slow_flow,
-    fourier_transform,
-    declare_variable,
-    is_rearranged
+  var_name,
+  d,
+  rearrange_standard,
+  _remove_brackets,
+  expand_derivatives,
+  substitute_all,
+  _free_symbols,
+  _get_mask,
+  compile_matrix,
+  _set_Plots_default,
+  dim,
+  _get_mask,
+  harmonic_ansatz,
+  slow_flow,
+  fourier_transform,
+  declare_variable,
+  is_rearranged
 
 using ..HC_wrapper
 

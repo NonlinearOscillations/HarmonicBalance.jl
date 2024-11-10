@@ -16,11 +16,11 @@ using HarmonicBalance
 @variables ω₀ γ λ F η α ω t x(t)
 
 natural_equation =
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    (ω₀^2 - λ * cos(2 * ω * t)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
+  d(d(x, t), t) +
+  γ * d(x, t) +
+  (ω₀^2 - λ * cos(2 * ω * t)) * x +
+  α * x^3 +
+  η * d(x, t) * x^2
 forces = F * cos(ω * t)
 diff_eq = DifferentialEquation(natural_equation + forces, x)
 

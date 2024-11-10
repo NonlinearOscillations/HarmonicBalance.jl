@@ -3,7 +3,7 @@ using HarmonicBalance, OrdinaryDiffEqTsit5
 @variables α ω ω0 F γ η t x(t); # declare constant variables and a function x(t)
 
 diff_eq = DifferentialEquation(
-    d(x, t, 2) + ω0 * x + α * x^3 + γ * d(x, t) + η * x^2 * d(x, t) ~ F * cos(ω * t), x
+  d(x, t, 2) + ω0 * x + α * x^3 + γ * d(x, t) + η * x^2 * d(x, t) ~ F * cos(ω * t), x
 ) # define ODE
 
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
@@ -26,5 +26,5 @@ plot_linear_response(result, x, followed_branches; Ω_range=range(0.9, 1.1, 10),
 # Check if an empty brspectrum can be plotted
 followed_branches[6] = 3
 plot_linear_response(
-    result, x, followed_branches; Ω_range=range(0.9, 1.1, 10), show=false, force=true
+  result, x, followed_branches; Ω_range=range(0.9, 1.1, 10), show=false, force=true
 );

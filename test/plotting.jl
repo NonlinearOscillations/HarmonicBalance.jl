@@ -6,11 +6,11 @@ default(; show=false)
 @variables t x(t)
 
 natural_equation =
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    ω0^2 * (1 - λ * cos(2 * ω * t)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
+  d(d(x, t), t) +
+  γ * d(x, t) +
+  ω0^2 * (1 - λ * cos(2 * ω * t)) * x +
+  α * x^3 +
+  η * d(x, t) * x^2
 dEOM = DifferentialEquation(natural_equation, x)
 add_harmonic!(dEOM, x, ω)
 harmonic_eq = get_harmonic_equations(dEOM);

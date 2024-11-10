@@ -12,5 +12,5 @@ examples = filter!(file -> file[(end - 2):end] == ".jl", readdir(EXAMPLES_IN; jo
 filter!(file -> !contains(file, "make_nb_examples"), examples)
 
 for example in examples
-    Literate.notebook(example, OUTPUT_NB_DIR; documenter=false, execute=true)
+  Literate.notebook(example, OUTPUT_NB_DIR; documenter=false, execute=true)
 end

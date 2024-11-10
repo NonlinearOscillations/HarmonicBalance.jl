@@ -3,7 +3,7 @@ module HarmonicBalance
 # default global settings
 IM_TOL::Float64 = 1E-6
 function set_imaginary_tolerance(x::Float64)
-    @eval(IM_TOL::Float64 = $x)
+  @eval(IM_TOL::Float64 = $x)
 end
 
 using DocStringExtensions
@@ -24,15 +24,15 @@ using Plots: Plots, plot, plot!, savefig, heatmap, Plot
 using Latexify: Latexify, latexify
 
 using Symbolics:
-    Symbolics,
-    Num,
-    Equation,
-    @variables,
-    expand_derivatives,
-    get_variables,
-    Differential,
-    unwrap,
-    wrap
+  Symbolics,
+  Num,
+  Equation,
+  @variables,
+  expand_derivatives,
+  get_variables,
+  Differential,
+  unwrap,
+  wrap
 using SymbolicUtils: SymbolicUtils
 
 include("ExprUtils/ExprUtils.jl")

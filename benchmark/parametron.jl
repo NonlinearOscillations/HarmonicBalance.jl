@@ -9,11 +9,11 @@ Random.seed!(SEED)
 @variables x(t)
 
 natural_equation =
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    Ω^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
+  d(d(x, t), t) +
+  γ * d(x, t) +
+  Ω^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
+  α * x^3 +
+  η * d(x, t) * x^2
 forces = F * cos(ω * t + θ)
 dEOM = DifferentialEquation(natural_equation + forces, x)
 add_harmonic!(dEOM, x, ω)
@@ -25,17 +25,17 @@ varied = ω => range(0.9, 1.1, 100)
 
 @btime res = get_steady_states(harmonic_eq, WarmUp(), varied, fixed; show_progress=false)
 @btime res = get_steady_states(
-    harmonic_eq, WarmUp(; compile=true), varied, fixed; show_progress=false
+  harmonic_eq, WarmUp(; compile=true), varied, fixed; show_progress=false
 )
 @btime res = get_steady_states(
-    harmonic_eq, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
+  harmonic_eq, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
 )
 @btime res = get_steady_states(
-    harmonic_eq, Polyhedral(; only_non_zero=false), varied, fixed; show_progress=false
+  harmonic_eq, Polyhedral(; only_non_zero=false), varied, fixed; show_progress=false
 )
 @btime res = get_steady_states(
-    harmonic_eq, TotalDegree(; compile=true), varied, fixed; show_progress=false
+  harmonic_eq, TotalDegree(; compile=true), varied, fixed; show_progress=false
 )
 @btime res = get_steady_states(
-    harmonic_eq, TotalDegree(), varied, fixed; show_progress=false
+  harmonic_eq, TotalDegree(), varied, fixed; show_progress=false
 )

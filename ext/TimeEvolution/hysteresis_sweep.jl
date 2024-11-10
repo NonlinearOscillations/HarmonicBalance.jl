@@ -2,12 +2,12 @@
 Calculate distance between a given state and a stable branch
 """
 function _closest_branch_index(res::Result, state::Vector{Float64}, index::Int64)
-    #search only among stable solutions
-    stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
+  #search only among stable solutions
+  stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
 
-    steadystates = reduce(hcat, stable[index])
-    distances = vec(sum(abs2.(steadystates .- state); dims=1))
-    return argmin(replace(distances, NaN => Inf))
+  steadystates = reduce(hcat, stable[index])
+  distances = vec(sum(abs2.(steadystates .- state); dims=1))
+  return argmin(replace(distances, NaN => Inf))
 end
 
 """
@@ -21,56 +21,53 @@ Keyword arguments
   - `ϵ`: small random perturbation applied to quenched solution, in a bifurcation in order to favour convergence in cases where multiple solutions are identically accessible (e.g. symmetry breaking into two equal amplitude states)
 """
 function HarmonicBalance.follow_branch(
-    starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep="right", tf=10000, ϵ=1e-4
+  starting_branch::Int64, res::Result; y="u1^2+v1^2", sweep="right", tf=10000, ϵ=1e-4
 )
-    sweep_directions = ["left", "right"]
-    sweep ∈ sweep_directions || error(
-        "Only the following (1D) sweeping directions are allowed:  ", sweep_directions
-    )
+  sweep_directions = ["left", "right"]
+  sweep ∈ sweep_directions ||
+    error("Only the following (1D) sweeping directions are allowed:  ", sweep_directions)
 
-    # get stable solutions
-    Y = transform_solutions(res, y; realify=true)
-    Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
-    Ys = sweep == "left" ? reverse(Ys) : Ys
+  # get stable solutions
+  Y = transform_solutions(res, y; realify=true)
+  Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
+  Ys = sweep == "left" ? reverse(Ys) : Ys
 
-    followed_branch = zeros(Int64, length(Y))  # followed branch indexes
-    followed_branch[1] = starting_branch
+  followed_branch = zeros(Int64, length(Y))  # followed branch indexes
+  followed_branch[1] = starting_branch
 
-    p1 = first(keys(res.swept_parameters)) # parameter values
+  p1 = first(keys(res.swept_parameters)) # parameter values
 
-    for i in 2:length(Ys)
-        s = Ys[i][followed_branch[i - 1]] # solution amplitude in the current branch and current parameter index
-        if !isnan(s) # the solution is not unstable or unphysical
-            followed_branch[i] = followed_branch[i - 1]
-        else # bifurcation found
-            next_index = sweep == "right" ? i : length(Ys) - i + 1
+  for i in 2:length(Ys)
+    s = Ys[i][followed_branch[i - 1]] # solution amplitude in the current branch and current parameter index
+    if !isnan(s) # the solution is not unstable or unphysical
+      followed_branch[i] = followed_branch[i - 1]
+    else # bifurcation found
+      next_index = sweep == "right" ? i : length(Ys) - i + 1
 
-            # create a synthetic starting point out of an unphysical solution: quench and time evolve
-            # the actual solution is complex there, i.e. non physical. Take real part for the quench.
-            sol_dict = get_single_solution(
-                res; branch=followed_branch[i - 1], index=next_index
-            )
+      # create a synthetic starting point out of an unphysical solution: quench and time evolve
+      # the actual solution is complex there, i.e. non physical. Take real part for the quench.
+      sol_dict = get_single_solution(res; branch=followed_branch[i - 1], index=next_index)
 
-            var = res.problem.variables
-            var_values_noise =
-                real.(getindex.(Ref(sol_dict), var)) .+ 0.0im .+ ϵ * rand(length(var))
-            for (i, v) in enumerate(var)
-                sol_dict[v] = var_values_noise[i]
-            end
+      var = res.problem.variables
+      var_values_noise =
+        real.(getindex.(Ref(sol_dict), var)) .+ 0.0im .+ ϵ * rand(length(var))
+      for (i, v) in enumerate(var)
+        sol_dict[v] = var_values_noise[i]
+      end
 
-            problem_t = ODEProblem(res.problem.eom, sol_dict; timespan=(0, tf))
-            res_t = solve(problem_t, OrdinaryDiffEqTsit5.Tsit5(); saveat=tf)
+      problem_t = ODEProblem(res.problem.eom, sol_dict; timespan=(0, tf))
+      res_t = solve(problem_t, OrdinaryDiffEqTsit5.Tsit5(); saveat=tf)
 
-            # closest branch to final state
-            followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index)
+      # closest branch to final state
+      followed_branch[i] = _closest_branch_index(res, res_t.u[end], next_index)
 
-            @info "bifurcation @ $p1 = $(real(sol_dict[p1])): switched branch $(followed_branch[i-1]) ➡ $(followed_branch[i])"
-        end
+      @info "bifurcation @ $p1 = $(real(sol_dict[p1])): switched branch $(followed_branch[i-1]) ➡ $(followed_branch[i])"
     end
-    if sweep == "left"
-        Ys = reverse(Ys)
-        followed_branch = reverse(followed_branch)
-    end
+  end
+  if sweep == "left"
+    Ys = reverse(Ys)
+    followed_branch = reverse(followed_branch)
+  end
 
-    return followed_branch, Ys
+  return followed_branch, Ys
 end

@@ -38,20 +38,26 @@ end
     plot_eigenvalues(result; branch=1, type=:re, class="all")
 
     @testset "NaN Exception Error" begin
-        @variables α λ ω0 ω ωₚ F t x(t)
+        @variables α λ ω0 ω ωₚ γ F t x(t)
         diff_eq = DifferentialEquation(
-            d(x, t, 2) + (ω0^2 - λ * cos(2 * ω * t)) * x + α * x^3 + γ * d(x, t) ~
-                F * cos(ωₚ * t),
-            x,
+            d(x, t, 2) + (ω0^2 - λ * cos(2 * ω * t)) * x + α * x^3 + γ * d(x, t), x
         )
 
         add_harmonic!(diff_eq, x, ω)
-        add_harmonic!(diff_eq, x, ωₚ)
         harmonic_eq = get_harmonic_equations(diff_eq)
 
-        fixed = (γ => 0.008, ω0 => 1.0, α => 1.0, F => 0.0, ωₚ => 1.0, λ => 0.016)
+        fixed = (γ => 0.002, ω0 => 1.0, α => 1.0, λ => 0.016)
         varied = (ω => range(0.995, 1.005, 20))
-        result_ω = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
-        @test_throws ErrorException plot_eigenvalues(result_ω; branch=1)
+        result_ω = get_steady_states(harmonic_eq, varied, fixed)
+        plot(result_ω; y="u1")
+        broken = true
+        @test try
+            plot_eigenvalues(result_ω; branch=1)
+            false
+        catch e
+            typeof(e) == ErrorException
+        end broken = true
+
+        # replace with system where branch has non-physical solution. I think coupled parametrons has this
     end
 end

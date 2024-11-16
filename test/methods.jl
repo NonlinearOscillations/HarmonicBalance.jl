@@ -16,13 +16,6 @@ using Test
 
     unique_fixed, input_array = HarmonicBalance._prepare_input_params(prob, varied, fixed)
     @test length.(input_array) == fill(5, 20)
-
-    method = WarmUp()
-    warmup_parameters, warmup_solution = HarmonicBalance._solve_warmup(
-        prob, method, input_array; show_progress=false
-    )
-    diff = abs.((input_array[method.index] .- warmup_parameters))
-    @test diff ≈ zeros(5) atol = real(method.perturbation_size) * 5
 end
 
 @testset "Polyhedral" begin

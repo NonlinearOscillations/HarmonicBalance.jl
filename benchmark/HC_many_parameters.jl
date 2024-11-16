@@ -13,7 +13,7 @@ eqs = [
     (1 / 2) * v1 * λ * ω0^2,
 ]
 
-F = System(eqs, parameters = [ω, α, γ, λ, ω0], variables = [u1, v1])
+F = System(eqs; parameters=[ω, α, γ, λ, ω0], variables=[u1, v1])
 
 input_array = [
     [0.9, 1.0, 0.00, 0.05, 1.0],
@@ -25,14 +25,14 @@ input_array = [
 ]
 generic_parameters = randn(ComplexF64, 5)
 
-R0 = solve(F; target_parameters = generic_parameters, threading = true)
+R0 = solve(F; target_parameters=generic_parameters, threading=true)
 R1 = solve(
     F,
     solutions(R0);
-    start_parameters = generic_parameters,
-    target_parameters = input_array,
-    threading = true,
-    only_non_zero=true
+    start_parameters=generic_parameters,
+    target_parameters=input_array,
+    threading=true,
+    only_non_zero=true,
 )
 solutions(R1[4][1])
 solutions(R0)

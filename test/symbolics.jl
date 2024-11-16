@@ -178,6 +178,12 @@ end
     @eqtest get_independent(cos(t)^2 + 5, t) == 5
 end
 
+@testset "expand_fraction" begin
+    using HarmonicBalance.ExprUtils: expand_fraction
+    @variables a, b, c
+
+    @eqtest expand_fraction((a + b) / c) == a / c + b / c
+end
 @testset "count_derivatives" begin
     using HarmonicBalance.ExprUtils: count_derivatives
     @variables t x(t) y(t)

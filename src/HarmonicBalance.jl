@@ -38,7 +38,7 @@ using SymbolicUtils: SymbolicUtils
 include("ExprUtils/ExprUtils.jl")
 using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives
 
-include("extention_functions.jl")
+include("extension_functions.jl")
 include("utils.jl")
 include("types.jl")
 include("DifferentialEquation.jl")

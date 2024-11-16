@@ -78,7 +78,7 @@ plot(
     size=(600, 250), margin=3mm
 )
 ```
-In branch 1 the linear response to white noise shows _more than one peak_. This is a distinctly nonlinear phenomenon, indicitive if the squeezing of the steady state. Branch 2 is again quasi-linear, which stems from its low amplitude.
+In branch 1 the linear response to white noise shows _more than one peak_. This is a distinctly nonlinear phenomenon, indicative if the squeezing of the steady state. Branch 2 is again quasi-linear, which stems from its low amplitude.
 
 Following [Huber et al.](https://doi.org/10.1103/PhysRevX.10.021066), we may also fix $\omega = \omega_0$ and plot the linear response as a function of $F$. The response turns out to be single-valued over a large range of driving strengths. Using a log scale for the x-axis:
 

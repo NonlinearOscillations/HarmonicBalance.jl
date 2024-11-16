@@ -33,7 +33,7 @@ end
 ###
 
 """
-Removes rows and columns with given idices from the Matrix M.
+Removes rows and columns with given indices from the Matrix M.
 The row/column indices are defined with respect to the original M!
 """
 function remove_rows_columns(M::Matrix, rows::Vector{Int64}, cols::Vector{Int64})

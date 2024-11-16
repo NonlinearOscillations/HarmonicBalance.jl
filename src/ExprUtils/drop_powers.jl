@@ -40,7 +40,7 @@ end
 drop_powers(expr, var::Num, deg::Int) = drop_powers(expr, [var], deg)
 drop_powers(x, vars, deg::Int) = drop_powers(Num(x), vars, deg)
 
-"Return the highest power of `y` occuring in the term `x`."
+"Return the highest power of `y` occurring in the term `x`."
 function max_power(x::Num, y::Num)
     terms = get_all_terms(x)
     powers = power_of.(terms, y)

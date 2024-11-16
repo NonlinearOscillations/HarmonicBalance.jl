@@ -24,8 +24,18 @@ fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 
 varied = ω => range(0.9, 1.1, 100)
 
 @btime res = get_steady_states(harmonic_eq, WarmUp(), varied, fixed; show_progress=false)
-@btime res = get_steady_states(harmonic_eq, WarmUp(;compile=true), varied, fixed; show_progress=false)
-@btime res = get_steady_states(harmonic_eq, Polyhedral(;only_non_zero=true), varied, fixed; show_progress=false)
-@btime res = get_steady_states(harmonic_eq, Polyhedral(;only_non_zero=false), varied, fixed; show_progress=false)
-@btime res = get_steady_states(harmonic_eq, TotalDegree(;compile=true), varied, fixed; show_progress=false)
-@btime res = get_steady_states(harmonic_eq, TotalDegree(), varied, fixed; show_progress=false)
+@btime res = get_steady_states(
+    harmonic_eq, WarmUp(; compile=true), varied, fixed; show_progress=false
+)
+@btime res = get_steady_states(
+    harmonic_eq, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
+)
+@btime res = get_steady_states(
+    harmonic_eq, Polyhedral(; only_non_zero=false), varied, fixed; show_progress=false
+)
+@btime res = get_steady_states(
+    harmonic_eq, TotalDegree(; compile=true), varied, fixed; show_progress=false
+)
+@btime res = get_steady_states(
+    harmonic_eq, TotalDegree(), varied, fixed; show_progress=false
+)

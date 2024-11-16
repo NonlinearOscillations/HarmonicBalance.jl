@@ -80,15 +80,15 @@ end
     include("limit_cycle.jl")
 end
 
-@testset "Extentions" begin
-    @testset "Time evolution extention" begin
+@testset "extensions" begin
+    @testset "Time evolution extension" begin
         include("time_evolution.jl")
         include("hysteresis_sweep.jl")
     end
-    @testset "ModelingToolkit extention" begin
+    @testset "ModelingToolkit extension" begin
         include("ModelingToolkitExt.jl")
     end
-    @testset "SteadyState Extention" begin
+    @testset "SteadyState extension" begin
         include("SteadyStateDiffEqExt.jl")
     end
 end

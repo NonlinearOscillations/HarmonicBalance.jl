@@ -36,7 +36,7 @@ A steady state result for 100 parameter points
 
 ```
 
-It is also possible to perfrom 2-dimensional sweeps.
+It is also possible to perform 2-dimensional sweeps.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
 julia> range = ParameterRange(ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )

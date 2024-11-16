@@ -9,6 +9,16 @@ function expand_all(x)
 end
 expand_all(x::Complex{Num}) = expand_all(x.re) + im * expand_all(x.im)
 
+function expand_fraction(x::BasicSymbolic)
+    @compactified x::BasicSymbolic begin
+        Add => _apply_termwise(expand_fraction, x)
+        Mul => _apply_termwise(expand_fraction, x)
+        Div => sum([arg / x.den for arg in arguments(x.num)])
+        _   => x
+    end
+end
+expand_fraction(x::Num) = Num(expand_fraction(x.val))
+
 "Apply a function f on every member of a sum or a product"
 function _apply_termwise(f, x::BasicSymbolic)
     @compactified x::BasicSymbolic begin

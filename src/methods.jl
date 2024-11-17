@@ -75,10 +75,10 @@ for more information.
 $(TYPEDFIELDS)
 """
 Base.@kwdef struct WarmUp <: HarmonicBalanceMethod
-    """Size of the perturbation."""
-    perturbation_size::ComplexF64 = 1e-6 + 1e-6 * im
-    """Index for the parameter set used as start system."""
-    index::Union{Int,EndpointRanges.Endpoint} = EndpointRanges.iend ÷ 2
+    """Method used for the warmup system."""
+    warm_up_method::Union{TotalDegree,Polyhedral} = Polyhedral()
+    """Start parameters."""
+    start_parameters::Union{Vector{ComplexF64},Nothing} = nothing
     """Boolean indicating if threading is enabled."""
     thread::Bool = Threads.nthreads() > 1
     """Options for the tracker."""
@@ -160,15 +160,6 @@ alg_specific_options(method::TotalDegree) = (gamma=method.gamma,)
 Returns a named tuple of specific algorithm options for the Polyhedral method.
 """
 alg_specific_options(method::Polyhedral) = (only_non_zero=method.only_non_zero,)
-
-"""
-    alg_specific_options(method::WarmUp) -> NamedTuple
-
-Returns a named tuple of specific algorithm options for the Warm Up method.
-"""
-function alg_specific_options(method::WarmUp)
-    return (perturbation_size=method.perturbation_size, index=method.index)
-end
 
 """
     method_symbol(m::Polyhedral) -> Symbol

@@ -191,36 +191,30 @@ function filter_duplicate_parameters(sweeps, fixed_parameters)
     return new_params
 end
 
-"A random warmup solution is computed to use as `start_parameters` in the homotopy."
-function _solve_warmup(problem::Problem, method::WarmUp, params; show_progress)
-    # complex perturbation of the warmup parameters
-    options = alg_specific_options(method)
-    l = length(params[1])
-
-    perturbation = ones(l) + options[:perturbation_size] * randn(ComplexF64, l)
-    warmup_parameters = params[options[:index]] .* perturbation
-
-    warmup_solution = HC.solve(
-        problem.system;
-        start_system=:total_degree,
-        target_parameters=warmup_parameters,
-        show_progress=show_progress,
-        alg_default_options(method)...,
-    )
-    return warmup_parameters, warmup_solution
-end
-
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
 function _get_raw_solution(
     problem::Problem, method::WarmUp, parameter_values; show_progress
 )
-    warmup_parameters, warmup_solution = _solve_warmup(
-        problem, method, parameter_values; show_progress=show_progress
+    warm_up_method = method.warm_up_method
+    if isnothing(method.start_parameters)
+        start_parameters = randn(ComplexF64, length(parameter_values[1]))
+    else
+        start_parameters = method.start_parameters
+    end
+
+    warmup_solution = HC.solve(
+        problem.system;
+        start_system=method_symbol(warm_up_method),
+        target_parameters=start_parameters,
+        show_progress=show_progress,
+        alg_default_options(warm_up_method)...,
+        alg_specific_options(warm_up_method)...,
     )
+
     result_full = HC.solve(
         problem.system,
         HC.solutions(warmup_solution);
-        start_parameters=warmup_parameters,
+        start_parameters=start_parameters,
         target_parameters=parameter_values,
         show_progress=show_progress,
         alg_default_options(method)...,

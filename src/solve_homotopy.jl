@@ -1,8 +1,8 @@
 """
     get_steady_states(problem::HarmonicEquation,
                         method::HarmonicBalanceMethod,
-                        swept_parameters::OrderedDict,
-                        fixed_parameters::OrderedDict;
+                        swept_parameters,
+                        fixed_parameters;
                         show_progress=true,
                         sorting="nearest",
                         classify_default=true)
@@ -22,8 +22,8 @@ solving a simple harmonic oscillator
 ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)`` to obtain the response as a function of ``ω``
 ```julia-repl
 # having obtained a Problem object, let's find steady states
-julia> range = OrderedDict(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
-julia> fixed = OrderedDict(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
+julia> range = (ω => range(0.8, 1.2, 100) ) # 100 parameter sets to solve
+julia> fixed = ParameterList(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
 julia> get_steady_states(problem, range, fixed)
 
 A steady state result for 100 parameter points
@@ -39,7 +39,7 @@ A steady state result for 100 parameter points
 It is also possible to perform 2-dimensional sweeps.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
-julia> range = OrderedDict(ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
+julia> range = (ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
 
 # The swept parameters take precedence over fixed -> the F in fixed is now ignored
 julia> get_steady_states(problem, range, fixed)
@@ -67,9 +67,6 @@ function get_steady_states(
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables; dims=1)))
 
-    variable_names = var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])
-    any([var_name(var) ∈ variable_names for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
-
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
@@ -87,7 +84,6 @@ function get_steady_states(
         compiled_J,
         seed(method),
     )
-
 
     if sorting != "no_sorting"
         sort_solutions!(result; sorting=sorting, show_progress=show_progress)
@@ -150,7 +146,7 @@ function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
 end
 
 "Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
-function _reorder_nested(a::Array, order::Vector{Int64})
+function _reorder_nested(a::Array, order::Vector{Int})
     a[1] isa Union{Array,BitVector} || return a
     order = length(order) == length(a) ? order : vcat(order, setdiff(1:length(a[1]), order)) # pad if needed
     return new_array = [el[order] for el in a]
@@ -160,6 +156,11 @@ end
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
+
+    variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
+    if any([var_name(var) ∈ variable_names for var in get_variables(prob)])
+         error("Cannot fix one of the variables!")
+    end
     # sweeping takes precedence over fixed_parameters
     unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
 
@@ -169,23 +170,41 @@ function _prepare_input_params(
     # get the order from prob and construct a permutation to rearrange our parameters
     error = ArgumentError("Some input parameters are missing or appear more than once!")
     permutation = try
-        p = [findall(x -> isequal(x, par), all_keys) for par in prob.parameters] # find the matching position of each parameter
+        # find the matching position of each parameter
+        p = [findall(x -> isequal(x, par), all_keys) for par in prob.parameters]
         all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!
         p = getindex.(p, 1) # all exist once -> flatten
-        isequal(all_keys[getindex.(p, 1)], prob.parameters) || throw(error) # parameters sorted wrong!
-        #isempty(setdiff(all_keys, prob.parameters)) || throw(error) # extra parameters present!
+        # ∨ parameters sorted wrong!
+        isequal(all_keys[getindex.(p, 1)], prob.parameters) || throw(error)
+        # ∨ extra parameters present!
+        #isempty(setdiff(all_keys, prob.parameters)) || throw(error)
         p
     catch
         throw(error)
     end
 
-    param_ranges = collect(values(sweeps)) # Vector of the sweep LinRanges
-    input_array = collect(Iterators.product(param_ranges..., values(fixed_parameters)...)) # array of all permutations (fixed_params do not change)
-
+    input_array = type_stable_parameters(sweeps, fixed_parameters)
     # order each parameter vector to match the order in prob
     input_array = getindex.(input_array, [permutation])
     # HC wants arrays, not tuples
     return unique_fixed, tuple_to_vector.(input_array)
+end
+
+function type_stable_parameters(
+        sweeps::OrderedDict, fixed_parameters::OrderedDict
+    )
+    param_ranges = collect(values(sweeps)) # Vector of the sweep ranges
+    # array of all permutations (fixed_params do not change)
+    iter = Iterators.product(param_ranges..., values(fixed_parameters)...)
+    input_array = collect(iter)
+
+    types = unique(reduce(vcat, [unique(typeof.(ps)) for ps in input_array]))
+    if length(types) == 1
+        return input_array
+    else
+        common_type = promote_type(types...)
+        return [convert.(common_type, ps) for ps in input_array]
+    end
 end
 
 "Remove occurrences of `sweeps` elements from `fixed_parameters`."
@@ -263,7 +282,7 @@ function _get_raw_solution(
 end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."
-function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN)
+function pad_solutions(solutions::Solutions(T); padding_value=NaN) where {T}
     Ls = length.(solutions)
     nvars = length(solutions[1][1]) # number of variables
     max_N = maximum(Ls) # length to be fixed

@@ -10,8 +10,8 @@ function Num_to_Variable(x::Num)
 end
 
 "Converts a Num dictionary into a Variable dictionary."
-Num_to_Variable(dict::Dict{Num,ComplexF64}) =
-    Dict{Variable,ComplexF64}([[Variable(key), dict[key]] for key in keys(dict)]) # for the parameter assignments
+Num_to_Variable(dict::Dict{Num,T}) where {T<:Number} =
+    Dict{Variable,T}([[Variable(key), dict[key]] for key in keys(dict)]) # for the parameter assignments
 
 "Parse symbolic expressions as the Expression type in HomotopyContinuation."
 function parse_equations(eqs::Vector{Num})

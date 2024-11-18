@@ -1,7 +1,9 @@
 """
 Calculate distance between a given state and a stable branch
 """
-function _closest_branch_index(res::Result, state::Vector{Float64}, index::Int64)
+function _closest_branch_index(
+    res::Result{S}, state::SteadyState(S), index::Int64
+) where {S}
     #search only among stable solutions
     stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
 

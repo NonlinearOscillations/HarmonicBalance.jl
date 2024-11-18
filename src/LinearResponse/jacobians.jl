@@ -73,7 +73,7 @@ Construct a function for the Jacobian of `eom` using `rules=Dict()`.
 
 Necessary matrix inversions are only performed AFTER substituting numerical values at each call, avoiding huge symbolic operations.
 
-Returns a function `f(soln::OrderedDict)::Matrix{ComplexF64}`.
+Returns a function `f(soln::OrderedDict{Num,T})::Matrix{T}`.
 """
 function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
     J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules=rules)

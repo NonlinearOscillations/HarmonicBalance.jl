@@ -1,7 +1,7 @@
 module HarmonicBalance
 
 # default global settings
-IM_TOL::Float64 = 1E-6
+IM_TOL::Float64 = 1e-6
 function set_imaginary_tolerance(x::Float64)
     @eval(IM_TOL::Float64 = $x)
 end
@@ -90,14 +90,14 @@ using .FFTWExt
 
 using PrecompileTools: @setup_workload, @compile_workload
 
-@setup_workload begin
-    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-    # precompile file and potentially make loading faster.
-    @compile_workload begin
-        # all calls in this block will be precompiled, regardless of whether
-        # they belong to your package or not (on Julia 1.8 and higher)
-        include("precompilation.jl")
-    end
-end
+# @setup_workload begin
+#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+#     # precompile file and potentially make loading faster.
+#     @compile_workload begin
+#         # all calls in this block will be precompiled, regardless of whether
+#         # they belong to your package or not (on Julia 1.8 and higher)
+#         include("precompilation.jl")
+#     end
+# end
 
 end # module

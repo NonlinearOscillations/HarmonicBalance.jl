@@ -32,7 +32,7 @@ the amplitude of the first quadratures multiplied by 2.
 Default behaviour is to plot stable solutions as full lines, unstable as dashed.
 
 If a sweep in two parameters were done, i.e., `dim(res)==2`, a one dimensional cut can be
-plotted by using the keyword `cut` were it takes a `Pair{Num, Float64}` type entry. For example,
+plotted by using the keyword `cut` were it takes a `Pair{Num, Float}` type entry. For example,
 `plot(res, y="sqrt(u1^2+v1^2), cut=(λ => 0.2))` plots a cut at `λ = 0.2`.
 ###
 
@@ -44,18 +44,18 @@ To make the 2d plot less chaotic it is required to specify the specific `branch`
 The x and y axes are taken automatically from `res`
 """
 function Plots.plot(
-    res::Result, varargs...; cut=Pair(missing, missing), kwargs...
-)::Plots.Plot
-    if dim(res) == 1
+    res::Result{S,P,D}, varargs...; cut=Pair(missing, missing), kwargs...
+)::Plots.Plot where {S,P,D}
+    if D == 1
         plot1D(res, varargs...; _set_Plots_default..., kwargs...)
-    elseif dim(res) == 2
+    elseif D == 2
         if ismissing(cut.first)
             plot2D(res, varargs...; _set_Plots_default..., kwargs...)
         else
             plot2D_cut(res, varargs...; cut=cut, _set_Plots_default..., kwargs...)
         end
     else
-        error("Data dimension ", dim(res), " not supported")
+        error("Data dimension ", D, " not supported")
     end
 end
 
@@ -69,9 +69,9 @@ function Plots.plot!(res::Result, varargs...; kwargs...)::Plots.Plot
 end
 
 """ Project the array `a` into the real axis, warning if its contents are complex. """
-function _realify(a::Array{T} where {T<:Number}; warning="")
+function _realify(a::Array{Complex}; warning="")
     warned = false
-    a_real = similar(a, Float64)
+    a_real = similar(a, typeof(real(a[1])))
     for i in eachindex(a)
         if !isnan(a[i]) && !warned && !is_real(a[i])
             @warn "Values with non-negligible complex parts have
@@ -82,6 +82,7 @@ function _realify(a::Array{T} where {T<:Number}; warning="")
     end
     return a_real
 end
+_realify(a::Array{Real}; warning="") = a
 
 # return true if p already has a label for branch index idx
 function _is_labeled(p::Plot, idx::Int64)
@@ -178,7 +179,7 @@ function plot2D(
 
     ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
     return p = plot!(
-        map(_realify, [Float64.(Y), Float64.(X), Z])...;
+        map(_realify, [real.(Y), real.(X), Z])...;
         st=:surface,
         color=:blue,
         opacity=0.5,
@@ -252,7 +253,7 @@ function plot2D_cut(
     for k in findall(branch -> !all(isnan.(branch)), branch_data) # skip NaN branches but keep indices
         l = _is_labeled(p, k) ? nothing : k
         Plots.plot!(
-            Float64.(X),
+            real.(X),
             _realify(getindex.(branches, k));
             color=k,
             label=l,
@@ -308,8 +309,8 @@ function plot_phase_diagram_2D(
 
     # cannot set heatmap ticks (Plots issue #3560)
     return heatmap(
-        Float64.(X),
-        Float64.(Y),
+        real.(X),
+        real.(Y),
         transpose(Z);
         xlabel=xlab,
         ylabel=ylab,
@@ -324,7 +325,7 @@ function plot_phase_diagram_1D(
     X = first(values(res.swept_parameters))
     Y = sum.(_get_mask(res, class, not_class))
     return plot(
-        Float64.(X),
+        real.(X),
         Y;
         xlabel=latexify(string(keys(res.swept_parameters)...)),
         ylabel="#",
@@ -425,7 +426,7 @@ function plot_spaghetti(
         Plots.plot!(
             _realify(getindex.(X, k)),
             _realify(getindex.(Y, k)),
-            Float64.(Z);
+            real.(Z);
             _set_Plots_default...,
             color=k,
             label=l,

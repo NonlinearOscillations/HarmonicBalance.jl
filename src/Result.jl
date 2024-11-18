@@ -7,17 +7,22 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-mutable struct Result
+struct Result{SolutionType<:Number,ParameterType<:Number,Dimension}
     "The variable values of steady-state solutions."
-    solutions::Array{Vector{SteadyState}}
+    solutions::Array{Vector{Vector{SolutionType}},Dimension}
     "Values of all parameters for all solutions."
-    swept_parameters::ParameterRange
+    swept_parameters::OrderedDict{Num,Vector{ParameterType}}
     "The parameters fixed throughout the solutions."
-    fixed_parameters::ParameterList
+    fixed_parameters::OrderedDict{Num,ParameterType}
     "The `Problem` used to generate this."
     problem::Problem
     "Maps strings such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions (see method `classify_solutions!`)."
-    classes::Dict{String,Array}
+    classes::Dict{String,Array{BitVector,Dimension}}
+    "Create binary classification of the solutions, such that each solution point receives an identifier
+    based on its permutation of stable branches (allows to distinguish between different phases,
+    which may have the same number of stable solutions). It works by converting each bitstring
+    `[is_stable(solution_1), is_stable(solution_2), ...,]` into unique labels."
+    binary_labels::Array{Int64,Dimension}
     "The Jacobian with `fixed_parameters` already substituted. Accepts a dictionary specifying the solution.
     If problem.jacobian is a symbolic matrix, this holds a compiled function.
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
@@ -25,12 +30,32 @@ mutable struct Result
     jacobian::Function
     "Seed used for the solver"
     seed::UInt32
+end
 
-    function Result(sol, swept, fixed, problem, classes, J, seed)
-        return new(sol, swept, fixed, problem, classes, J, seed)
-    end
-    Result(sol, swept, fixed, problem, classes) = new(sol, swept, fixed, problem, classes)
-    Result(sol, swept, fixed, problem) = new(sol, swept, fixed, problem, Dict([]))
+function Result(
+    solutions,
+    swept_parameters,
+    fixed_parameters,
+    problem,
+    classes,
+    binary_labels,
+    jacobian,
+    seed,
+)
+    soltype = eltype(eltype(eltype(solutions)))
+    partype = eltype(eltype(swept_parameters).parameters[2])
+    dim = ndims(solutions)
+
+    return Result{soltype,partype,dim}(
+        solutions,
+        swept_parameters,
+        fixed_parameters,
+        problem,
+        classes,
+        binary_labels,
+        jacobian,
+        seed,
+    )
 end
 
 Symbolics.get_variables(res::Result)::Vector{Num} = get_variables(res.problem)

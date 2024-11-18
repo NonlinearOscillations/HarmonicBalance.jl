@@ -33,11 +33,11 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 ```
 The variables `u1` and `v1` were declared automatically to construct the harmonic ansatz. The *slow time* variable `T` describes variation of the quadratures on timescales much slower than `ω`. For a steady state, all derivatives w.r.t `T` vanish, leaving only algebraic equations to be solved. 
 
-We are ready to start plugging in numbers! Let us find steady states by solving `harmonic_eq` for numerical parameters. Homotopy continuation is especially suited to [solving over a range of parameter values](https://www.juliahomotopycontinuation.org/guides/parameter-homotopies/). Here we will solve over a range of driving frequencies `ω` -- these are stored as `Pairs{Sym, Vector{Float64}}`:
+We are ready to start plugging in numbers! Let us find steady states by solving `harmonic_eq` for numerical parameters. Homotopy continuation is especially suited to [solving over a range of parameter values](https://www.juliahomotopycontinuation.org/guides/parameter-homotopies/). Here we will solve over a range of driving frequencies `ω` -- these are stored as `Pairs{Sym, Vector{Float}}`:
 ```@example steady_state
 varied = ω => range(0.9, 1.2, 100); # range of parameter values
 ```
-The other parameters we be fixed -- these are declared as `Pairs{Sym, Float64}` pairs:
+The other parameters we be fixed -- these are declared as `Pairs{Sym, Float}` pairs:
 ```@example steady_state
 fixed = (α => 1., ω0 => 1.0, F => 0.01, γ => 0.01); # fixed parameters
 ```

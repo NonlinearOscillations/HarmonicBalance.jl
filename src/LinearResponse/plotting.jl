@@ -1,11 +1,11 @@
 function get_jacobian_response(
-    res::Result, nat_var::Num, Ω_range, branch::Int; show_progress=true
-)
+    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
+) where {S,P}
     stable = classify_branch(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
     spectra = [JacobianSpectrum(res; branch=branch, index=i) for i in findall(stable)]
-    C = Array{Float64,2}(undef, length(Ω_range), length(spectra))
+    C = Array{P,2}(undef, length(Ω_range), length(spectra))
 
     if show_progress
         bar = Progress(
@@ -23,18 +23,18 @@ function get_jacobian_response(
     return C
 end
 function get_jacobian_response(
-    res::Result,
+    res::Result{S,P},
     nat_var::Num,
     Ω_range,
     followed_branches::Vector{Int};
     show_progress=true,
     force=false,
-)
+) where {S,P}
     spectra = [
         JacobianSpectrum(res; branch=branch, index=i, force=force) for
         (i, branch) in pairs(followed_branches)
     ]
-    C = Array{Float64,2}(undef, length(Ω_range), length(spectra))
+    C = Array{P,2}(undef, length(Ω_range), length(spectra))
 
     if show_progress
         bar = Progress(
@@ -53,13 +53,13 @@ function get_jacobian_response(
 end
 
 function get_linear_response(
-    res::Result, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
-)
+    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
+) where {S,P}
     stable = classify_branch(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
     response = ResponseMatrix(res) # the symbolic response matrix
-    C = Array{Float64,2}(undef, length(Ω_range), sum(stable))
+    C = Array{P,2}(undef, length(Ω_range), sum(stable))
 
     # note: this could be optimized by not grabbing the entire huge dictionary every time
     if show_progress
@@ -83,12 +83,12 @@ function get_linear_response(
 end
 
 function get_rotframe_jacobian_response(
-    res::Result, Ω_range, branch::Int; show_progress=true, damping_mod::Float64
-)
+    res::Result{S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
+) where {S,P}
     stable = classify_branch(res, branch, "stable")
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
     stableidx = findall(stable)
-    C = zeros(length(Ω_range), sum(stable))
+    C = zeros(P, length(Ω_range), sum(stable))
 
     if show_progress
         bar = Progress(
@@ -141,7 +141,7 @@ function plot_linear_response(
         error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = classify_branch(res, branch, "stable") # boolean array
 
-    X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
+    X = collect(values(res.swept_parameters))[1][stable]
 
     C = if order == 1
         get_jacobian_response(res, nat_var, Ω_range, branch; show_progress=show_progress)
@@ -179,7 +179,7 @@ function plot_linear_response(
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
 
-    X = Vector{Float64}(collect(first(values(res.swept_parameters))))
+    X = collect(first(values(res.swept_parameters)))
 
     C = get_jacobian_response(res, nat_var, Ω_range, followed_branches; force=force)
     C = logscale ? log.(C) : C
@@ -212,7 +212,7 @@ function plot_linear_response(
 end
 
 """
-    plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod::Float64 = 1.0, show_progress=true, kwargs...)
+    plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod = 1.0, show_progress=true, kwargs...)
 
 Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency separately identifiable.
 
@@ -221,14 +221,14 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function plot_rotframe_jacobian_response(
-    res::Result;
+    res::Result{S,P};
     Ω_range,
     branch::Int,
     logscale=true,
-    damping_mod::Float64=1.0,
+    damping_mod=one(P),
     show_progress=true,
     kwargs...,
-)
+) where {S,P}
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = classify_branch(res, branch, "stable") # boolean array
@@ -237,7 +237,7 @@ function plot_rotframe_jacobian_response(
     !isempty(findall(x -> x == 0, Ω_range)) &&
         @warn("Probing with Ω=0 may lead to unexpected results")
 
-    X = Vector{Float64}(collect(values(res.swept_parameters))[1][stable])
+    X = Vector{P}(collect(values(res.swept_parameters))[1][stable])
 
     C = get_rotframe_jacobian_response(
         res, Ω_range, branch; show_progress=show_progress, damping_mod=damping_mod
@@ -266,21 +266,21 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function plot_eigenvalues(
-    res;
+    res::Result{S,P};
     branch,
     class=["physical"],
     type=:imag,
     projection=v -> 1,
     cscheme=:default,
     kwargs...,
-)
+) where {S,P}
     filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
     dim(res) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
     x = string(first(keys(res.swept_parameters)))
-    varied = Vector{Float64}(collect(first(values(res.swept_parameters))))
+    varied = Vector{P}(collect(first(values(res.swept_parameters))))
 
     eigenvalues = map(eachindex(varied)) do i
         jac = res.jacobian(get_single_solution(res; branch=branch, index=i))

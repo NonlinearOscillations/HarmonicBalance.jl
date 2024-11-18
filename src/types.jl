@@ -1,8 +1,9 @@
-const ParameterRange = OrderedDict{Num,Vector{Union{Float64,ComplexF64}}};
-const ParameterList = OrderedDict{Num,Float64};
-const StateDict = OrderedDict{Num,ComplexF64};
-const SteadyState = Vector{ComplexF64};
-const ParameterVector = Vector{Float64};
+const ParameterRange = OrderedDict;
+const ParameterList = Union{AbstractDict,NamedTuple};
+const StateDict = OrderedDict;
+const Solutions(T) = VecOrMat{Vector{Vector{T}}};
+const SteadyState(T) = Vector{T};
+# const ParameterVector = Vector{Float64};
 
 """
 

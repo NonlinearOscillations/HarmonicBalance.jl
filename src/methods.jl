@@ -18,9 +18,9 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct TotalDegree <: HarmonicBalanceMethod
+Base.@kwdef struct TotalDegree{T<:Complex} <: HarmonicBalanceMethod
     """Complex multiplying factor of the start system G(x) for the homotopy"""
-    gamma::Complex = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df)))
+    gamma::T = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df)))
     """Boolean indicating if threading is enabled."""
     thread::Bool = Threads.nthreads() > 1
     """Options for the tracker."""
@@ -74,11 +74,11 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct WarmUp <: HarmonicBalanceMethod
+Base.@kwdef struct WarmUp{T<:Complex} <: HarmonicBalanceMethod
     """Method used for the warmup system."""
     warm_up_method::Union{TotalDegree,Polyhedral} = Polyhedral()
     """Start parameters."""
-    start_parameters::Union{Vector{ComplexF64},Nothing} = nothing
+    start_parameters::Vector{T} = Vector{ComplexF64}()
     """Boolean indicating if threading is enabled."""
     thread::Bool = Threads.nthreads() > 1
     """Options for the tracker."""
@@ -181,8 +181,7 @@ method_symbol(m::TotalDegree) = :total_degree
 Displays information about the Warm Up method.
 """
 function Base.show(io::IO, m::WarmUp)
-    println(io, "Warm up method:")
-    println(io, "perturbation_size: ", m.perturbation_size)
+    println(io, "$(typeof(m)) method:")
     println(io, "Threading:         ", thread(m))
     println(io, "Compile:           ", compile(m))
     return println(io, "Seed:              ", seed(m))
@@ -194,7 +193,7 @@ end
 Displays information about the Total Degree method.
 """
 function Base.show(io::IO, m::TotalDegree)
-    println(io, "Total degree method:")
+    println(io, "$(typeof(m)) method:")
     println(io, "Gamma:     ", m.gamma)
     println(io, "Threading: ", thread(m))
     println(io, "Compile:   ", compile(m))
@@ -207,7 +206,7 @@ end
 Displays information about the Polyhedral method.
 """
 function Base.show(io::IO, m::Polyhedral)
-    println(io, "Polyhedral method:")
+    println(io, "$(typeof(m)) method:")
     println(io, "Zero solutions: ", !m.only_non_zero)
     println(io, "Threading:      ", thread(m))
     println(io, "Compile:        ", compile(m))

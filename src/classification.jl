@@ -112,17 +112,21 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Create binary classification of the solutions, such that each solution points receives an identifier based
-on its permutation of stable branches (allows to distinguish between different phases, which may have the same number
-of stable solutions). It works by converting each bistring `[is_stable(solution_1),is_stable(solution_2),...,]` into unique labels.
+Create binary classification of the solutions, such that each solution point receives an identifier
+based on its permutation of stable branches (allows to distinguish between different phases,
+which may have the same number of stable solutions). It works by converting each bitstring
+`[is_stable(solution_1), is_stable(solution_2), ...,]` into unique labels.
 """
 function classify_binaries!(res::Result)
-    bin_label = bitarr_to_int.(clean_bitstrings(res)) #mapping of binary string (stable or not) for each solution set to integer. Sensitive to ordering!
-    #renormalize labels with numbers from 1 to length(unique(label))
+    # mapping of binary string (stable or not) for each solution set to integer.
+    # Sensitive to ordering!
+    bin_label = bitarr_to_int.(clean_bitstrings(res))
+
+    # renormalize labels with numbers from 1 to length(unique(label))
     for (idx, el) in enumerate(unique(bin_label))
         bin_label[findall(x -> x == el, bin_label)] .= idx
     end
-    return res.classes["binary_labels"] = bin_label
+    return res.binary_labels .= bin_label
 end
 
 function clean_bitstrings(res::Result)
@@ -144,7 +148,7 @@ Typically used to filter out unphysical solutions to prevent huge file sizes.
 function filter_result!(res::Result, class::String)
     bools = [any(getindex.(res.classes[class], i)) for i in 1:length(res[1])]
     res.solutions = [s[bools] for s in res.solutions]
-    for c in filter(x -> x != "binary_labels", keys(res.classes)) # binary_labels stores one Int per parameter set, ignore here
+    for c in keys(res.classes)
         res.classes[c] = [s[bools] for s in res.classes[c]]
     end
 end
@@ -154,5 +158,6 @@ function _classify_default!(result)
     classify_solutions!(result, _is_stable(result), "stable")
     classify_solutions!(result, _is_Hopf_unstable(result), "Hopf")
     order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant ones first
-    return classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
+    classify_binaries!(result) # assign binaries to solutions depending on which branches are stable
+    return nothing
 end

@@ -20,7 +20,8 @@ using HarmonicBalance:
     get_variables,
     transform_solutions,
     get_single_solution,
-    follow_branch
+    follow_branch,
+    SteadyState
 const HB = HarmonicBalance
 
 include("sweeps.jl")

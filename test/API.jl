@@ -33,6 +33,7 @@ end
     @test_throws MethodError get_steady_states(prob, Dict())
     @test_throws MethodError get_steady_states(prob, varied, fixed)
     r = get_steady_states(prob, HarmonicBalance.WarmUp(), varied, fixed)
+    # ^ thows no solutions found
 end
 
 @testset "forgot variable" begin

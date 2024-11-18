@@ -53,7 +53,7 @@ end
 """ Compile the Jacobian from `prob`, inserting `fixed_parameters`.
     Returns a function that takes a dictionary of variables and `swept_parameters` to give the Jacobian."""
 function _compile_Jacobian(
-    prob::Problem, swept_parameters::ParameterRange, fixed_parameters::ParameterList
+    prob::Problem, swept_parameters::OrderedDict, fixed_parameters::OrderedDict
 )
     if prob.jacobian isa Matrix
         compiled_J = compile_matrix(

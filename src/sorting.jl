@@ -78,9 +78,7 @@ Match a to_sort vector of solutions to a set of reference vectors of solutions.
 Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
 reference[1] and to_sort[i1] belong to the same branch
 """
-function align_pair(
-    reference::Vector{SteadyState(T)}, to_sort::Vector{SteadyState(T)}
-) where {T}
+function align_pair(reference, to_sort::Vector{SteadyState(T)}) where {T}
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
     sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]

@@ -1,5 +1,12 @@
 @testset "Concretely typed" begin
-    include("concretely_typed.jl")
+    using Pkg, HarmonicBalance
+    Pkg.add(; url="https://github.com/gdalle/CheckConcreteStructs.jl")
+
+    using CheckConcreteStructs
+    all_concrete(HarmonicBalance; verbose=true)
+    all_concrete(HarmonicBalance.LinearResponse.Lorentzian)
+    all_concrete(HarmonicBalance.LinearResponse.ResponseMatrix)
+    all_concrete(HarmonicBalance.LinearResponse.JacobianSpectrum)
 end
 
 @testset "Code linting" begin
@@ -14,7 +21,6 @@ end
     TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
     ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
     SteadyStateDiffEqExt = Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
-
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
     Aqua.test_ambiguities([HarmonicBalance])

@@ -146,7 +146,7 @@ function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
 end
 
 "Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
-function _reorder_nested(a::Array, order::Vector{Int64})
+function _reorder_nested(a::Array, order::Vector{Int})
     a[1] isa Union{Array,BitVector} || return a
     order = length(order) == length(a) ? order : vcat(order, setdiff(1:length(a[1]), order)) # pad if needed
     return new_array = [el[order] for el in a]

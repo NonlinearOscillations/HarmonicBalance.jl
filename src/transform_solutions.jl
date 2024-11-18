@@ -4,7 +4,7 @@ Return an ordered dictionary specifying all variables and parameters of the solu
 in `result` on `branch` at the position `index`.
 """
 function get_single_solution(
-    res::Result{S,P}; branch::Int64, index
+    res::Result{S,P}; branch::Int, index
 )::OrderedDict{Num,S} where {S,P}
 
     # check if the dimensionality of index matches the solutions
@@ -52,7 +52,6 @@ function transform_solutions(
     pars = collect(values(res.swept_parameters))
     n_vars = length(get_variables(res))
     n_pars = length(pars)
-
     vtype = if isa(Base.invokelatest(func, rand(Float64, n_vars + n_pars)), Bool)
         BitVector
     else
@@ -60,7 +59,6 @@ function transform_solutions(
     end
     transformed = _similar(vtype, res; branches=branches)
     f = realify ? v -> real.(v) : identity
-
     batches = Iterators.partition(
         CartesianIndices(res.solutions),
         ceil(Int, length(res.solutions) / Threads.nthreads()),
@@ -107,7 +105,6 @@ function transform_solutions(
     transformed = map(x -> Symbolics.unwrap(substitute_all(expr, rule(x))), soln)
     return convert(T, transformed) # TODO is this necessary?
 end
-
 """ Parse `expr` into a Symbolics.jl expression, substitute with `rules` and build a function taking free_symbols """
 function _build_substituted(expr::String, rules, free_symbols)
     subbed = substitute_all(_parse_expression(expr), rules)
@@ -155,11 +152,11 @@ Go over a solution and an equally-sized array (a "mask") of booleans.
 true  -> solution unchanged
 false -> changed to NaN (omitted from plotting)
 """
-function _apply_mask(solns::Array{Vector}, booleans)
+function _apply_mask(solns::Array{Vector{T}}, booleans) where {T}
     factors = replace.(booleans, 0 => NaN)
     return map(.*, solns, factors)
 end
-function _apply_mask(solns::Solutions(T), booleans) where {T<:Number}
+function _apply_mask(solns::Vector{Vector{Vector{T}}}, booleans) where {T}
     Nan_vector = NaN .* similar(solns[1][1])
     new_solns = [
         Vector{T}[booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])]

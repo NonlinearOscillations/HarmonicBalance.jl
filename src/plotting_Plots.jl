@@ -69,7 +69,7 @@ function Plots.plot!(res::Result, varargs...; kwargs...)::Plots.Plot
 end
 
 """ Project the array `a` into the real axis, warning if its contents are complex. """
-function _realify(a::Array{Complex}; warning="")
+function _realify(a::Array{T}; warning="") where {T<:Number}
     warned = false
     a_real = similar(a, typeof(real(a[1])))
     for i in eachindex(a)

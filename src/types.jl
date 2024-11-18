@@ -1,10 +1,9 @@
-const ParameterRange = OrderedDict;
-const ParameterList = Union{AbstractDict,NamedTuple};
+# const ParameterRange = OrderedDict;
+# const ParameterList = Union{AbstractDict,NamedTuple};
 const StateDict = OrderedDict;
 const Solutions(T) = VecOrMat{Vector{Vector{T}}};
 const SteadyState(T) = Vector{T};
 # const ParameterVector = Vector{Float64};
-
 """
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.

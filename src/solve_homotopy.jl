@@ -271,8 +271,8 @@ function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_val
 end
 
 function newton(prob::Problem, soln::OrderedDict)
-    vars = _convert_or_zero.(substitute_all(prob.variables, soln))
-    pars = _convert_or_zero.(substitute_all(prob.parameters, soln))
+    vars = substitute_all(prob.variables, soln)
+    pars = substitute_all(prob.parameters, soln)
 
     return HC.newton(prob.system, vars, pars)
 end

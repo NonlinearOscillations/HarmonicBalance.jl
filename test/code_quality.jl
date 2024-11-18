@@ -18,6 +18,7 @@
     all_concrete(HarmonicBalance.LinearResponse.Lorentzian)
     all_concrete(HarmonicBalance.LinearResponse.ResponseMatrix)
     all_concrete(HarmonicBalance.LinearResponse.JacobianSpectrum)
+end
 
 @testset "Code linting" begin
     using JET

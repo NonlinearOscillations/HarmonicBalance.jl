@@ -224,7 +224,7 @@ function _get_raw_solution(
 
     example_p = parameter_values[1]
     if isempty(method.start_parameters)
-        start_parameters = randn(eltype(example_p), length(example_p))
+        start_parameters = randn(complex(eltype(example_p)), length(example_p))
     else
         start_parameters = method.start_parameters
     end

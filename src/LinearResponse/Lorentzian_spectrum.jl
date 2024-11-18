@@ -11,7 +11,7 @@ function Base.:*(peak::Lorentzian{T}, number::T) where {T<:Real} # multiplicatio
 end
 #! format: on
 
-# TODO:  ∨ allocation heavy. Intead, define in-place multipliation.
+# TODO:  ∨ allocation heavy. Instead, define in-place multipliation.
 function Base.:*(number::T, s::JacobianSpectrum{T}) where {T<:Real}
     return JacobianSpectrum{T}([*(number, peak) for peak in s.peaks])
 end

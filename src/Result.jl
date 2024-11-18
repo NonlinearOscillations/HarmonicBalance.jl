@@ -9,11 +9,11 @@ $(TYPEDFIELDS)
 """
 mutable struct Result
     "The variable values of steady-state solutions."
-    solutions::Array{Vector{SteadyState}}
+    solutions::Array{Vector{Vector{ComplexF64}}}
     "Values of all parameters for all solutions."
-    swept_parameters::ParameterRange
+    swept_parameters::OrderedDict
     "The parameters fixed throughout the solutions."
-    fixed_parameters::ParameterList
+    fixed_parameters::OrderedDict
     "The `Problem` used to generate this."
     problem::Problem
     "Maps strings such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions (see method `classify_solutions!`)."

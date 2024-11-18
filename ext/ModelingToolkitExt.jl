@@ -90,7 +90,7 @@ function ModelingToolkit.ODEProblem(
     eom::Union{HarmonicEquation,DifferentialEquation},
     u0,
     tspan::Tuple,
-    p::ParameterList;
+    p::AbstractDict;
     in_place=true,
     kwargs...,
 )
@@ -105,14 +105,14 @@ function ModelingToolkit.ODEProblem(
 end
 
 function ModelingToolkit.NonlinearProblem(
-    eom::HarmonicEquation, u0, p::ParameterList; in_place=true, kwargs...
+    eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
 )
-    ss_prob = SteadyStateProblem(eom, u0, p::ParameterList; in_place=in_place, kwargs...)
+    ss_prob = SteadyStateProblem(eom, u0, p::AbstractDict; in_place=in_place, kwargs...)
     return NonlinearProblem(ss_prob)
 end
 
 function ModelingToolkit.SteadyStateProblem(
-    eom::HarmonicEquation, u0, p::ParameterList; in_place=true, kwargs...
+    eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
 )
     sys = ODESystem(eom)
     param = varmap_to_vars(p, parameters(sys))

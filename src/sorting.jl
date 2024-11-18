@@ -11,7 +11,9 @@ Keyword arguments
 - `show_progress`: Indicate whether a progress bar should be displayed.
 
 """
-function sort_solutions(solutions::Array; sorting="nearest", show_progress=true)
+function sort_solutions(
+    solutions::Solutions(T); sorting="nearest", show_progress=true
+) where {T}
     sorting_schemes = ["none", "hilbert", "nearest"]
     sorting ∈ sorting_schemes ||
         error("Only the following sorting options are allowed:  ", sorting_schemes)
@@ -22,9 +24,9 @@ function sort_solutions(solutions::Array; sorting="nearest", show_progress=true)
     return error("do not know how to solve solution which are not 1D or 2D")
 end
 
-function sort_solutions!(solutions::Result; sorting="nearest", show_progress=true)
-    return solutions.solutions = sort_solutions(
-        solutions.solutions; sorting=sorting, show_progress=show_progress
+function sort_solutions!(res::Result; sorting="nearest", show_progress=true)
+    return res.solutions .= sort_solutions(
+        res.solutions; sorting=sorting, show_progress=show_progress
     )
 end
 
@@ -36,12 +38,12 @@ end
 Removes rows and columns with given indices from the Matrix M.
 The row/column indices are defined with respect to the original M!
 """
-function remove_rows_columns(M::Matrix, rows::Vector{Int64}, cols::Vector{Int64})
+function remove_rows_columns(M::Matrix, rows::Vector{Int}, cols::Vector{Int})
     a, b = size(M)
     return M[[!in(i, rows) for i in 1:a], [!in(j, cols) for j in 1:b]]
 end
 
-remove_rows_columns(M, row::Int64, col::Int64) = remove_rows_columns(M, [row], [col])
+remove_rows_columns(M, row::Int, col::Int) = remove_rows_columns(M, [row], [col])
 function remove_rows_columns(M, pairs::Vector{CartesianIndex{2}})
     return remove_rows_columns(M, getindex.(pairs, 1), getindex.(pairs, 2))
 end
@@ -52,7 +54,9 @@ is_repetitive(array) = length(unique(array)) !== length(array)
 
 "Given two sets of [u1, u2, ... un] and [v1, v2, ... vn], return a matrix of norms
 such that M_ij = norm(ui - vj). NaNs (nonexistent solutions) are replaced by Inf"
-function get_distance_matrix(ref::Vector{SteadyState}, to_sort::Vector{SteadyState})
+function get_distance_matrix(
+    ref::Vector{SteadyState(T)}, to_sort::Vector{SteadyState(T)}
+) where {T}
     length(ref) != length(to_sort) &&
         error("trying to align two solutions of unequal length!")
     distances = Distances.pairwise(Distances.Euclidean(), ref, to_sort)
@@ -60,9 +64,7 @@ function get_distance_matrix(ref::Vector{SteadyState}, to_sort::Vector{SteadySta
 end
 
 "Match each solution from to_sort to a closest partner from refs"
-function get_distance_matrix(
-    refs::Vector{Vector{SteadyState}}, to_sort::Vector{SteadyState}
-)
+function get_distance_matrix(refs::Solutions(T), to_sort::Vector{SteadyState(T)}) where {T}
     distances = map(ref -> get_distance_matrix(ref, to_sort), refs)
     lowest_distances = similar(distances[1])
     for idx in CartesianIndices(lowest_distances)
@@ -76,7 +78,9 @@ Match a to_sort vector of solutions to a set of reference vectors of solutions.
 Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
 reference[1] and to_sort[i1] belong to the same branch
 """
-function align_pair(reference, to_sort::Vector{SteadyState})
+function align_pair(
+    reference, to_sort::Vector{SteadyState(T)}
+) where {T}
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
     sorted_cartesians = CartesianIndices(distances)[sortperm(vec(distances))]
@@ -101,7 +105,7 @@ end
 """
 Go through a vector of solution and sort each according to Euclidean norm.
 """
-function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
+function sort_1D(solns::Solutions(T); show_progress=true) where {T<:Number}
     sorted_solns = similar(solns) # preallocate
     sorted_solns[1] = sort(solns[1]; by=x -> abs.(imag(x))) # prefer real solution at first position
 
@@ -119,7 +123,7 @@ function sort_1D(solns::Vector{Vector{SteadyState}}; show_progress=true)
     return sorted_solns
 end
 
-function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
+function hilbert_indices(solns::Solutions(T)) where {T}
     """Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
     Lx, Ly = size(solns)
     mapping = [] # compute mapping between Hilbert indices and 2Ds
@@ -135,7 +139,7 @@ function hilbert_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     return idx_pairs = [el[2] for el in sort(mapping)]
 end
 
-function naive_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
+function naive_indices(solns::Solutions(T)) where {T}
     idx_pairs = []
     for i in 1:size(solns, 1)
         for j in 1:size(solns, 2)
@@ -145,7 +149,7 @@ function naive_indices(solns::Matrix{Vector{Vector{ComplexF64}}})
     return idx_pairs
 end
 
-function get_nn_2D(idx::Vector{Int64}, Nx::Int64, Ny::Int64)
+function get_nn_2D(idx::Vector{Int}, Nx::Int, Ny::Int)
     "returns all neighbors from a point, including diagonal ones"
     x, y = idx[1], idx[2]
     max_n = 1
@@ -164,9 +168,7 @@ function get_nn_2D(idx::Vector{Int64}, Nx::Int64, Ny::Int64)
     return neighbors
 end
 
-function sort_2D(
-    solns::Matrix{Vector{Vector{ComplexF64}}}; sorting="nearest", show_progress=true
-)
+function sort_2D(solns::Solutions(T); sorting="nearest", show_progress=true) where {T}
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
     # determine a trajectory in 2D space where nodes will be visited
     if sorting == "hilbert" # propagating matching of solutions along a hilbert_curve in 2D
@@ -203,7 +205,7 @@ function find_branch_order(classification::Vector{BitVector})
     return order = setdiff(sortperm(indices), negative)
 end
 
-find_branch_order(classification::Array) = collect(1:length(classification[1])) # no ordering for >1D
+find_branch_order(classification) = collect(1:length(classification[1])) # no ordering for >1D
 
 "Order the solution branches in `res` such that close classified positively by `classes` are first."
 function order_branches!(res::Result, classes::Vector{String})
@@ -215,8 +217,8 @@ end
 order_branches!(res::Result, class::String) = order_branches!(res, [class])
 
 "Reorder the solutions in `res` to match the index permutation `order`."
-function order_branches!(res::Result, order::Vector{Int64})
-    res.solutions = _reorder_nested(res.solutions, order)
+function order_branches!(res::Result, order::Vector{Int})
+    res.solutions .= _reorder_nested(res.solutions, order)
     for key in keys(res.classes)
         res.classes[key] = _reorder_nested(res.classes[key], order)
     end

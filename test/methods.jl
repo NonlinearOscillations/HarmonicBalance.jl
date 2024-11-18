@@ -10,8 +10,8 @@ using Test
     add_harmonic!(diff_eq, x, ω) #
     harmonic_eq = get_harmonic_equations(diff_eq)
 
-    fixed = HarmonicBalance.ParameterList((α => 1.0, ω0 => 1.1, λ => 0.01, γ => 0.01))
-    varied = HarmonicBalance.ParameterRange((ω => range(0.9, 1.1, 20),))
+    fixed = HarmonicBalance.OrderedDict((α => 1.0, ω0 => 1.1, λ => 0.01, γ => 0.01))
+    varied = HarmonicBalance.OrderedDict((ω => range(0.9, 1.1, 20),))
     prob = HarmonicBalance.Problem(harmonic_eq)
 
     unique_fixed, input_array = HarmonicBalance._prepare_input_params(prob, varied, fixed)
@@ -27,8 +27,8 @@ end
     add_harmonic!(diff_eq, x, ω) #
     harmonic_eq = get_harmonic_equations(diff_eq)
 
-    fixed = HarmonicBalance.ParameterList((α => 1.0, ω0 => 1.1, λ => 0.001, γ => 0.01))
-    varied = HarmonicBalance.ParameterRange((ω => range(0.9, 1.1, 10),))
+    fixed = HarmonicBalance.OrderedDict((α => 1.0, ω0 => 1.1, λ => 0.001, γ => 0.01))
+    varied = HarmonicBalance.OrderedDict((ω => range(0.9, 1.1, 10),))
     result = get_steady_states(
         harmonic_eq, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
     )

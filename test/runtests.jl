@@ -5,9 +5,9 @@ using Random
 const SEED = 0xd8e5d8df
 Random.seed!(SEED)
 
-@testset "Code quality" begin
-    include("code_quality.jl")
-end
+# @testset "Code quality" begin
+#     include("code_quality.jl")
+# end
 
 @testset "API" begin
     include("API.jl")

@@ -1,8 +1,8 @@
 """
     get_steady_states(problem::HarmonicEquation,
                         method::HarmonicBalanceMethod,
-                        swept_parameters::ParameterRange,
-                        fixed_parameters::ParameterList;
+                        swept_parameters::OrderedDict,
+                        fixed_parameters::OrderedDict;
                         show_progress=true,
                         sorting="nearest",
                         classify_default=true)
@@ -22,8 +22,8 @@ solving a simple harmonic oscillator
 ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)`` to obtain the response as a function of ``ω``
 ```julia-repl
 # having obtained a Problem object, let's find steady states
-julia> range = ParameterRange(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
-julia> fixed = ParameterList(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
+julia> range = OrderedDict(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
+julia> fixed = OrderedDict(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
 julia> get_steady_states(problem, range, fixed)
 
 A steady state result for 100 parameter points
@@ -39,7 +39,7 @@ A steady state result for 100 parameter points
 It is also possible to perform 2-dimensional sweeps.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
-julia> range = ParameterRange(ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
+julia> range = OrderedDict(ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
 
 # The swept parameters take precedence over fixed -> the F in fixed is now ignored
 julia> get_steady_states(problem, range, fixed)
@@ -57,8 +57,8 @@ A steady state result for 1000 parameter points
 function get_steady_states(
     prob::Problem,
     method::HarmonicBalanceMethod,
-    swept_parameters::ParameterRange,
-    fixed_parameters::ParameterList;
+    swept_parameters::OrderedDict,
+    fixed_parameters::OrderedDict;
     show_progress=true,
     sorting="nearest",
     classify_default=true,
@@ -93,7 +93,7 @@ function get_steady_states(
     p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
     return get_steady_states(
-        p, method, ParameterRange(swept), ParameterList(fixed); kwargs...
+        p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...
     )
 end
 function get_steady_states(
@@ -152,7 +152,7 @@ end
 
 "prepares an input vector to be parsed to the 2D phase diagram with parameters to sweep and kwargs"
 function _prepare_input_params(
-    prob::Problem, sweeps::ParameterRange, fixed_parameters::ParameterList
+    prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
     # sweeping takes precedence over fixed_parameters
     unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)

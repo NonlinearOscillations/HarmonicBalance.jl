@@ -122,7 +122,7 @@ function classify_binaries!(res::Result)
     for (idx, el) in enumerate(unique(bin_label))
         bin_label[findall(x -> x == el, bin_label)] .= idx
     end
-    return res.classes["binary_labels"] = bin_label
+    return res.binary_labels .= bin_label
 end
 
 function clean_bitstrings(res::Result)

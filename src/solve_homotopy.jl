@@ -78,8 +78,16 @@ function get_steady_states(
     compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
 
     result = Result(
-        solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed(method)
+        solutions,
+        swept_parameters,
+        unique_fixed,
+        prob,
+        Dict(),
+        zeros(Int64, size(solutions)...),
+        compiled_J,
+        seed(method),
     )
+
 
     if sorting != "no_sorting"
         sort_solutions!(result; sorting=sorting, show_progress=show_progress)

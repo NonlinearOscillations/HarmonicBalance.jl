@@ -7,7 +7,6 @@ using HarmonicBalance:
     is_rearranged,
     rearrange_standard,
     get_variables,
-    ParameterList,
     DifferentialEquation,
     get_independent_variables
 using HarmonicBalance.KrylovBogoliubov:

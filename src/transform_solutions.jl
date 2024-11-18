@@ -3,7 +3,9 @@ $(TYPEDSIGNATURES)
 Return an ordered dictionary specifying all variables and parameters of the solution
 in `result` on `branch` at the position `index`.
 """
-function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num,ComplexF64}
+function get_single_solution(
+    res::Result{S,P}; branch::Int, index
+)::OrderedDict{Num,S} where {S,P}
 
     # check if the dimensionality of index matches the solutions
     if length(size(res.solutions)) !== length(index)
@@ -26,7 +28,7 @@ function get_single_solution(res::Result; branch::Int64, index)::OrderedDict{Num
     )
     full_solution = merge(vars, swept_params, res.fixed_parameters)
 
-    return OrderedDict(zip(keys(full_solution), ComplexF64.(values(full_solution))))
+    return OrderedDict{Num,S}(zip(keys(full_solution), values(full_solution)))
 end
 
 function get_single_solution(res::Result, index)
@@ -42,27 +44,27 @@ Takes a `Result` object and a string `f` representing a Symbolics.jl expression.
 Returns an array with the values of `f` evaluated for the respective solutions.
 Additional substitution rules can be specified in `rules` in the format `("a" => val)` or `(a => val)`
 """
-function transform_solutions(res::Result, func; branches=1:branch_count(res), realify=false)
+function transform_solutions(
+    res::Result{S}, func; branches=1:branch_count(res), realify=false
+) where {S}
     # preallocate an array for the numerical values, rewrite parts of it
     # when looping through the solutions
     pars = collect(values(res.swept_parameters))
     n_vars = length(get_variables(res))
     n_pars = length(pars)
-
     vtype = if isa(Base.invokelatest(func, rand(Float64, n_vars + n_pars)), Bool)
         BitVector
     else
-        Vector{ComplexF64}
+        Vector{S}
     end
     transformed = _similar(vtype, res; branches=branches)
     f = realify ? v -> real.(v) : identity
-
     batches = Iterators.partition(
         CartesianIndices(res.solutions),
         ceil(Int, length(res.solutions) / Threads.nthreads()),
     )
     Threads.@threads for batch in collect(batches)
-        _vals = Vector{ComplexF64}(undef, n_vars + n_pars)
+        _vals = Vector{S}(undef, n_vars + n_pars)
         for idx in batch
             for i in 1:length(idx) # param values are common to all branches
                 _vals[end - n_pars + i] = pars[i][idx[i]]
@@ -89,9 +91,11 @@ end
 
 # a simplified version meant to work with arrays of solutions
 # cannot parse parameter values -- meant for time-dependent results
-function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
+function transform_solutions(
+    soln::Vector{T}, f::String, harm_eq::HarmonicEquation
+) where {T}
     vars = _remove_brackets(get_variables(harm_eq))
-    transformed = Vector{ComplexF64}(undef, length(soln))
+    transformed = Vector{T}(undef, length(soln))
 
     # parse the input with Symbolics
     expr = _parse_expression(f)
@@ -99,9 +103,8 @@ function transform_solutions(soln::Vector, f::String, harm_eq::HarmonicEquation)
     rule(u) = Dict(zip(vars, u))
 
     transformed = map(x -> Symbolics.unwrap(substitute_all(expr, rule(x))), soln)
-    return convert(typeof(soln[1]), transformed)
+    return convert(T, transformed) # TODO is this necessary?
 end
-
 """ Parse `expr` into a Symbolics.jl expression, substitute with `rules` and build a function taking free_symbols """
 function _build_substituted(expr::String, rules, free_symbols)
     subbed = substitute_all(_parse_expression(expr), rules)
@@ -149,11 +152,11 @@ Go over a solution and an equally-sized array (a "mask") of booleans.
 true  -> solution unchanged
 false -> changed to NaN (omitted from plotting)
 """
-function _apply_mask(solns::Array{Vector{ComplexF64}}, booleans)
+function _apply_mask(solns::Array{Vector{T}}, booleans) where {T}
     factors = replace.(booleans, 0 => NaN)
     return map(.*, solns, factors)
 end
-function _apply_mask(solns::Vector{Vector{Vector{ComplexF64}}}, booleans)
+function _apply_mask(solns::Vector{Vector{Vector{T}}}, booleans) where {T}
     Nan_vector = NaN .* similar(solns[1][1])
     new_solns = [
         [booleans[i][j] ? solns[i][j] : Nan_vector for j in eachindex(solns[i])] for

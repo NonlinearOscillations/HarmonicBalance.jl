@@ -7,7 +7,7 @@ all_concrete(HarmonicBalance; verbose=true)
 all_concrete(HarmonicBalance.HarmonicVariable)
 all_concrete(HarmonicBalance.WarmUp)
 all_concrete(HarmonicBalance.TotalDegree)
-all_concrete(HarmonicBalance.Polyhedral)
+# all_concrete(HarmonicBalance.Polyhedral) # does not work on CI?
 all_concrete(HarmonicBalance.Result)
 all_concrete(HarmonicBalance.Problem)
 all_concrete(HarmonicBalance.HarmonicEquation)

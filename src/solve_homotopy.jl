@@ -92,9 +92,7 @@ end
 function get_steady_states(
     p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
-    return get_steady_states(
-        p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...
-    )
+    return get_steady_states(p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...)
 end
 function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...

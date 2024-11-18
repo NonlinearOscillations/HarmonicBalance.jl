@@ -2,13 +2,21 @@
 Here the methods to find a
 """
 # multiply a peak by a number.
+#! format: off
 function Base.:*(number::T, peak::Lorentzian{T}) where {T<:Real} # multiplication operation
-    return Lorentzian(peak.ω0, peak.Γ, Base .* (peak.A, number))
+    return Lorentzian(peak.ω0, peak.Γ, *(peak.A, number))
 end
+function Base.:*(peak::Lorentzian{T}, number::T) where {T<:Real} # multiplication operation
+    return Lorentzian(peak.ω0, peak.Γ, *(peak.A, number))
+end
+#! format: on
 
 # TODO:  ∨ allocation heavy. Intead, define in-place multipliation.
 function Base.:*(number::T, s::JacobianSpectrum{T}) where {T<:Real}
-    return JacobianSpectrum{T}([Base .* (number, peak) for peak in s.peaks])
+    return JacobianSpectrum{T}([*(number, peak) for peak in s.peaks])
+end
+function Base.:*(s::JacobianSpectrum{T}, number::T) where {T<:Real}
+    return JacobianSpectrum{T}([*(number, peak) for peak in s.peaks])
 end
 
 function Base.show(io::IO, s::JacobianSpectrum)

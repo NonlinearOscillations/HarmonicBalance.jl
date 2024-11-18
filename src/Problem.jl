@@ -15,7 +15,7 @@ Problem(eom::HarmonicEquation; Jacobian=J) # use J as the Jacobian (a function t
 Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian
 ```
 """
-struct Problem
+mutable struct Problem
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."

@@ -8,6 +8,7 @@ Random.seed!(SEED)
 @testset "Code quality" begin
     include("code_quality.jl")
 end
+
 @testset "API" begin
     include("API.jl")
 end

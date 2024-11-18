@@ -12,6 +12,10 @@ struct Lorentzian{T<:Real}
     Γ::T
     A::T
     Lorentzian(; ω0, Γ) = new{eltype(ω0)}(ω0, Γ, one(ω0)) # default peak height is 1
+    function Lorentzian(ω0, Γ, A)
+        type = promote_type(typeof.((ω0, Γ, A))...)
+        return new{type}(convert.(type, (ω0, Γ, A))...)
+    end
 end
 
 """

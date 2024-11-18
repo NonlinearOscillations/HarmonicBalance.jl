@@ -156,10 +156,9 @@ end
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
-
     variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
     if any([var_name(var) ∈ variable_names for var in get_variables(prob)])
-         error("Cannot fix one of the variables!")
+        error("Cannot fix one of the variables!")
     end
     # sweeping takes precedence over fixed_parameters
     unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
@@ -190,9 +189,7 @@ function _prepare_input_params(
     return unique_fixed, tuple_to_vector.(input_array)
 end
 
-function type_stable_parameters(
-        sweeps::OrderedDict, fixed_parameters::OrderedDict
-    )
+function type_stable_parameters(sweeps::OrderedDict, fixed_parameters::OrderedDict)
     param_ranges = collect(values(sweeps)) # Vector of the sweep ranges
     # array of all permutations (fixed_params do not change)
     iter = Iterators.product(param_ranges..., values(fixed_parameters)...)

@@ -131,20 +131,6 @@ function get_solutions(prob, method, input_array; show_progress)
     end
 end
 
-"""
-Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
-Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments
-    in the order set in `variables`.
-"""
-function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
-    J = substitute_all.(mat, Ref(rules))
-    matrix = Symbolics.build_function(J, variables)
-    matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
-    m(vals::Vector) = postproc(matrix(vals))
-    m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI
-    return m
-end
-
 "Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
 function _reorder_nested(a::Array, order::Vector{Int})
     a[1] isa Union{Array,BitVector} || return a

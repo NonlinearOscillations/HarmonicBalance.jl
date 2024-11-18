@@ -13,6 +13,7 @@ using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
 using LinearAlgebra: eigvals
 using Random: Random # for setting seed
+import FunctionWrappers: FunctionWrapper
 
 using Distances: Distances
 using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilbert
@@ -44,6 +45,7 @@ include("DifferentialEquation.jl")
 include("HarmonicVariable.jl")
 include("HarmonicEquation.jl")
 include("Problem.jl")
+include("Jacobian.jl")
 include("Result.jl")
 include("methods.jl")
 

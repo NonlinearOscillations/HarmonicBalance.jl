@@ -49,22 +49,3 @@ end
 function _free_symbols(p::Problem, varied)
     return cat(p.variables, collect(keys(OrderedDict(varied))); dims=1)
 end
-
-""" Compile the Jacobian from `prob`, inserting `fixed_parameters`.
-    Returns a function that takes a dictionary of variables and `swept_parameters` to give the Jacobian."""
-function _compile_Jacobian(
-    prob::Problem, swept_parameters::OrderedDict, fixed_parameters::OrderedDict
-)
-    if prob.jacobian isa Matrix
-        compiled_J = compile_matrix(
-            prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
-        )
-    elseif prob.jacobian == "implicit"
-        compiled_J = LinearResponse.get_implicit_Jacobian(
-            prob, swept_parameters, fixed_parameters
-        ) # leave implicit Jacobian as is
-    else
-        return prob.jacobian
-    end
-    return compiled_J
-end

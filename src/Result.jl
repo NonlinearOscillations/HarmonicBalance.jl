@@ -7,7 +7,7 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-struct Result{SolutionType<:Number,ParameterType<:Number,Dimension}
+struct Result{SolutionType<:Number,ParameterType<:Number,VarLength,Dimension}
     "The variable values of steady-state solutions."
     solutions::Array{Vector{Vector{SolutionType}},Dimension}
     "Values of all parameters for all solutions."
@@ -27,7 +27,7 @@ struct Result{SolutionType<:Number,ParameterType<:Number,Dimension}
     If problem.jacobian is a symbolic matrix, this holds a compiled function.
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
-    jacobian::Function
+    jacobian::JacobianFunction{Matrix{ParameterType},NTuple{VarLength,SolutionType}}
     "Seed used for the solver"
     seed::UInt32
 end
@@ -45,8 +45,9 @@ function Result(
     soltype = eltype(eltype(eltype(solutions)))
     partype = eltype(eltype(swept_parameters).parameters[2])
     dim = ndims(solutions)
+    varlength = length(swept_parameters)+length(get_variables(problem))
 
-    return Result{soltype,partype,dim}(
+    return Result{soltype,partype,varlength,dim}(
         solutions,
         swept_parameters,
         fixed_parameters,

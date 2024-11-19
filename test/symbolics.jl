@@ -3,16 +3,7 @@ using Symbolics
 using HarmonicBalance
 using SymbolicUtils: Fixpoint, Prewalk, PassThrough
 
-macro eqtest(expr)
-    @assert expr.head == :call && expr.args[1] in [:(==), :(!=)]
-    return esc(
-        if expr.args[1] == :(==)
-            :(@test isequal($(expr.args[2]), $(expr.args[3])))
-        else
-            :(@test !isequal($(expr.args[2]), $(expr.args[3])))
-        end,
-    )
-end
+using HarmonicBalance.ExprUtils: @eqtest
 
 @testset "exp(x)^n => exp(x*n)" begin
     using HarmonicBalance.ExprUtils: expand_all, expand_exp_power

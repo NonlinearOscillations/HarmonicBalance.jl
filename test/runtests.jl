@@ -2,7 +2,7 @@ using HarmonicBalance
 using Test
 
 using Random
-const SEED = 0xd8e5d8df
+const SEED = 0x8f88209c
 Random.seed!(SEED)
 
 @testset "Code quality" begin
@@ -11,6 +11,7 @@ end
 
 @testset "API" begin
     include("API.jl")
+    include("Problem.jl")
 end
 
 @testset "Symbolics customised" begin
@@ -28,6 +29,7 @@ end
 end
 
 @testset "Processing solutions" begin
+    include("Jacobian.jl")
     include("transform_solutions.jl")
 end
 

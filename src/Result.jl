@@ -7,27 +7,27 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-struct Result{SolutionType<:Number,ParameterType<:Number,VarLength,Dimension}
+struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType)}
     "The variable values of steady-state solutions."
-    solutions::Array{Vector{Vector{SolutionType}},Dimension}
+    solutions::Array{Vector{Vector{SolType}},D}
     "Values of all parameters for all solutions."
-    swept_parameters::OrderedDict{Num,Vector{ParameterType}}
+    swept_parameters::OrderedDict{Num,Vector{ParType}}
     "The parameters fixed throughout the solutions."
-    fixed_parameters::OrderedDict{Num,ParameterType}
+    fixed_parameters::OrderedDict{Num,ParType}
     "The `Problem` used to generate this."
     problem::Problem
     "Maps strings such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions (see method `classify_solutions!`)."
-    classes::Dict{String,Array{BitVector,Dimension}}
+    classes::Dict{String,Array{BitVector,D}}
     "Create binary classification of the solutions, such that each solution point receives an identifier
     based on its permutation of stable branches (allows to distinguish between different phases,
     which may have the same number of stable solutions). It works by converting each bitstring
     `[is_stable(solution_1), is_stable(solution_2), ...,]` into unique labels."
-    binary_labels::Array{Int64,Dimension}
+    binary_labels::Array{Int64,D}
     "The Jacobian with `fixed_parameters` already substituted. Accepts a dictionary specifying the solution.
     If problem.jacobian is a symbolic matrix, this holds a compiled function.
     If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
     only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
-    jacobian::JacobianFunction{Matrix{ParameterType},NTuple{VarLength,SolutionType}}
+    jacobian::F
     "Seed used for the solver"
     seed::UInt32
 end
@@ -42,12 +42,11 @@ function Result(
     jacobian,
     seed,
 )
-    soltype = eltype(eltype(eltype(solutions)))
-    partype = eltype(eltype(swept_parameters).parameters[2])
+    soltype = solution_type(solutions)
+    partype = parameter_type(swept_parameters, fixed_parameters)
     dim = ndims(solutions)
-    varlength = length(swept_parameters)+length(get_variables(problem))
 
-    return Result{soltype,partype,varlength,dim}(
+    return Result{soltype,partype,dim,typeof(jacobian)}(
         solutions,
         swept_parameters,
         fixed_parameters,

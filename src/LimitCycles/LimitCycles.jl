@@ -15,13 +15,12 @@ using HarmonicBalance:
     find_branch_order,
     _remove_brackets,
     classify_solutions,
-    _free_symbols,
     _symidx,
     _is_physical,
     substitute_all,
-    var_name
+    var_name,
+    get_implicit_Jacobian
 
-using HarmonicBalance.LinearResponse: get_implicit_Jacobian
 using HarmonicBalance.ExprUtils: get_all_terms
 
 include("gauge_fixing.jl")

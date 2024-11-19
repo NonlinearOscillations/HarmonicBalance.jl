@@ -10,8 +10,6 @@ $(TYPEDFIELDS)
 #  Constructors
 ```julia
 Problem(eom::HarmonicEquation; Jacobian=true) # find and store the symbolic Jacobian
-Problem(eom::HarmonicEquation; Jacobian="implicit") # ignore the Jacobian for now, compute implicitly later
-Problem(eom::HarmonicEquation; Jacobian=J) # use J as the Jacobian (a function that takes a Dict)
 Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian
 ```
 """
@@ -24,13 +22,13 @@ mutable struct Problem
     system::HC.System
     "The Jacobian matrix (possibly symbolic).
     If `false`, the Jacobian is ignored (may be calculated implicitly after solving)."
-    jacobian
+    jacobian::Matrix{Num}
     "The HarmonicEquation object used to generate this `Problem`."
     eom::HarmonicEquation
 
     function Problem(variables, parameters, system, jacobian)
         return new(variables, parameters, system, jacobian)
-    end #incomplete initialization for user-defined symbolic systems
+    end # incomplete initialization for user-defined symbolic systems
     function Problem(variables, parameters, system, jacobian, eom)
         return new(variables, parameters, system, jacobian, eom)
     end
@@ -46,6 +44,21 @@ function Base.show(io::IO, p::Problem)
 end
 
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)
-function _free_symbols(p::Problem, varied)
-    return cat(p.variables, collect(keys(OrderedDict(varied))); dims=1)
+function _free_symbols(p::Problem, varied::OrderedDict)
+    return cat(p.variables, collect(keys(varied)); dims=1)
+end
+
+"Constructor for the type `Problem` (to be solved by HomotopyContinuation)
+from a `HarmonicEquation`."
+function HarmonicBalance.Problem(eom::HarmonicEquation; Jacobian::Bool=true)
+    S = HomotopyContinuation.System(eom)
+    if Jacobian == true
+        J = HarmonicBalance.get_Jacobian(eom)
+    else
+        # this possibly has variables in the denominator and cannot be used for solving
+        J = Num.(float.(collect(LinearAlgebra.I(length(eom.variables)))))
+    end
+    vars_orig = get_variables(eom)
+    vars_new = declare_variable.(var_name.(vars_orig))
+    return Problem(vars_new, eom.parameters, S, J, eom)
 end

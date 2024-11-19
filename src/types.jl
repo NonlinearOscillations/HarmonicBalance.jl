@@ -4,6 +4,9 @@ const StateDict = OrderedDict;
 const Solutions(T) = VecOrMat{Vector{Vector{T}}};
 const SteadyState(T) = Vector{T};
 # const ParameterVector = Vector{Float64};
+
+solution_type(sol::Solutions(T)) where {T} = T
+
 """
 
 Represents a sweep of one or more parameters of a `HarmonicEquation`.

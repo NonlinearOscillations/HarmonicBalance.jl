@@ -100,7 +100,7 @@ function get_rotframe_jacobian_response(
     end
 
     for i in 1:sum(stable)
-        s = get_single_solution(res; branch=branch, index=stableidx[i])
+        s = get_variable_solutions(res; branch=branch, index=stableidx[i])
         jac = res.jacobian(s) #numerical Jacobian
         λs, vs = eigen(jac)
         for j in λs
@@ -283,7 +283,7 @@ function plot_eigenvalues(
     varied = Vector{P}(collect(first(values(res.swept_parameters))))
 
     eigenvalues = map(eachindex(varied)) do i
-        jac = res.jacobian(get_single_solution(res; branch=branch, index=i))
+        jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
         if any(isnan, jac)
             throw(
                 ErrorException(
@@ -296,7 +296,7 @@ function plot_eigenvalues(
     eigenvalues_filtered = map(.*, eigenvalues, filter_branch)
 
     eigenvectors = [
-        eigvecs(res.jacobian(get_single_solution(res; branch=branch, index=i))) for
+        eigvecs(res.jacobian(get_variable_solutions(res; branch=branch, index=i))) for
         i in eachindex(varied)
     ]
     eigvecs_filtered = map(.*, eigenvectors, filter_branch)

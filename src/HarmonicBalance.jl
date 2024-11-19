@@ -11,7 +11,7 @@ using JLD2: JLD2
 using DelimitedFiles: DelimitedFiles, writedlm
 using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
-using LinearAlgebra: eigvals
+using LinearAlgebra: LinearAlgebra, eigvals
 using Random: Random # for setting seed
 import FunctionWrappers: FunctionWrapper
 
@@ -36,7 +36,7 @@ using Symbolics:
 using SymbolicUtils: SymbolicUtils
 
 include("ExprUtils/ExprUtils.jl")
-using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives
+using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
 
 include("extension_functions.jl")
 include("utils.jl")
@@ -70,7 +70,7 @@ export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 export AdiabaticSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
-include("HC_wrapper/HC_wrapper.jl")
+include("HC_wrapper.jl")
 using .HC_wrapper
 
 include("LinearResponse/LinearResponse.jl")

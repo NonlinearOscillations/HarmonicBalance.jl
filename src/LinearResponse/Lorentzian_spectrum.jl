@@ -95,7 +95,8 @@ function JacobianSpectrum(
     end
 
     solution_dict = get_single_solution(res; branch=branch, index=index)
-    λs, vs = eigen(res.jacobian(solution_dict))
+    solutions = get_variable_solutions(res; branch=branch, index=index)
+    λs, vs = eigen(res.jacobian(solutions))
 
     for (j, λ) in enumerate(λs)
         eigvec = vs[:, j] # the eigenvector

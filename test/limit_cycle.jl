@@ -1,5 +1,6 @@
 using HarmonicBalance
 import HarmonicBalance.LinearResponse.plot_linear_response
+using Test
 
 @testset "van der Pol oscillator " begin
     @variables ω_lc, t, ω0, x(t), μ
@@ -15,8 +16,8 @@ import HarmonicBalance.LinearResponse.plot_linear_response
 
     fixed = ()
     varied = μ => range(2, 3, 2)
-    method = HarmonicBalance.WarmUp(; seed=SEED)
-    result = get_limit_cycles(harmonic_eq, method, varied, fixed, ω_lc; show_progress=false)
+    # method = HarmonicBalance.WarmUp(; seed=SEED)
+    result = get_limit_cycles(harmonic_eq, WarmUp(), varied, fixed, ω_lc; show_progress=false)
 
     @test sum(any.(classify_branch(result, "stable"))) == 4
     @test sum(any.(classify_branch(result, "unique_cycle"))) == 1
@@ -24,7 +25,7 @@ import HarmonicBalance.LinearResponse.plot_linear_response
     plot(result; y="ω_lc")
     plot_linear_response(result, x; branch=1, Ω_range=range(2.4, 2.6, 2), order=1)
 end
-
+# real(ComplexF64[0.0 + 0.0im 1.375193014698595 + 0.0im 0.0 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im -0.09353667681429773 + 0.0im 0.0 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im -0.10927509336716573 + 0.0im 4.158613703389808 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im -4.092544384801762 + 0.0im -0.0777982602614297 + 0.0im])
 # takes to long
 # @testset "coupled modes" begin
 # @variables F, ω, ω_lc, t, x(t), y(t)

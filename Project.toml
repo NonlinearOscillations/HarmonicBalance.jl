@@ -62,6 +62,7 @@ ProgressMeter = "1.7.2"
 SteadyStateDiffEq = "2.3.2"
 SymbolicUtils = "3.5"
 Symbolics = "6.4"
+TestExtras = "0.3"
 julia = "1.10.0"
 
 [extras]
@@ -76,6 +77,7 @@ OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestExtras = "5ed8adda-3752-4e41-b88a-e8b09835ee3a"
 
 [targets]
-test = ["Pkg", "Test", "OrdinaryDiffEqTsit5", "OrdinaryDiffEqRosenbrock", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve", "ExplicitImports", "Aqua", "JET", "Documenter"]
+test = ["Pkg", "Test", "OrdinaryDiffEqTsit5", "OrdinaryDiffEqRosenbrock", "ModelingToolkit", "SteadyStateDiffEq", "NonlinearSolve", "ExplicitImports", "Aqua", "JET", "Documenter", "TestExtras"]

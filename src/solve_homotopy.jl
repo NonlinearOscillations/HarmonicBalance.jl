@@ -72,7 +72,9 @@ function get_steady_states(
     )
     solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
 
-    compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
+    compiled_J = _compile_Jacobian(
+        prob, solution_type(solutions), swept_parameters, unique_fixed
+    )
 
     result = Result(
         solutions,
@@ -173,30 +175,6 @@ function _prepare_input_params(
     input_array = getindex.(input_array, [permutation])
     # HC wants arrays, not tuples
     return unique_fixed, tuple_to_vector.(input_array)
-end
-
-function type_stable_parameters(sweeps::OrderedDict, fixed_parameters::OrderedDict)
-    param_ranges = collect(values(sweeps)) # Vector of the sweep ranges
-    # array of all permutations (fixed_params do not change)
-    iter = Iterators.product(param_ranges..., values(fixed_parameters)...)
-    input_array = collect(iter)
-
-    types = unique(reduce(vcat, [unique(typeof.(ps)) for ps in input_array]))
-    if length(types) == 1
-        return input_array
-    else
-        common_type = promote_type(types...)
-        return [convert.(common_type, ps) for ps in input_array]
-    end
-end
-
-"Remove occurrences of `sweeps` elements from `fixed_parameters`."
-function filter_duplicate_parameters(sweeps, fixed_parameters)
-    new_params = copy(fixed_parameters)
-    for par in keys(sweeps)
-        delete!(new_params, par)
-    end
-    return new_params
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."

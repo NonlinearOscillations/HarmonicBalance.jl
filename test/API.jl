@@ -1,4 +1,5 @@
 using HarmonicBalance
+using Test
 
 @testset "Equation{Vector}" begin
     # define equation of motion

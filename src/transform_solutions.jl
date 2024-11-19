@@ -37,6 +37,32 @@ function get_single_solution(res::Result, index)
     ]
 end
 
+function get_variable_solutions(
+    res::Result{S,P}; branch::Int, index
+)::Vector{S} where {S,P}
+
+    # check if the dimensionality of index matches the solutions
+    if length(size(res.solutions)) !== length(index)
+        # if index is a number, use linear indexing
+        index = if length(index) == 1
+            CartesianIndices(res.solutions)[index]
+        else
+            error("Index ", index, " undefined for a solution of size ", size(res.solutions))
+        end
+    else
+        index = CartesianIndex(index)
+    end
+
+    sol = res.solutions[index][branch]
+
+    # collect the swept parameters required for this call
+    swept_params = [
+        res.swept_parameters[key][index[i]] for
+        (i, key) in enumerate(keys(res.swept_parameters))
+    ]
+    return vcat(sol, swept_params)
+end
+
 """
 $(TYPEDSIGNATURES)
 

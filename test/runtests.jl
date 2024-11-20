@@ -12,6 +12,7 @@ end
 @testset "API" begin
     include("API.jl")
     include("Problem.jl")
+    include("HarmonicVariable.jl")
 end
 
 @testset "Symbolics customised" begin
@@ -47,14 +48,14 @@ end
 
 @testset "extensions" begin
     @testset "Time evolution extension" begin
-        include("time_evolution.jl")
-        include("hysteresis_sweep.jl")
+        include("extensions/time_evolution.jl")
+        include("extensions/hysteresis_sweep.jl")
     end
     @testset "ModelingToolkit extension" begin
-        include("ModelingToolkitExt.jl")
+        include("extensions/ModelingToolkitExt.jl")
     end
     @testset "SteadyState extension" begin
-        include("SteadyStateDiffEqExt.jl")
+        include("extensions/SteadyStateDiffEqExt.jl")
     end
 end
 

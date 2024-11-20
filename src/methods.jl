@@ -76,7 +76,7 @@ $(TYPEDFIELDS)
 """
 Base.@kwdef struct WarmUp{T<:Complex} <: HarmonicBalanceMethod
     """Method used for the warmup system."""
-    warm_up_method::Union{TotalDegree,Polyhedral} = Polyhedral()
+    warm_up_method::Union{TotalDegree{T},Polyhedral} = Polyhedral()
     """Start parameters."""
     start_parameters::Vector{T} = Vector{ComplexF64}()
     """Boolean indicating if threading is enabled."""

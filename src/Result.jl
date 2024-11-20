@@ -7,7 +7,7 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType), F1}
+struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType),F1}
     "The variable values of steady-state solutions."
     solutions::Array{Vector{Vector{SolType}},D}
     "Values of all parameters for all solutions."

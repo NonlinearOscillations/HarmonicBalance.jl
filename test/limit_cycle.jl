@@ -17,7 +17,9 @@ using Test
     fixed = ()
     varied = μ => range(2, 3, 2)
     # method = HarmonicBalance.WarmUp(; seed=SEED)
-    result = get_limit_cycles(harmonic_eq, WarmUp(), varied, fixed, ω_lc; show_progress=false)
+    result = get_limit_cycles(
+        harmonic_eq, WarmUp(), varied, fixed, ω_lc; show_progress=false
+    )
 
     @test sum(any.(classify_branch(result, "stable"))) == 4
     @test sum(any.(classify_branch(result, "unique_cycle"))) == 1

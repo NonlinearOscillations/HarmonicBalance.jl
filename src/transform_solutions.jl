@@ -37,9 +37,7 @@ function get_single_solution(res::Result, index)
     ]
 end
 
-function get_variable_solutions(
-    res::Result{S,P}; branch::Int, index
-)::Vector{S} where {S,P}
+function get_variable_solutions(res::Result{S,P}; branch::Int, index)::Vector{S} where {S,P}
 
     # check if the dimensionality of index matches the solutions
     if length(size(res.solutions)) !== length(index)

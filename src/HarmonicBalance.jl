@@ -103,4 +103,11 @@ using PrecompileTools: @setup_workload, @compile_workload
     end
 end
 
+function __init__()
+    # Handle all available errors!
+    Base.Experimental.register_error_hint(_error_hinter("OrdinaryDiffEq", :TimeEvolution, follow_branch), MethodError)
+    Base.Experimental.register_error_hint(_error_hinter("OrdinaryDiffEq", :TimeEvolution, plot_1D_solutions_branch), MethodError)
+    Base.Experimental.register_error_hint(_error_hinter("SteadyStateDiffEq", :SteadyStateDiffEqExt, steady_state_sweep), MethodError)
+end
+
 end # module

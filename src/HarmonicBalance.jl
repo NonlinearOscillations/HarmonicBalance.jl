@@ -90,7 +90,6 @@ export steady_state_sweep
 export plot_1D_solutions_branch
 export follow_branch
 
-
 # src code
 
 include("extension_functions.jl")

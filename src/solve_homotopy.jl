@@ -14,12 +14,16 @@ keeping `fixed_parameters` constant.
 
 ### Keyword arguments
 - `show_progress`: Indicate whether a progress bar should be displayed.
-- `sorting`: the method used by `sort_solutions` to get continuous solutions branches. The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
-- `classify_default`: If `true`, the solutions will be classified using the default classification method.
+- `sorting`: the method used by `sort_solutions` to get continuous solutions branches.
+    The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"`
+    (nearest-neighbor sorting) and `"none"`.
+- `classify_default`: If `true`, the solutions will be classified using the default
+    classification method.
 
 ### Example
 solving a simple harmonic oscillator
-``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)`` to obtain the response as a function of ``ω``
+``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)`` to obtain the response
+as a function of ``ω``
 ```julia-repl
 # having obtained a Problem object, let's find steady states
 julia> range = (ω => range(0.8, 1.2, 100) ) # 100 parameter sets to solve
@@ -133,14 +137,20 @@ function get_solutions(prob, method, input_array; show_progress)
     end
 end
 
-"Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
+"""
+Reorder EACH ELEMENT of `a` to match the index permutation `order`.
+If length(order) < length(array), the remanining positions are kept.
+"""
 function _reorder_nested(a::Array, order::Vector{Int})
     a[1] isa Union{Array,BitVector} || return a
     order = length(order) == length(a) ? order : vcat(order, setdiff(1:length(a[1]), order)) # pad if needed
     return new_array = [el[order] for el in a]
 end
 
-"prepares an input vector to be parsed to the 2D phase diagram with parameters to sweep and kwargs"
+"""
+prepares an input vector to be parsed to the 2D phase diagram with parameters
+to sweep and kwargs
+"""
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )

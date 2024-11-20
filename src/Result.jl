@@ -16,17 +16,24 @@ struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType),F1}
     fixed_parameters::OrderedDict{Num,ParType}
     "The `Problem` used to generate this."
     problem::Problem{F1}
-    "Maps strings such as \"stable\", \"physical\" etc to arrays of values, classifying the solutions (see method `classify_solutions!`)."
+    """
+    Maps strings such as \"stable\", \"physical\" etc to arrays of values,
+    classifying the solutions (see method `classify_solutions!`).
+    """
     classes::Dict{String,Array{BitVector,D}}
-    "Create binary classification of the solutions, such that each solution point receives an identifier
-    based on its permutation of stable branches (allows to distinguish between different phases,
-    which may have the same number of stable solutions). It works by converting each bitstring
-    `[is_stable(solution_1), is_stable(solution_2), ...,]` into unique labels."
+    """
+    Create binary classification of the solutions, such that each solution point receives
+    an identifier based on its permutation of stable branches (allows to distinguish between
+    different phases, which may have the same number of stable solutions). It works by
+    converting each bitstring `[is_stable(solution_1), is_stable(solution_2), ...,]` into
+    unique labels.
+    """
     binary_labels::Array{Int64,D}
-    "The Jacobian with `fixed_parameters` already substituted. Accepts a dictionary specifying the solution.
-    If problem.jacobian is a symbolic matrix, this holds a compiled function.
-    If problem.jacobian was `false`, this holds a function that rearranges the equations to find J
-    only after numerical values are inserted (preferable in cases where the symbolic J would be very large)."
+    """
+    The Jacobian function with `fixed_parameters` already substituted. Accepts a vector
+    specifying the solution. If problem.jacobian is a symbolic matrix, this holds a compiled
+    function.
+    """
     jacobian::F
     "Seed used for the solver"
     seed::UInt32

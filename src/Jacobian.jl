@@ -93,10 +93,8 @@ time cost per run.
 # for limit cycles, the zero eigenvalue causes the rearrangement to fail -> filter it out
 # THIS SETS ALL DERIVATIVES TO ZERO - assumes use for steady states
 function _get_J_matrix(eom::HarmonicEquation; order=0)
-    order > 1 && error(
-        "Cannot get a J matrix of order > 1 from the harmonic equations.\n
-        These are by definition missing higher derivatives",
-    )
+    order > 1 && error("Cannot get a J matrix of order > 1 from the harmonic equations.\n
+                       These are by definition missing higher derivatives")
 
     vars_simp = Dict([var => _remove_brackets(var) for var in get_variables(eom)])
     T = get_independent_variables(eom)[1]

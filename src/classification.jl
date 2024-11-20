@@ -57,9 +57,7 @@ Returns an array of booleans classifying each branch in the solutions in `res`
 according to `class`.
 """
 function get_class(soln::Result, class::String)
-    return [
-        get_class(soln, b, class) for b in 1:length(first(soln.solutions))
-    ]
+    return [get_class(soln, b, class) for b in 1:length(first(soln.solutions))]
 end
 
 """

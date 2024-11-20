@@ -49,7 +49,7 @@ mutable struct DifferentialEquation
             throw(
                 ArgumentError(
                     "The equation is of the form $(typerhs)~$(typelhs) is not supported.
-                    Commenly one forgot to broadcast the equation symbol `~`.",
+                    Commenly one forgot to broadcast the equation symbol `~`."
                 ),
             )
         end

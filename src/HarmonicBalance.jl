@@ -139,7 +139,7 @@ using PrecompileTools: @setup_workload, @compile_workload
     end
 end
 
-# Error hint for extentions stubs
+# Error hint for extensions stubs
 function __init__()
     Base.Experimental.register_error_hint(
         _error_hinter("OrdinaryDiffEq", :TimeEvolution, follow_branch), MethodError

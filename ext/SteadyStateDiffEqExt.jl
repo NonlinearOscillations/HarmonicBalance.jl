@@ -17,7 +17,7 @@ function HarmonicBalance.steady_state_sweep(
 
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? [0.0, 0.0] : result[i - 1]
-        # make type-stable: FD.Dual or Float64
+        # make type-stable: FD.Dual or Float
         parameters = get_new_parameters(prob, varied_idx, value)
         sol = solve(remake(prob; p=parameters, u0=u0), alg; kwargs...)
         result[i] = sol.u
@@ -39,7 +39,7 @@ function HarmonicBalance.steady_state_sweep(
 
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? Base.zeros(length(prob_np.u0)) : result[i - 1]
-        # make type-stable: FD.Dual or Float64
+        # make type-stable: FD.Dual or Float
         parameters = get_new_parameters(prob_np, varied_idx, value)
         sol_nn = solve(remake(prob_np; p=parameters, u0=u0), alg_np; kwargs...)
 
@@ -67,7 +67,7 @@ function tunable_parameters(param)
 end
 
 function get_new_parameters(prob, varied_idx, value)
-    # make type-stable: FD.Dual or Float64
+    # make type-stable: FD.Dual or Float
     if hasfield(typeof(prob.p), :tunable)
         rest = map(filter(x -> x != :tunable, propertynames(prob.p))) do prop
             getproperty(prob.p, prop)

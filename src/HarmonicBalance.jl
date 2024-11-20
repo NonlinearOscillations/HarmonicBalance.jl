@@ -1,7 +1,7 @@
 module HarmonicBalance
 
 # default global settings
-IM_TOL::Float64 = 1E-6
+IM_TOL::Float64 = 1e-6
 function set_imaginary_tolerance(x::Float64)
     @eval(IM_TOL::Float64 = $x)
 end
@@ -11,8 +11,9 @@ using JLD2: JLD2
 using DelimitedFiles: DelimitedFiles, writedlm
 using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
-using LinearAlgebra: eigvals
+using LinearAlgebra: LinearAlgebra, eigvals
 using Random: Random # for setting seed
+import FunctionWrappers: FunctionWrapper
 
 using Distances: Distances
 using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilbert
@@ -35,7 +36,7 @@ using Symbolics:
 using SymbolicUtils: SymbolicUtils
 
 include("ExprUtils/ExprUtils.jl")
-using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives
+using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
 
 include("extension_functions.jl")
 include("utils.jl")
@@ -44,6 +45,7 @@ include("DifferentialEquation.jl")
 include("HarmonicVariable.jl")
 include("HarmonicEquation.jl")
 include("Problem.jl")
+include("Jacobian.jl")
 include("Result.jl")
 include("methods.jl")
 
@@ -68,7 +70,7 @@ export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
 export AdiabaticSweep, steady_state_sweep
 export plot_1D_solutions_branch, follow_branch
 
-include("HC_wrapper/HC_wrapper.jl")
+include("HC_wrapper.jl")
 using .HC_wrapper
 
 include("LinearResponse/LinearResponse.jl")

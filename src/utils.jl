@@ -1,4 +1,4 @@
-is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL::Float64 || abs(x) < 1e-70
+is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL || abs(x) < 1e-70
 is_real(x::Array) = is_real.(x)
 
 flatten(a) = collect(Iterators.flatten(a))
@@ -10,11 +10,30 @@ tuple_to_vector(t::Tuple) = [i for i in t]
 _str_to_vec(s::Vector) = s
 _str_to_vec(s) = [s]
 
-function _convert_or_zero(x, t=ComplexF64)
-    try
-        convert(t, x)
-    catch ArgumentError
-        @warn string(x) * " not supplied: setting to zero"
-        return 0
+function common_type(A::Array)
+    types = unique(reduce(vcat, [unique(typeof.(ps)) for ps in A]))
+    return promote_type(types...)
+end
+function collect_parameters(sweeps::OrderedDict, fixed_parameters::OrderedDict)
+    param_ranges = collect(values(sweeps))
+    iter = Iterators.product(param_ranges..., values(fixed_parameters)...)
+    return collect(iter)
+end
+function type_stable_parameters(sweeps::OrderedDict, fixed_parameters::OrderedDict)
+    input_array = collect_parameters(sweeps, fixed_parameters)
+    T = common_type(input_array)
+    return [convert.(T, ps) for ps in input_array]
+end
+function parameter_type(sweeps::OrderedDict, fixed_parameters::OrderedDict)
+    input_array = collect_parameters(sweeps, fixed_parameters)
+    return common_type(input_array)
+end
+
+"Remove occurrences of `sweeps` elements from `fixed_parameters`."
+function filter_duplicate_parameters(sweeps, fixed_parameters)
+    new_params = copy(fixed_parameters)
+    for par in keys(sweeps)
+        delete!(new_params, par)
     end
+    return new_params
 end

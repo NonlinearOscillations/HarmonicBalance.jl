@@ -8,44 +8,37 @@ using Plots: heatmap, theme_palette, scatter, RGB, cgrad
 using Latexify: Latexify, latexify, @L_str
 using Latexify.LaTeXStrings: LaTeXStrings
 
-using Symbolics: Symbolics, Num, Equation, unwrap
+using Symbolics: Symbolics, Num, unwrap
 using LinearAlgebra: norm, eigvals, eigen, eigvecs
-using OrderedCollections: OrderedDict
 
 using HarmonicBalance
 using HarmonicBalance:
     Result,
     HarmonicVariable,
-    HarmonicEquation,
     DifferentialEquation,
     StateDict,
     get_variables,
-    get_independent_variables
+    get_independent_variables,
+    get_variable_solutions
 
 using HarmonicBalance:
     var_name,
     d,
-    rearrange_standard,
-    _remove_brackets,
-    expand_derivatives,
     substitute_all,
     _free_symbols,
     _get_mask,
-    compile_matrix,
     _set_Plots_default,
     dim,
     _get_mask,
     harmonic_ansatz,
     slow_flow,
     fourier_transform,
-    declare_variable,
-    is_rearranged
+    declare_variable
 
 using ..HC_wrapper
 
 include("types.jl")
 include("utils.jl")
-include("jacobians.jl")
 include("Lorentzian_spectrum.jl")
 include("response.jl")
 include("plotting.jl")

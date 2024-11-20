@@ -1,4 +1,5 @@
 using HarmonicBalance
+using Test
 
 @testset "Equation{Vector}" begin
     # define equation of motion
@@ -33,6 +34,7 @@ end
     @test_throws MethodError get_steady_states(prob, Dict())
     @test_throws MethodError get_steady_states(prob, varied, fixed)
     r = get_steady_states(prob, HarmonicBalance.WarmUp(), varied, fixed)
+    # ^ throws a warning that no solutions found
 end
 
 @testset "forgot variable" begin

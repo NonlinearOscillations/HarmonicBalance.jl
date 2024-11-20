@@ -7,12 +7,15 @@ Holds the three parameters of a Lorentzian peak, defined as A / sqrt((ω-ω0)² 
 $(TYPEDFIELDS)
 
 """
-struct Lorentzian
-    ω0::Float64
-    Γ::Float64
-    A::Float64
-    Lorentzian(; ω0::Float64, Γ::Float64) = new(ω0, Γ, 1) # default peak height is 1
-    Lorentzian(ω0, Γ, A) = new(ω0, Γ, A)
+struct Lorentzian{T<:Real}
+    ω0::T
+    Γ::T
+    A::T
+    Lorentzian(; ω0, Γ) = new{eltype(ω0)}(ω0, Γ, one(ω0)) # default peak height is 1
+    function Lorentzian(ω0, Γ, A)
+        type = promote_type(typeof.((ω0, Γ, A))...)
+        return new{type}(convert.(type, (ω0, Γ, A))...)
+    end
 end
 
 """
@@ -29,9 +32,10 @@ JacobianSpectrum(res::Result; index::Int, branch::Int)
 ```
 
 """
-mutable struct JacobianSpectrum
-    peaks::Vector{Lorentzian}
+mutable struct JacobianSpectrum{T<:Real}
+    peaks::Vector{Lorentzian{T}}
 end
+JacobianSpectrum{T}() where {T<:Real} = JacobianSpectrum{T}(Lorentzian{T}[])
 
 """
 $(TYPEDEF)
@@ -50,6 +54,4 @@ struct ResponseMatrix
     """The frequencies of the harmonic variables underlying `matrix`. These are needed to transform
     the harmonic variables to the non-rotating frame."""
     variables::Vector{HarmonicVariable}
-
-    ResponseMatrix(matrix, symbols, variables) = new(matrix, symbols, variables)
 end

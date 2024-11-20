@@ -8,7 +8,7 @@ diff_eq = DifferentialEquation(
 add_harmonic!(diff_eq, x, ω)
 harmonic_eq = get_harmonic_equations(diff_eq)
 
-@testset "" begin
+@testset "default variable names" begin
     vars = get_variables(harmonic_eq)
     @test HarmonicBalance.var_name.(vars) == ["u1", "v1"]
 end

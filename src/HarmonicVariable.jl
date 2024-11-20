@@ -108,6 +108,8 @@ function declare_variable(name::String)
     return eval(var_sym)
 end
 
+declare_variable(x::Num) = declare_variable(string(x))
+
 "Declare a variable that is a function of another variable in the the current namespace"
 function declare_variable(name::String, independent_variable::Num)
     # independent_variable = declare_variable(independent_variable) convert string into Num

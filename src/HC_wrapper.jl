@@ -1,3 +1,16 @@
+module HC_wrapper
+
+using DocStringExtensions
+using Symbolics: Num, @variables, expand_derivatives, get_variables
+using Symbolics.SymbolicUtils: isterm
+using LinearAlgebra: LinearAlgebra
+
+using HarmonicBalance:
+    HarmonicBalance, HarmonicEquation, _remove_brackets, var_name, Problem
+
+using HomotopyContinuation
+using HomotopyContinuation: Variable, System
+
 "Conversion from Symbolics.jl types to HomotopyContinuation types."
 HomotopyContinuation.Variable(var::Num) =
     isterm(var.val) ? Variable(string(var.val.f)) : Variable(string(var_name(var)))
@@ -10,41 +23,13 @@ function Num_to_Variable(x::Num)
 end
 
 "Converts a Num dictionary into a Variable dictionary."
-Num_to_Variable(dict::Dict{Num,ComplexF64}) =
-    Dict{Variable,ComplexF64}([[Variable(key), dict[key]] for key in keys(dict)]) # for the parameter assignments
+Num_to_Variable(dict::Dict{Num,T}) where {T<:Number} =
+    Dict{Variable,T}([[Variable(key), dict[key]] for key in keys(dict)]) # for the parameter assignments
 
 "Parse symbolic expressions as the Expression type in HomotopyContinuation."
 function parse_equations(eqs::Vector{Num})
     parsed_strings = [Meta.parse(s) for s in string.(eqs)]
     return [Expression(eval(symbol)) for symbol in parsed_strings]
-end
-
-"Declare a new variable in the the current namespace."
-function declare_variable(name::String)
-    var_sym = Symbol(name)
-    @eval($(var_sym) = first(@variables $var_sym))
-    return eval(var_sym)
-end
-
-declare_variable(x::Num) = declare_variable(string(x))
-
-"Constructor for the type `Problem` (to be solved by HomotopyContinuation)
-from a `HarmonicEquation`."
-function HarmonicBalance.Problem(eom::HarmonicEquation; Jacobian=true)
-    S = System(eom)
-    # use the rearranged system for the proper definition of the Jacobian
-    # this possibly has variables in the denominator and cannot be used for solving
-    if Jacobian == true || Jacobian == "explicit"
-        J = HarmonicBalance.get_Jacobian(eom)
-    elseif Jacobian == "false" || Jacobian == false
-        dummy_J(arg) = LinearAlgebra.I(1)
-        J = dummy_J
-    else
-        J = Jacobian
-    end
-    vars_orig = get_variables(eom)
-    vars_new = declare_variable.(var_name.(vars_orig))
-    return Problem(vars_new, eom.parameters, S, J, eom)
 end
 
 "A constructor for Problem from explicitly entered equations, variables and parameters."
@@ -70,4 +55,8 @@ function System(eom::HarmonicEquation)
     return S = HomotopyContinuation.System(
         parse_equations(eqs); variables=conv_vars, parameters=conv_para
     )
+end
+
+export Problem
+
 end

@@ -1,8 +1,8 @@
 """
     get_steady_states(problem::HarmonicEquation,
                         method::HarmonicBalanceMethod,
-                        swept_parameters::ParameterRange,
-                        fixed_parameters::ParameterList;
+                        swept_parameters,
+                        fixed_parameters;
                         show_progress=true,
                         sorting="nearest",
                         classify_default=true)
@@ -22,7 +22,7 @@ solving a simple harmonic oscillator
 ``m \\ddot{x} + γ \\dot{x} + ω_0^2 x = F \\cos(ωt)`` to obtain the response as a function of ``ω``
 ```julia-repl
 # having obtained a Problem object, let's find steady states
-julia> range = ParameterRange(ω => LinRange(0.8,1.2,100) ) # 100 parameter sets to solve
+julia> range = (ω => range(0.8, 1.2, 100) ) # 100 parameter sets to solve
 julia> fixed = ParameterList(m => 1, γ => 0.01, F => 0.5, ω_0 => 1)
 julia> get_steady_states(problem, range, fixed)
 
@@ -39,7 +39,7 @@ A steady state result for 100 parameter points
 It is also possible to perform 2-dimensional sweeps.
 ```julia-repl
 # The swept parameters take precedence over fixed -> use the same fixed
-julia> range = ParameterRange(ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
+julia> range = (ω => range(0.8,1.2,100), F => range(0.1,1.0,10) )
 
 # The swept parameters take precedence over fixed -> the F in fixed is now ignored
 julia> get_steady_states(problem, range, fixed)
@@ -57,8 +57,8 @@ A steady state result for 1000 parameter points
 function get_steady_states(
     prob::Problem,
     method::HarmonicBalanceMethod,
-    swept_parameters::ParameterRange,
-    fixed_parameters::ParameterList;
+    swept_parameters::OrderedDict,
+    fixed_parameters::OrderedDict;
     show_progress=true,
     sorting="nearest",
     classify_default=true,
@@ -67,18 +67,24 @@ function get_steady_states(
     # make sure the variables are in our namespace to make them accessible later
     declare_variable.(string.(cat(prob.parameters, prob.variables; dims=1)))
 
-    variable_names = var_name.([keys(fixed_parameters)..., keys(swept_parameters)...])
-    any([var_name(var) ∈ variable_names for var in get_variables(prob)]) && error("Cannot fix one of the variables!")
-
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
     solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
 
-    compiled_J = _compile_Jacobian(prob, swept_parameters, unique_fixed)
+    compiled_J = _compile_Jacobian(
+        prob, solution_type(solutions), swept_parameters, unique_fixed
+    )
 
     result = Result(
-        solutions, swept_parameters, unique_fixed, prob, Dict(), compiled_J, seed(method)
+        solutions,
+        swept_parameters,
+        unique_fixed,
+        prob,
+        Dict(),
+        zeros(Int64, size(solutions)...),
+        compiled_J,
+        seed(method),
     )
 
     if sorting != "no_sorting"
@@ -92,9 +98,7 @@ end
 function get_steady_states(
     p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
-    return get_steady_states(
-        p, method, ParameterRange(swept), ParameterList(fixed); kwargs...
-    )
+    return get_steady_states(p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...)
 end
 function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
@@ -129,22 +133,8 @@ function get_solutions(prob, method, input_array; show_progress)
     end
 end
 
-"""
-Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
-Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments
-    in the order set in `variables`.
-"""
-function compile_matrix(mat, variables; rules=Dict(), postproc=x -> x)
-    J = substitute_all.(mat, Ref(rules))
-    matrix = Symbolics.build_function(J, variables)
-    matrix = eval(matrix[1]) # compiled allocating function, see Symbolics manual
-    m(vals::Vector) = postproc(matrix(vals))
-    m(s::OrderedDict) = m([s[var] for var in variables]) # for the UI
-    return m
-end
-
 "Reorder EACH ELEMENT of `a` to match the index permutation `order`. If length(order) < length(array), the remanining positions are kept."
-function _reorder_nested(a::Array, order::Vector{Int64})
+function _reorder_nested(a::Array, order::Vector{Int})
     a[1] isa Union{Array,BitVector} || return a
     order = length(order) == length(a) ? order : vcat(order, setdiff(1:length(a[1]), order)) # pad if needed
     return new_array = [el[order] for el in a]
@@ -152,8 +142,12 @@ end
 
 "prepares an input vector to be parsed to the 2D phase diagram with parameters to sweep and kwargs"
 function _prepare_input_params(
-    prob::Problem, sweeps::ParameterRange, fixed_parameters::ParameterList
+    prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
+    variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
+    if any([var_name(var) ∈ variable_names for var in get_variables(prob)])
+        error("Cannot fix one of the variables!")
+    end
     # sweeping takes precedence over fixed_parameters
     unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
 
@@ -163,32 +157,24 @@ function _prepare_input_params(
     # get the order from prob and construct a permutation to rearrange our parameters
     error = ArgumentError("Some input parameters are missing or appear more than once!")
     permutation = try
-        p = [findall(x -> isequal(x, par), all_keys) for par in prob.parameters] # find the matching position of each parameter
+        # find the matching position of each parameter
+        p = [findall(x -> isequal(x, par), all_keys) for par in prob.parameters]
         all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!
         p = getindex.(p, 1) # all exist once -> flatten
-        isequal(all_keys[getindex.(p, 1)], prob.parameters) || throw(error) # parameters sorted wrong!
-        #isempty(setdiff(all_keys, prob.parameters)) || throw(error) # extra parameters present!
+        # ∨ parameters sorted wrong!
+        isequal(all_keys[getindex.(p, 1)], prob.parameters) || throw(error)
+        # ∨ extra parameters present!
+        #isempty(setdiff(all_keys, prob.parameters)) || throw(error)
         p
     catch
         throw(error)
     end
 
-    param_ranges = collect(values(sweeps)) # Vector of the sweep LinRanges
-    input_array = collect(Iterators.product(param_ranges..., values(fixed_parameters)...)) # array of all permutations (fixed_params do not change)
-
+    input_array = type_stable_parameters(sweeps, fixed_parameters)
     # order each parameter vector to match the order in prob
     input_array = getindex.(input_array, [permutation])
     # HC wants arrays, not tuples
     return unique_fixed, tuple_to_vector.(input_array)
-end
-
-"Remove occurrences of `sweeps` elements from `fixed_parameters`."
-function filter_duplicate_parameters(sweeps, fixed_parameters)
-    new_params = copy(fixed_parameters)
-    for par in keys(sweeps)
-        delete!(new_params, par)
-    end
-    return new_params
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
@@ -196,8 +182,10 @@ function _get_raw_solution(
     problem::Problem, method::WarmUp, parameter_values; show_progress
 )
     warm_up_method = method.warm_up_method
-    if isnothing(method.start_parameters)
-        start_parameters = randn(ComplexF64, length(parameter_values[1]))
+
+    example_p = parameter_values[1]
+    if isempty(method.start_parameters)
+        start_parameters = randn(complex(eltype(example_p)), length(example_p))
     else
         start_parameters = method.start_parameters
     end
@@ -257,7 +245,7 @@ function _get_raw_solution(
 end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."
-function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_value=NaN)
+function pad_solutions(solutions::Solutions(T); padding_value=NaN) where {T}
     Ls = length.(solutions)
     nvars = length(solutions[1][1]) # number of variables
     max_N = maximum(Ls) # length to be fixed
@@ -273,8 +261,8 @@ function pad_solutions(solutions::Array{Vector{Vector{ComplexF64}}}; padding_val
 end
 
 function newton(prob::Problem, soln::OrderedDict)
-    vars = _convert_or_zero.(substitute_all(prob.variables, soln))
-    pars = _convert_or_zero.(substitute_all(prob.parameters, soln))
+    vars = substitute_all(prob.variables, soln)
+    pars = substitute_all(prob.parameters, soln)
 
     return HC.newton(prob.system, vars, pars)
 end

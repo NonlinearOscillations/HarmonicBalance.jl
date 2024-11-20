@@ -2,12 +2,21 @@
 Here the methods to find a
 """
 # multiply a peak by a number.
-function Base.:*(number::Float64, peak::Lorentzian) # multiplication operation
-    return Lorentzian(peak.ω0, peak.Γ, peak.A * number)
+#! format: off
+function Base.:*(number::T, peak::Lorentzian{T}) where {T<:Real} # multiplication operation
+    return Lorentzian(peak.ω0, peak.Γ, *(peak.A, number))
 end
+function Base.:*(peak::Lorentzian{T}, number::T) where {T<:Real} # multiplication operation
+    return Lorentzian(peak.ω0, peak.Γ, *(peak.A, number))
+end
+#! format: on
 
-function Base.:*(number::Float64, s::JacobianSpectrum)
-    return JacobianSpectrum([number * peak for peak in s.peaks])
+# TODO:  ∨ allocation heavy. Instead, define in-place multipliation.
+function Base.:*(number::T, s::JacobianSpectrum{T}) where {T<:Real}
+    return JacobianSpectrum{T}([*(number, peak) for peak in s.peaks])
+end
+function Base.:*(s::JacobianSpectrum{T}, number::T) where {T<:Real}
+    return JacobianSpectrum{T}([*(number, peak) for peak in s.peaks])
 end
 
 function Base.show(io::IO, s::JacobianSpectrum)
@@ -40,15 +49,21 @@ function add_peak(s1::JacobianSpectrum, s2::JacobianSpectrum)
 end
 
 "Gives the numerical value of a peak at ω."
-evaluate(peak::Lorentzian, ω::Float64)::Float64 =
+evaluate(peak::Lorentzian{T}, ω::T) where {T<:Real} =
     peak.A / sqrt(((peak.ω0 - ω)^2 + (peak.Γ)^2))
 
 "Gives the numerical value of a JacobianSpectrum at ω"
-evaluate(s::JacobianSpectrum, ω::Float64)::Float64 = sum([evaluate(p, ω) for p in s.peaks])
+function evaluate(s::JacobianSpectrum{T}, ω::T) where {T<:Real}
+    sum = zero(T)
+    for p in s.peaks
+        sum += evaluate(p, ω)
+    end
+    return sum
+end
 
 "Take a pair of harmonic variable u,v and an eigenvalue λ and eigenvector eigvec_2d of the Jacobian to generate corresponding Lorentzians.
     IMPORTANT: The eigenvetor eigen_2d contains only the two components of the full eigenvector which correspond to the u,v pair in question."
-function _pair_to_peaks(λ, eigvec_2d::Vector; ω::Float64)
+function _pair_to_peaks(λ, eigvec_2d::Vector; ω)
     u, v = eigvec_2d
     peak1 =
         (1 + 2 * (imag(u) * real(v) - real(u) * imag(v))) *
@@ -63,11 +78,13 @@ end
 _get_as(hvars::Vector{HarmonicVariable}) = findall(x -> isequal(x.type, "a"), hvars)
 
 #   Returns the spectra of all variables in `res` for `index` of `branch`.
-function JacobianSpectrum(res::Result; index::Int, branch::Int, force=false)
+function JacobianSpectrum(
+    res::Result{S,P,D}; index::Int, branch::Int, force=false
+) where {S,P,D}
     hvars = res.problem.eom.variables # fetch the vector of HarmonicVariable
     # blank JacobianSpectrum for each variable
-    all_spectra = Dict{Num,JacobianSpectrum}([
-        [nvar, JacobianSpectrum([])] for nvar in getfield.(hvars, :natural_variable)
+    all_spectra = Dict{Num,JacobianSpectrum{P}}([
+        [nvar, JacobianSpectrum{P}()] for nvar in getfield.(hvars, :natural_variable)
     ])
 
     if force
@@ -78,7 +95,8 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int, force=false)
     end
 
     solution_dict = get_single_solution(res; branch=branch, index=index)
-    λs, vs = eigen(res.jacobian(solution_dict))
+    solutions = get_variable_solutions(res; branch=branch, index=index)
+    λs, vs = eigen(res.jacobian(solutions))
 
     for (j, λ) in enumerate(λs)
         eigvec = vs[:, j] # the eigenvector
@@ -113,9 +131,9 @@ function JacobianSpectrum(res::Result; index::Int, branch::Int, force=false)
 end
 
 "Condense peaks with similar centers and linewidths in JacobianSpectrum s."
-function _simplify_spectrum(s::JacobianSpectrum)
+function _simplify_spectrum(s::JacobianSpectrum{T}) where {T<:Real}
     ω0s = getfield.(s.peaks, Symbol("ω0"))
-    new_spectrum = JacobianSpectrum([])
+    new_spectrum = JacobianSpectrum{T}()
     for ω in unique(ω0s)
         peaks = filter(x -> x.ω0 == ω, s.peaks) # all peaks centered at ω
         length(unique(getfield.(peaks, Symbol("Γ")))) > 1 && return (s)  # there are peaks of multiple linewidths at the same frequency => not simplifiable

@@ -1,5 +1,31 @@
 using HarmonicBalance, Symbolics
+using Test
 HB = HarmonicBalance
+
+@testset "Lorentzian" begin
+    using HarmonicBalance.LinearResponse: Lorentzian
+    Γ = Lorentzian(1.0, 0.005, 1.0)
+    @test typeof(Γ).parameters[1] == Float64
+    Γr′ = 2.0 * Γ
+    Γl′ = Γ * 2.0
+    @test Γr′.A == 2.0 && Γl′.A == 2.0
+end
+
+@testset "JacobianSpectrum" begin
+    using HarmonicBalance.LinearResponse: JacobianSpectrum, add_peak, evaluate
+    s = JacobianSpectrum{Float64}()
+    p = Lorentzian(1.0, 0.005, 1.0)
+    s = add_peak(s, p)
+    @test length(s.peaks) == 1
+    s = add_peak(s, p)
+    @test length(s.peaks) == 2
+    @test (2.0 * s).peaks[1].A == 2.0
+    s2 = JacobianSpectrum{Float64}()
+    s2 = add_peak(s2, p)
+    s = add_peak(s, s2)
+    @test length(s.peaks) == 3
+    @test evaluate(s, 1.0) == 600.0
+end
 
 @variables α, ω, ω0, F, γ, t, x(t);
 

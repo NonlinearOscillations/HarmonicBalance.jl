@@ -29,8 +29,8 @@ function compile_matrix(
     mat::Matrix{Num}, variables::Vector{Num}; rules=Dict()
 )::Symbolics.RuntimeGeneratedFunction
     J = substitute_all.(mat, Ref(rules)) # Ref makes sure only mat is broadcasted
-    jacfunc = Symbolics.build_function(J, variables; expression=Val(false))[1]
-    return jacfunc
+    jacfunc = Symbolics.build_function(J, variables; expression=Val(false))
+    return jacfunc isa Tuple ? jacfunc[1] : jacfunc
 end
 
 """

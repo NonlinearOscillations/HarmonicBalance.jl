@@ -18,7 +18,7 @@ using Test
     )
     @test typeof(method).parameters[1] == ComplexF32
 
-    method =  WarmUp(;
+    method = WarmUp(;
         warm_up_method=TotalDegree(), start_parameters=ComplexF32[0.0, 0.0, 0.0]
     )
     @test typeof(method).parameters[1] == ComplexF64

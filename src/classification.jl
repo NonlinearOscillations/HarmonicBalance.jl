@@ -1,11 +1,10 @@
 """
 $(TYPEDSIGNATURES)
 
-Creates a solution class in `res` using the inequality `condition` (parsed into Symbolics.jl input).
-
-The new class is labelled with `name` and stored under `res.classes[name]`.
-
-By default, only physical (=real) solutions are classified, `false` is returned for the rest.
+Creates a solution class in `res` using the function `func` (parsed into Symbolics.jl input).
+The new class is labeled with `name` and stored under `res.classes[name]`.
+By default, only physical (real) solutions are classified, and `false` is returned for the rest.
+To also classify complex solutions, set `physical=false`.
 
 # Example
 ```julia
@@ -24,33 +23,49 @@ function classify_solutions!(
     return res.classes[name] = values
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Classifies solutions in `res` using the function `func`.
+If `physical` is true, only physical solutions are classified.
+"""
 function classify_solutions(res::Result, func; physical=true)
     func = isa(func, Function) ? func : _build_substituted(func, res)
     if physical
         f_comp(soln) = _is_physical(soln) && func(real.(soln))
-        transform_solutions(res, f_comp)
+        return transform_solutions(res, f_comp)
 
     else
-        transform_solutions(res, func)
+        return transform_solutions(res, func)
     end
 end
 
 """
 $(TYPEDSIGNATURES)
+
 Returns an array of booleans classifying `branch` in the solutions in `res`
 according to `class`.
 """
-function classify_branch(res::Result, branch::Int64, class::String)
+function get_class(res::Result, branch::Int64, class::String)
     return branch_values = getindex.(res.classes[class], branch)
-end
-
-function classify_branch(soln::Result, class::String)
-    return [classify_branch(soln, b, class) for b in 1:length(first(soln.solutions))]
 end
 
 """
 $(TYPEDSIGNATURES)
-Returns true if the solution `soln` of the Result `res` is physical (= real number).
+
+Returns an array of booleans classifying each branch in the solutions in `res`
+according to `class`.
+"""
+function get_class(soln::Result, class::String)
+    return [
+        get_class(soln, b, class) for b in 1:length(first(soln.solutions))
+    ]
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Returns true if the solution `soln` of the Result `res` is physical (real number).
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
 function is_physical(soln::StateDict, res::Result)
@@ -63,8 +78,9 @@ _is_physical(res::Result) = classify_solutions(res, _is_physical)
 
 """
 $(TYPEDSIGNATURES)
+
 Returns true if the solution `soln` of the Result `res` is stable.
-Stable solutions are real and have all Jacobian eigenvalues Re[λ] <= 0.
+Stable solutions are real and have all Jacobian eigenvalues Re(λ) <= 0.
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 `rel_tol`: Re(λ) considered <=0 if real.(λ) < rel_tol*abs(λmax)
 """
@@ -72,11 +88,21 @@ function is_stable(soln::StateDict, res::Result; kwargs...)
     return _is_stable(collect(values(soln)), res.jacobian; kwargs...)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Returns a function that checks if a solution is stable.
+"""
 function _is_stable(res::Result; kwargs...)
     return _isit(soln) = _is_stable(soln, res.jacobian; kwargs...)
 end
 
-function _is_stable(soln, J; rel_tol=1E-10)
+"""
+$(TYPEDSIGNATURES)
+
+Returns true if the solution `soln` is stable.
+"""
+function _is_stable(soln, J; rel_tol=1e-10)
     _is_physical(soln) || return false
     λs = eigvals(real.(J(soln)))
     scale = maximum(Iterators.map(abs, λs))
@@ -85,19 +111,31 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
 Returns true if the solution `soln` of the problem `prob` is Hopf-unstable.
-Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with positive real parts, which
-are complex conjugates of each other.
+Hopf-unstable solutions are real and have exactly two Jacobian eigenvalues with positive real parts,
+which are complex conjugates of each other.
+
 `im_tol` : an absolute threshold to distinguish real/complex numbers.
 """
 function is_Hopf_unstable(soln::StateDict, res::Result)
     return _is_Hopf_unstable(collect(values(soln)), res.jacobian)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Returns a function that checks if a solution is Hopf-unstable.
+"""
 function _is_Hopf_unstable(res::Result)
     return _isit(soln) = _is_Hopf_unstable(soln, res.jacobian)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Returns true if the solution `soln` is Hopf-unstable.
+"""
 function _is_Hopf_unstable(soln, J)
     _is_physical(soln) || return false  # the solution is unphysical anyway
     λs = eigvals(J(soln))
@@ -112,9 +150,10 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Create binary classification of the solutions, such that each solution point receives an identifier
-based on its permutation of stable branches (allows to distinguish between different phases,
-which may have the same number of stable solutions). It works by converting each bitstring
+
+Create binary classification of the solutions, where each solution point receives an identifier based
+on its permutation of stable branches (allows to distinguish between different phases, which may
+have the same number of stable solutions). It works by converting each bitstring
 `[is_stable(solution_1), is_stable(solution_2), ...,]` into unique labels.
 """
 function classify_binaries!(res::Result)
@@ -129,6 +168,11 @@ function classify_binaries!(res::Result)
     return res.binary_labels .= bin_label
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Removes unphysical solutions from the bitstrings in `res`.
+"""
 function clean_bitstrings(res::Result)
     return [
         [el for el in bit_string[phys_string]] for
@@ -136,12 +180,18 @@ function clean_bitstrings(res::Result)
     ] #remove unphysical solutions from strings
 end; #remove unphysical solutions from strings
 
+"""
+$(TYPEDSIGNATURES)
+
+Converts a bit array to an integer.
+"""
 function bitarr_to_int(arr)
     return sum(arr .* (2 .^ collect((length(arr) - 1):-1:0)))
 end
 
 """
 $(TYPEDSIGNATURES)
+
 Removes all solution branches from `res` where NONE of the solution falls into `class`.
 Typically used to filter out unphysical solutions to prevent huge file sizes.
 """
@@ -153,6 +203,11 @@ function filter_result!(res::Result, class::String)
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Classifies solutions in `result` using default classes: "physical", "stable, "Hopf".
+"""
 function _classify_default!(result)
     classify_solutions!(result, _is_physical, "physical")
     classify_solutions!(result, _is_stable(result), "stable")

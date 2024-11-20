@@ -39,13 +39,13 @@ method = HarmonicBalance.WarmUp(; seed=SEED)
         res = get_steady_states(harmonic_eq, method, varied, fixed; show_progress=false)
         @test length(res.solutions) == 20
         @test length(res.solutions[1]) == 5
-        @test sum(any.(classify_branch(res, "physical"))) == 5
-        @test sum(any.(classify_branch(res, "stable"))) == 3
+        @test sum(any.(get_class(res, "physical"))) == 5
+        @test sum(any.(get_class(res, "stable"))) == 3
 
         classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1e-6", "nonzero")
 
-        stable_list = classify_branch(res, "stable")
-        zeros_list = classify_branch(res, "nonzero")
+        stable_list = get_class(res, "stable")
+        zeros_list = get_class(res, "nonzero")
 
         @test sum(stable_list[1]) == 18
         @test stable_list[2] == stable_list[3]

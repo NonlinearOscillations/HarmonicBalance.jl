@@ -1,7 +1,7 @@
 function get_jacobian_response(
     res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
 ) where {S,P}
-    stable = classify_branch(res, branch, "stable") # boolean array
+    stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
     spectra = [JacobianSpectrum(res; branch=branch, index=i) for i in findall(stable)]
@@ -55,7 +55,7 @@ end
 function get_linear_response(
     res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
 ) where {S,P}
-    stable = classify_branch(res, branch, "stable") # boolean array
+    stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
     response = ResponseMatrix(res) # the symbolic response matrix
@@ -85,7 +85,7 @@ end
 function get_rotframe_jacobian_response(
     res::Result{S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
 ) where {S,P}
-    stable = classify_branch(res, branch, "stable")
+    stable = get_class(res, branch, "stable")
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
     stableidx = findall(stable)
     C = zeros(P, length(Ω_range), sum(stable))
@@ -139,7 +139,7 @@ function plot_linear_response(
 )
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
-    stable = classify_branch(res, branch, "stable") # boolean array
+    stable = get_class(res, branch, "stable") # boolean array
 
     X = collect(values(res.swept_parameters))[1][stable]
 
@@ -231,7 +231,7 @@ function plot_rotframe_jacobian_response(
 ) where {S,P}
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
-    stable = classify_branch(res, branch, "stable") # boolean array
+    stable = get_class(res, branch, "stable") # boolean array
 
     Ω_range = vcat(Ω_range)
     !isempty(findall(x -> x == 0, Ω_range)) &&

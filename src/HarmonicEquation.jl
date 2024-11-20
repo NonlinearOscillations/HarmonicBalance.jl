@@ -319,9 +319,9 @@ function get_harmonic_equations(
     end
     # substitute trig functions into the differential equation
     eom = harmonic_ansatz(diff_eom, fast_time)
-     # drop 2nd order time derivatives
+    # drop 2nd order time derivatives
     eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree)
-     # perform averaging over the frequencies originally specified in dEOM
+    # perform averaging over the frequencies originally specified in dEOM
     fourier_transform!(eom, fast_time)
     # drop higher powers of the first-order derivatives
     ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2)

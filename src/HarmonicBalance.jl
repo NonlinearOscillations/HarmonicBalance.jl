@@ -20,7 +20,7 @@ using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilb
 using HomotopyContinuation: HomotopyContinuation
 const HC = HomotopyContinuation
 
-using Plots: Plots, plot, plot!, savefig, heatmap, Plot
+using Plots: Plots, plot, plot!, heatmap, Plot
 using Latexify: Latexify, latexify
 
 using Symbolics:
@@ -56,7 +56,6 @@ export add_harmonic!
 
 export get_independent_variables
 export get_variables
-export get_harmonic_variables
 
 # handle solutions
 export get_steady_states

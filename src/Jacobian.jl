@@ -1,8 +1,12 @@
-
 const JacobianFunction(T) = FunctionWrapper{Matrix{T},Tuple{Vector{T}}}
 
-""" Compile the Jacobian from `prob`, inserting `fixed_parameters`.
-    Returns a function that takes a dictionary of variables and `swept_parameters` to give the Jacobian."""
+"""
+Compile the Jacobian from `prob`, inserting `fixed_parameters`.
+Returns a function that takes a vector of variables and `swept_parameters` to give the Jacobian.
+The order of the vector is first the variables, then the swept parameters.
+For LC variables called "hopf", the Jacobian is already compiled.
+For Type stability the function is wrapped in a FunctionWrapper.
+"""
 function _compile_Jacobian(
     prob::Problem,
     soltype::DataType,
@@ -16,14 +20,15 @@ function _compile_Jacobian(
             prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
         )
     else
-        compiled_J = get_implicit_Jacobian(prob, swept_parameters, fixed_parameters) # leave implicit Jacobian as is
+        compiled_J = get_implicit_Jacobian(prob, swept_parameters, fixed_parameters)
     end
     return JacobianFunction(soltype)(compiled_J)
 end
 
 """
 Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
-Substitute the values according to `fixed_parameters` and compile into a function that takes numerical arguments in the order set in `variables`.
+Substitute the values according to `fixed_parameters` and compile into a function that takes
+numerical arguments in the order set in `variables`.
 """
 function compile_matrix(
     mat::Matrix{Num}, variables::Vector{Num}; rules=Dict()
@@ -34,17 +39,15 @@ function compile_matrix(
 end
 
 """
-Here stability and linear response is treated with the slow-flow approximation (SFA), see Chapter 5 of JK's thesis.
-Linear response always appears as a sum of Lorentzians, but is inaccurate where these are peaked far from the drive frequency.
-The Jacobian is stored in the Problem object as a function that takes a solution dictionary to give the numerical Jacobian.
+The Jacobian is stored in the Problem object as a
+function that takes a solution dictionary to give the numerical Jacobian.
 """
 
 """
 $(SIGNATURES)
 
-Obtain the symbolic Jacobian matrix of `eom` (either a `HarmonicEquation` or a `DifferentialEquation`).
+Obtain the symbolic Jacobian matrix of `eom`.
 This is the linearised left-hand side of F(u) = du/dT.
-
 """
 function get_Jacobian(eom::HarmonicEquation)::Matrix{Num}
     rearr = !is_rearranged(eom) ? rearrange_standard(eom) : eom
@@ -80,9 +83,10 @@ function get_Jacobian(eqs::Vector{Equation}, vars::Vector{Num})::Matrix{Num}
 end
 
 """
-Code follows for an implicit treatment of the Jacobian. Usually we rearrange the linear response equations to have time-derivatives on one side.
-    This may be extremely costly. Implicit evaluation means only solving the equations AFTER numerical values have been plugged in, giving
-    a constant time cost per run.
+Code follows for an implicit treatment of the Jacobian. Usually we rearrange the linear response
+equations to have time-derivatives on one side. This may be extremely costly. Implicit evaluation
+means only solving the equations AFTER numerical values have been plugged in, giving a constant
+time cost per run.
 """
 
 # for implicit evaluation, the numerical values precede the rearrangement
@@ -90,7 +94,8 @@ Code follows for an implicit treatment of the Jacobian. Usually we rearrange the
 # THIS SETS ALL DERIVATIVES TO ZERO - assumes use for steady states
 function _get_J_matrix(eom::HarmonicEquation; order=0)
     order > 1 && error(
-        "Cannot get a J matrix of order > 1 from the harmonic equations.\nThese are by definition missing higher derivatives",
+        "Cannot get a J matrix of order > 1 from the harmonic equations.\n
+        These are by definition missing higher derivatives",
     )
 
     vars_simp = Dict([var => _remove_brackets(var) for var in get_variables(eom)])
@@ -106,7 +111,8 @@ $(TYPEDSIGNATURES)
 
 Construct a function for the Jacobian of `eom` using `rules=Dict()`.
 
-Necessary matrix inversions are only performed AFTER substituting numerical values at each call, avoiding huge symbolic operations.
+Necessary matrix inversions are only performed AFTER substituting numerical values at each call,
+avoiding huge symbolic operations.
 
 Returns a function `f(soln::OrderedDict{Num,T})::Matrix{T}`.
 """

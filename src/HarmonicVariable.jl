@@ -50,12 +50,22 @@ function _coordinate_transform(new_var, ω, t, type)::Num
     return coords[type]
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Creates a new harmonic variable and its corresponding transformation rule.
+This function takes a natural variable (`nat_var`), a harmonic frequency (`ω`),
+an independent variable (`t`), and a type (`type`), and creates a new harmonic variable with
+the specified `new_symbol`. It returns a tuple containing the transformation rule and
+the new harmonic variable.
+"""
 function _create_harmonic_variable(
     nat_var::Num, ω::Num, t::Num, type::String; new_symbol::String
 )::Tuple{Num,HarmonicVariable}
     new_var = declare_variable(new_symbol, t) # this holds the internal symbol
     name = type * "_{" * var_name(nat_var) * "," * Base.replace(string(ω), "*" => "") * "}"
-    rule = _coordinate_transform(new_var, ω, t, type) # contribution of this harmonic variable to the natural variable
+    # contribution of this harmonic variable to the natural variable
+    rule = _coordinate_transform(new_var, ω, t, type)
     hvar = HarmonicVariable(new_var, name, type, ω, nat_var)
     return rule, hvar
 end
@@ -64,7 +74,7 @@ end
 # Functions for variable substutions and manipulation of HarmonicVariable
 ###
 
-# when HV is used for substitute, substitute its symbol
+"when HV is used for substitute, substitute its symbol"
 function ExprUtils.substitute_all(eq::Union{Num,Equation}, rules::Dict{HarmonicVariable})
     return Symbolics.substitute(
         eq, Dict(zip(getfield.(keys(rules), :symbol), values(rules)))
@@ -124,6 +134,7 @@ function var_name(x::Num)::String
     var = Symbolics._toexpr(x)
     var = var isa Expr ? String(var.args[1]) : String(var)
     return String(replace(var, r"\\mathtt\{([^}]*)\}" => s"\1"))
-    # ^ remove "\\mathtt{}" from the variable name coming from Symbolics since Symbolics v6.14.1 (Symbolics#1305)
+    # ^ remove "\\mathtt{}" from the variable name coming from Symbolics
+    # since Symbolics v6.14.1 (Symbolics#1305)
 end
 var_name(x::SymbolicUtils.Sym) = String(x.name)

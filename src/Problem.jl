@@ -13,7 +13,7 @@ Problem(eom::HarmonicEquation; Jacobian=true) # find and store the symbolic Jaco
 Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian
 ```
 """
-mutable struct Problem
+mutable struct Problem{F}
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."
@@ -22,15 +22,15 @@ mutable struct Problem
     system::HC.System
     "The Jacobian matrix (possibly symbolic).
     If `false`, the Jacobian is ignored (may be calculated implicitly after solving)."
-    jacobian::Matrix{Num}
+    jacobian::F
     "The HarmonicEquation object used to generate this `Problem`."
     eom::HarmonicEquation
 
     function Problem(variables, parameters, system, jacobian)
-        return new(variables, parameters, system, jacobian)
+        return new{typeof(jacobian)}(variables, parameters, system, jacobian)
     end # incomplete initialization for user-defined symbolic systems
     function Problem(variables, parameters, system, jacobian, eom)
-        return new(variables, parameters, system, jacobian, eom)
+        return new{typeof(jacobian)}(variables, parameters, system, jacobian, eom)
     end
 end
 

@@ -78,7 +78,17 @@ function _choose_fixed(eom, ω_lc)
     return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
-limit_cycle_problem(eom::HarmonicEquation, ω_lc) = _cycle_Problem(eom, ω_lc)
+function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
+    prob = _cycle_Problem(eom, ω_lc) # the eom in this problem is gauge-fixed
+    jacobian = _gaugefixed_Jacobian(
+        eom, # this is not gauge_fixed
+        _choose_fixed(eom, ω_lc);
+        sym_order=_free_symbols(prob, OrderedDict(swept)),
+        rules=fixed,
+    )
+    return Problem(prob.variables, prob.parameters, prob.system, jacobian, prob.eom)
+end
+
 
 """
     get_limit_cycles(
@@ -89,13 +99,13 @@ Variant of `get_steady_states` for a limit cycle problem characterised by a Hopf
 Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assumption of distinct harmonic variables corresponding to distinct harmonics.
 """
 function get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; kwargs...)
-    prob = limit_cycle_problem(eom, ω_lc)
+    prob = limit_cycle_problem(eom, swept, fixed, ω_lc)
     return get_limit_cycles(prob, WarmUp(), swept, fixed, ω_lc; kwargs...)
 end
 function get_limit_cycles(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...
 )
-    prob = limit_cycle_problem(eom, ω_lc)
+    prob = limit_cycle_problem(eom, swept, fixed, ω_lc)
     return get_limit_cycles(prob, method, swept, fixed, ω_lc; kwargs...)
 end
 function get_limit_cycles(eom::HarmonicEquation, pairs::Dict, ω_lc; kwargs...)

@@ -9,20 +9,12 @@ function _compile_Jacobian(
     swept_parameters::OrderedDict,
     fixed_parameters::OrderedDict,
 )::JacobianFunction(soltype)
-    if !is_identity(prob.jacobian)
+    if "Hopf" ∈ getfield.(prob.eom.variables, :type)
+        compiled_J = prob.jacobian
+    elseif !is_identity(prob.jacobian)
         compiled_J = compile_matrix(
             prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
         )
-        return JacobianFunction(soltype)(compiled_J)
-    elseif "Hopf" ∈ getfield.(prob.eom.variables, :type)
-        hopf_idx = findfirst(x -> x.type == "Hopf", prob.eom.variables)
-        hopf = prob.eom.variables[hopf_idx].symbol
-        compiled_J = LimitCycles._gaugefixed_Jacobian(
-                prob.eom,
-                LimitCycles._choose_fixed(prob.eom, _remove_brackets(hopf));
-                sym_order=_free_symbols(prob, swept_parameters),
-                rules=fixed_parameters,
-            )
     else
         compiled_J = get_implicit_Jacobian(prob, swept_parameters, fixed_parameters) # leave implicit Jacobian as is
     end
@@ -121,10 +113,7 @@ Returns a function `f(soln::OrderedDict{Num,T})::Matrix{T}`.
 function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
     J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules=rules)
     J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules=rules)
-    function jacfunc(vals::Vector)
-        @show J1c(vals)
-        -inv(real.(J1c(vals))) * J0c(vals)
-    end
+    jacfunc(vals::Vector) = -inv(real.(J1c(vals))) * J0c(vals)
     return jacfunc
 end
 

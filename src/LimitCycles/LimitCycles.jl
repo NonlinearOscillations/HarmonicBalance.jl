@@ -19,7 +19,9 @@ using HarmonicBalance:
     _is_physical,
     substitute_all,
     var_name,
-    get_implicit_Jacobian
+    get_implicit_Jacobian,
+    _free_symbols,
+    OrderedDict
 
 using HarmonicBalance.ExprUtils: get_all_terms
 

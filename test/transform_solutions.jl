@@ -1,9 +1,5 @@
 using HarmonicBalance
 
-using Random
-const SEED = 0xd8e5d8df
-Random.seed!(SEED)
-
 @variables Ω γ λ F x θ η α ω0 ω t T ψ
 @variables x(t) y(t)
 

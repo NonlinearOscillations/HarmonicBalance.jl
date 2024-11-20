@@ -111,10 +111,11 @@ function get_limit_cycles(
     return get_limit_cycles(eom, method, swept, fixed, ω_lc; kwargs...)
 end
 function get_limit_cycles(
-    prob::Problem, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...
+    prob::Problem, method::HarmonicBalanceMethod, swept, fixed, ω_lc;
+    classify_default=true, kwargs...
 )
-    result = get_steady_states(prob, method, swept, fixed; kwargs...)
-    _classify_limit_cycles!(result, ω_lc)
+    result = get_steady_states(prob, method, swept, fixed; classify_default=classify_default, kwargs...)
+    classify_default ? _classify_limit_cycles!(result, ω_lc) : nothing
     return result
 end
 

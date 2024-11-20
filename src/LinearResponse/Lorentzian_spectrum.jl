@@ -1,6 +1,3 @@
-"""
-Here the methods to find a
-"""
 # multiply a peak by a number.
 #! format: off
 function Base.:*(number::T, peak::Lorentzian{T}) where {T<:Real} # multiplication operation

@@ -38,9 +38,7 @@ function filter_duplicate_parameters(sweeps, fixed_parameters)
     return new_params
 end
 
-"
-Show fields of an object.
-"
+"Show fields of an object."
 function show_fields(object)
     for field in fieldnames(typeof(object)) # display every field
         display(string(field))

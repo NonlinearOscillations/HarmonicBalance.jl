@@ -66,3 +66,8 @@ If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this p
 **HarmonicBalance.jl: A Julia suite for nonlinear dynamics using harmonic balance**
 Jan Košata, Javier del Pino, Toni L. Heugel, Oded Zilberberg
 SciPost Phys. Codebases 6 (2022) 
+
+## Similar software
+
+- [JosephsonCircuits.jl](https://github.com/kpobrien/JosephsonCircuits.jl): Performs the frequency domain behaviour with a similar Harmonic Balance method for nonlinear circuits containing Josephson junctions, capacitors, inductors, mutual inductors, and resistors.
+- [Manlab](https://manlab.lma.cnrs-mrs.fr/spip/): A similar package in Matlab also using continuation methods and using the Harmonic Balance method for periodic orbits.

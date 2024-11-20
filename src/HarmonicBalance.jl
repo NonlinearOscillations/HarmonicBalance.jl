@@ -38,6 +38,62 @@ using SymbolicUtils: SymbolicUtils
 include("ExprUtils/ExprUtils.jl")
 using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
 
+# symbolics equations
+export @variables, d
+export DifferentialEquation
+export HarmonicVariable
+export HarmonicEquation
+
+export rearrange_standard
+export rearrange_standard!
+export first_order_transform!
+export is_rearranged_standard
+export get_equations
+
+export get_harmonic_equations
+export get_krylov_equations
+export add_harmonic!
+
+export get_independent_variables
+export get_variables
+export get_harmonic_variables
+
+# handle solutions
+export get_steady_states
+export classify_solutions!
+export get_class
+export get_single_solution
+export transform_solutions
+export IM_TOL
+
+# methods
+export WarmUp
+export TotalDegree
+export Polyhedral
+
+# Limit cycles
+export get_cycle_variables, get_limit_cycles, add_pairs!
+
+# LinearResponse
+export get_Jacobian
+
+# plotting
+export plot_linear_response
+export plot_phase_diagram
+export plot_rotframe_jacobian_response
+export plot_eigenvalues
+export plot, plot!
+export plot_spaghetti
+
+# extension functions
+export AdiabaticSweep
+export steady_state_sweep
+export plot_1D_solutions_branch
+export follow_branch
+
+
+# src code
+
 include("extension_functions.jl")
 include("utils.jl")
 include("types.jl")
@@ -57,41 +113,23 @@ include("saving.jl")
 include("transform_solutions.jl")
 include("plotting_Plots.jl")
 
-export show, *, @variables, d, IM_TOL
-export WarmUp, TotalDegree, Polyhedral
-
-export DifferentialEquation, HarmonicVariable, HarmonicEquation
-export get_steady_states, get_single_solution, get_harmonic_equations, add_harmonic!
-export get_variables, get_independent_variables, get_class, classify_solutions!
-export rearrange_standard
-
-export plot, plot!, plot_phase_diagram, savefig, plot_spaghetti
-
-export AdiabaticSweep, steady_state_sweep
-export plot_1D_solutions_branch, follow_branch
-
 include("HC_wrapper.jl")
 using .HC_wrapper
 
 include("LinearResponse/LinearResponse.jl")
 using .LinearResponse
-export plot_linear_response, plot_rotframe_jacobian_response, get_Jacobian, plot_eigenvalues
-export transform_solutions
 
 include("LimitCycles/LimitCycles.jl")
 using .LimitCycles
-export get_cycle_variables, get_limit_cycles, add_pairs!
 
 include("KrylovBogoliubov/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
-export first_order_transform!, is_rearranged_standard, rearrange_standard!, get_equations
-export get_krylov_equations
 
 include("FFTWExt.jl")
 using .FFTWExt
 
+# Precompilation setup
 using PrecompileTools: @setup_workload, @compile_workload
-
 @setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
@@ -102,8 +140,8 @@ using PrecompileTools: @setup_workload, @compile_workload
     end
 end
 
+# Error hint for extentions stubs
 function __init__()
-    # Handle all available errors!
     Base.Experimental.register_error_hint(
         _error_hinter("OrdinaryDiffEq", :TimeEvolution, follow_branch), MethodError
     )

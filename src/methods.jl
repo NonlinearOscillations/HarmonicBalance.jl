@@ -74,7 +74,7 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct WarmUp{T<:Complex} <: HarmonicBalanceMethod
+Base.@kwdef struct WarmUp{T} <: HarmonicBalanceMethod
     """Method used for the warmup system."""
     warm_up_method::Union{TotalDegree{T},Polyhedral} = Polyhedral()
     """Start parameters."""

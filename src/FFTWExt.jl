@@ -24,36 +24,6 @@ function FFT(soln_u, soln_t; window=DSP.Windows.hanning)
     return (fft_u / length(fft_f), 2 * pi * fft_f)
 end
 
-# function HarmonicBalance.FFT(soln::OrdinaryDiffEqTsit5.ODESolution; window=DSP.Windows.hanning)
-#     return HarmonicBalance.FFT(soln.u, soln.t; window=window)
-# end
-
-# function FFT_analyze(fft_u::Vector{ComplexF64}, fft_f)
-#     "finds peaks in the spectrum and returns corresponding frequency, amplitude and phase.
-#     Frequency and phase are corrected according to Huang Dishan, Mechanical Systems and Signal Processing (1995) 9(2), 113–118
-#     This correction works for a rectangular window."
-
-#     # retaining more sigdigits gives more ''spurious'' peaks
-#     max_indices, mxval = Peaks.peakproms(round.(abs.(fft_u), sigdigits=3); minprom=1)
-#     Del = fft_f[2] - fft_f[1] # frequency spacing
-#     A1 = abs.(fft_u)[max_indices]
-#     df = zeros(length(max_indices))
-
-#     # correction to the amplitude and phase of the peak
-#     for i in 1:length(max_indices)
-#         if abs.(fft_u)[max_indices[i] - 1] < abs.(fft_u)[max_indices[i] + 1]
-#             A2 = abs.(fft_u)[max_indices[i] + 1]
-#             df[i] = -Del / (A1[i] / A2 + 1)
-#         else
-#             A2 = abs.(fft_u)[max_indices[i] - 1]
-#             df[i] = Del / (A1[i] / A2 + 1)
-#         end
-#     end
-#     return 2 * pi * (fft_f[max_indices] - df),
-#     A1 .* 2,
-#     angle.(fft_u)[max_indices] + pi * df / Del
-# end
-
 function u_of_t(omegas_peak, As_peak, phis_peak, t)
     "Calculate us or vs as a function of time from the Fourier components."
     N = length(omegas_peak)

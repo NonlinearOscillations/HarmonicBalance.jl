@@ -21,8 +21,8 @@ using Test
         harmonic_eq, WarmUp(), varied, fixed, ω_lc; show_progress=false
     )
 
-    @test sum(any.(classify_branch(result, "stable"))) == 4
-    @test sum(any.(classify_branch(result, "unique_cycle"))) == 1
+    @test sum(any.(get_class(result, "stable"))) == 4
+    @test sum(any.(get_class(result, "unique_cycle"))) == 1
 
     plot(result; y="ω_lc")
     plot_linear_response(result, x; branch=1, Ω_range=range(2.4, 2.6, 2), order=1)

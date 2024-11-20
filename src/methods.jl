@@ -9,10 +9,10 @@ abstract type HarmonicBalanceMethod end
     TotalDegree
 
 The Total Degree homotopy method performs a homotopy ``H(x, t) = γ t G(x) + (1-t) F(x)``
-from the trivial polynomial system ``F(x) =xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ`` determined
-by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem). The method
-guarantees to find all solutions, however, it comes with a high computational cost. See
-[HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/totaldegree/)
+from the trivial polynomial system ``F(x) =xᵢ^{dᵢ} +aᵢ`` with the maximal degree ``dᵢ``
+determined by the [Bezout bound](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem).
+The method guarantees to find all solutions, however, it comes with a high computational cost.
+See [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/totaldegree/)
 for more information.
 
 # Fields
@@ -110,11 +110,14 @@ end
 """
     WarmUp
 
-The Warm Up method prepares a warmup system with the Total Degree method using the parameter at `index`
-perturbed by `perturbation_size`. The warmup system is used to perform a homotopy using all other
-systems in the parameter sweep. It is very efficient for systems with minimal bifurcation in the
-parameter sweep. The Warm Up method does not guarantee to find all solutions. See
-[HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/many-systems/)
+The Warm Up method prepares a warmup system with the Total Degree method using the parameter
+at `index` perturbed by `perturbation_size`. The warmup system is used to perform a homotopy
+using all other systems in the parameter sweep. It is very efficient for systems with minimal
+bifurcation in the parameter sweep. The Warm Up method should in theory guarantee to find all
+solutions, however, if the `start_parameters` is not proper (to close to the real line)
+it could miss some solutions.
+
+See[HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/guides/many-systems/)
 for more information.
 
 # Fields
@@ -148,7 +151,8 @@ struct WarmUp{T} <: HarmonicBalanceMethod
         T1 = eltype(start_parameters)
         T2 = typeof(warm_up_method).parameters[1]
         if T1 != T2
-            @warn "The start parameters and the method parameters do not match. The start parameters are converted to the method parameters."
+            @warn "The start parameters and the method parameters do not match.
+            The start parameters are converted to the method parameters."
             start_parameters = Vector{T2}(start_parameters)
         end
         return new{T2}(

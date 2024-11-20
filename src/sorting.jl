@@ -1,15 +1,15 @@
 """
     $(TYPEDSIGNATURES)
 
-Sorts `solutions` into branches according to the method `sorting`.
+Sorts `solutions` into branches according to the specified `sorting` method.
 
-`solutions` is an n-dimensional array of Vector{Vector}. Each element describes a set of solutions for a given parameter set.
-The output is a similar array, with each solution set rearranged such that neighboring solution sets have the smallest Euclidean distance.
+`solutions` is an n-dimensional array of `Vector{Vector}`. Each element describes a set of
+solutions for a given parameter set. The output is a similar array, with each solution set
+rearranged such that neighboring solution sets have the smallest Euclidean distance.
 
-Keyword arguments
-- `sorting`: the method used by `sort_solutions` to get continuous solutions branches.  The current options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting) and `"none"`.
-- `show_progress`: Indicate whether a progress bar should be displayed.
-
+The `sorting` keyword argument specifies the method used to get continuous solution branches.
+Options are `"hilbert"` (1D sorting along a Hilbert curve), `"nearest"` (nearest-neighbor sorting),
+and `"none"`. The `show_progress` keyword argument indicates whether a progress bar should be displayed.
 """
 function sort_solutions(
     solutions::Solutions(T); sorting="nearest", show_progress=true
@@ -24,6 +24,15 @@ function sort_solutions(
     return error("do not know how to solve solution which are not 1D or 2D")
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Sorts the solutions in `res` in-place according to the specified `sorting` method.
+
+`res` is a `Result` object containing the solutions to be sorted. The `sorting` keyword argument
+specifies the method used to get continuous solution branches. Options are `"hilbert"`, `"nearest"`,
+and `"none"`. The `show_progress` keyword argument indicates whether a progress bar should be displayed.
+"""
 function sort_solutions!(res::Result; sorting="nearest", show_progress=true)
     return res.solutions .= sort_solutions(
         res.solutions; sorting=sorting, show_progress=show_progress
@@ -34,10 +43,7 @@ end
 # SOLUTION SORTING
 ###
 
-"""
-Removes rows and columns with given indices from the Matrix M.
-The row/column indices are defined with respect to the original M!
-"""
+"Removes specified rows and columns from the matrix `M`."
 function remove_rows_columns(M::Matrix, rows::Vector{Int}, cols::Vector{Int})
     a, b = size(M)
     return M[[!in(i, rows) for i in 1:a], [!in(j, cols) for j in 1:b]]
@@ -49,11 +55,10 @@ function remove_rows_columns(M, pairs::Vector{CartesianIndex{2}})
 end
 remove_rows_columns(M, pair::CartesianIndex{2}) = remove_rows_columns(M, pair[1], pair[2])
 
-"Return true if array contains any element more than once"
+"Checks if the array contains any element more than once."
 is_repetitive(array) = length(unique(array)) !== length(array)
 
-"Given two sets of [u1, u2, ... un] and [v1, v2, ... vn], return a matrix of norms
-such that M_ij = norm(ui - vj). NaNs (nonexistent solutions) are replaced by Inf"
+"Given two sets of solutions, returns a matrix of Euclidean distances between them."
 function get_distance_matrix(
     ref::Vector{SteadyState(T)}, to_sort::Vector{SteadyState(T)}
 ) where {T}
@@ -73,11 +78,7 @@ function get_distance_matrix(refs::Solutions(T), to_sort::Vector{SteadyState(T)}
     return lowest_distances
 end
 
-"""
-Match a to_sort vector of solutions to a set of reference vectors of solutions.
-Returns a list of Tuples of the form (1, i1), (2, i2), ... such that
-reference[1] and to_sort[i1] belong to the same branch
-"""
+"Matches each solution from `to_sort` to the closest solution in `reference`."
 function align_pair(reference, to_sort::Vector{SteadyState(T)}) where {T}
     distances = get_distance_matrix(reference, to_sort)
     n = length(to_sort)
@@ -100,12 +101,11 @@ function align_pair(reference, to_sort::Vector{SteadyState(T)}) where {T}
     return sorted
 end
 
-"""
-Go through a vector of solution and sort each according to Euclidean norm.
-"""
+"Sorts 1D solutions according to the Euclidean norm."
 function sort_1D(solns::Solutions(T); show_progress=true) where {T<:Number}
     sorted_solns = similar(solns) # preallocate
-    sorted_solns[1] = sort(solns[1]; by=x -> abs.(imag(x))) # prefer real solution at first position
+    # prefer real solution at first position
+    sorted_solns[1] = sort(solns[1]; by=x -> abs.(imag(x)))
 
     if show_progress
         bar = Progress(
@@ -114,15 +114,15 @@ function sort_1D(solns::Solutions(T); show_progress=true) where {T<:Number}
     end
     for i in eachindex(solns[1:(end - 1)])
         show_progress ? ProgressMeter.next!(bar) : nothing
-        matched_indices = align_pair(sorted_solns[i], solns[i + 1]) # pairs of matching indices
-        next_indices = getindex.(matched_indices, 2) # indices of the next solution
+        matched_indices = align_pair(sorted_solns[i], solns[i + 1])
+        next_indices = getindex.(matched_indices, 2)
         sorted_solns[i + 1] = (solns[i + 1])[next_indices]
     end
     return sorted_solns
 end
 
+"""Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
 function hilbert_indices(solns::Solutions(T)) where {T}
-    """Get mapping between 2D indexes (parameter space) and a 1D Hilbert curve"""
     Lx, Ly = size(solns)
     mapping = [] # compute mapping between Hilbert indices and 2Ds
     for j in 1:Ly # length of parameter sweep 1
@@ -137,6 +137,7 @@ function hilbert_indices(solns::Solutions(T)) where {T}
     return idx_pairs = [el[2] for el in sort(mapping)]
 end
 
+"Generates a list of index pairs for a 2D array of solutions."
 function naive_indices(solns::Solutions(T)) where {T}
     idx_pairs = []
     for i in 1:size(solns, 1)
@@ -147,8 +148,8 @@ function naive_indices(solns::Solutions(T)) where {T}
     return idx_pairs
 end
 
+"Returns all neighbors of a point in a 2D grid, including diagonal ones."
 function get_nn_2D(idx::Vector{Int}, Nx::Int, Ny::Int)
-    "returns all neighbors from a point, including diagonal ones"
     x, y = idx[1], idx[2]
     max_n = 1
     neighbors = []
@@ -166,6 +167,16 @@ function get_nn_2D(idx::Vector{Int}, Nx::Int, Ny::Int)
     return neighbors
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Sorts 2D solutions according to the specified `sorting` method.
+
+`solns` is a 2D array of solutions. The `sorting` keyword argument specifies the method used
+to get continuous solution branches.
+Options are `"hilbert"` and `"nearest"`. The `show_progress` keyword argument indicates
+whether a progress bar should be displayed.
+"""
 function sort_2D(solns::Solutions(T); sorting="nearest", show_progress=true) where {T}
     """match each 2D solution with all its surrounding neighbors, including the diagonal ones"""
     # determine a trajectory in 2D space where nodes will be visited
@@ -175,9 +186,11 @@ function sort_2D(solns::Solutions(T); sorting="nearest", show_progress=true) whe
         idx_pairs = naive_indices(solns)
     end
 
-    # infinite solutions are ignored by the align_pair function. This trick allows a consistent ordering "propagation"
+    # infinite solutions are ignored by the align_pair function.
+    # This trick allows a consistent ordering "propagation"
     sorted_solns = Inf .* copy(solns)
-    sorted_solns[1, 1] = sort(solns[1, 1]; by=x -> abs.(imag(x))) # prefer real solution at first position
+    # prefer real solution at first position
+    sorted_solns[1, 1] = sort(solns[1, 1]; by=x -> abs.(imag(x)))
 
     if show_progress
         bar = Progress(
@@ -188,33 +201,33 @@ function sort_2D(solns::Solutions(T); sorting="nearest", show_progress=true) whe
         show_progress ? ProgressMeter.next!(bar) : nothing
         neighbors = get_nn_2D(idx_pairs[i + 1], size(solns, 1), size(solns, 2))
         reference = [sorted_solns[ind...] for ind in neighbors]
-        matched_indices = align_pair(reference, solns[idx_pairs[i + 1]...]) # pairs of matching indices
-        next_indices = getindex.(matched_indices, 2) # indices of the next solution
+        matched_indices = align_pair(reference, solns[idx_pairs[i + 1]...])
+        next_indices = getindex.(matched_indices, 2)
         sorted_solns[idx_pairs[i + 1]...] = (solns[idx_pairs[i + 1]...])[next_indices]
     end
     return sorted_solns
 end
 
-"Find a branch order according `classification`. Place branches where true occurs earlier first."
+"Finds the order of solution branches based on the classification."
 function find_branch_order(classification::Vector{BitVector})
-    branches = [getindex.(classification, k) for k in 1:length(classification[1])] # array of branches
+    branches = [getindex.(classification, k) for k in 1:length(classification[1])]
     indices = replace(findfirst.(branches), nothing => Inf)
     negative = findall(x -> x == Inf, indices) # branches not true anywhere - leave out
     return order = setdiff(sortperm(indices), negative)
 end
 
-find_branch_order(classification) = collect(1:length(classification[1])) # no ordering for >1D
+find_branch_order(classification) = collect(1:length(classification[1]))
 
-"Order the solution branches in `res` such that close classified positively by `classes` are first."
+"""
+Orders the solution branches in `res` such that those classified positively by `classes`
+are first.
+"""
 function order_branches!(res::Result, classes::Vector{String})
     for class in classes
         order_branches!(res, find_branch_order(res.classes[class]))
     end
 end
-
 order_branches!(res::Result, class::String) = order_branches!(res, [class])
-
-"Reorder the solutions in `res` to match the index permutation `order`."
 function order_branches!(res::Result, order::Vector{Int})
     res.solutions .= _reorder_nested(res.solutions, order)
     for key in keys(res.classes)

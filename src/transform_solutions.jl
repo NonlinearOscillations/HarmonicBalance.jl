@@ -89,7 +89,7 @@ function transform_solutions(
     )
     Threads.@threads for batch in collect(batches)
         _vals = Vector{S}(undef, n_vars + n_pars)
-        for idx in batch
+        for idx in batch # TODO: use get_variable_solutions
             for i in 1:length(idx) # param values are common to all branches
                 _vals[end - n_pars + i] = pars[i][idx[i]]
             end

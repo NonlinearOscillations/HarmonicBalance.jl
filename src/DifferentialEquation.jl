@@ -2,8 +2,8 @@
 $(TYPEDEF)
 
 Holds differential equation(s) of motion and a set of harmonics to expand each variable.
-This is the primary input for `HarmonicBalance.jl` ; after inputting the equations, the harmonics
-    ansatz needs to be specified using `add_harmonic!`.
+This is the primary input for `HarmonicBalance.jl`. After inputting the equations, the harmonics
+ansatz needs to be specified using `add_harmonic!`.
 
 # Fields
 $(TYPEDFIELDS)
@@ -17,7 +17,9 @@ julia> DifferentialEquation(d(x,t,2) + ω0^2 * x - F * cos(ω*t), x);
 julia> DifferentialEquation(d(x,t,2) + ω0^2 * x ~ F * cos(ω*t), x);
 
 # two coupled oscillators, one of them driven
-julia> DifferentialEquation([d(x,t,2) + ω0^2 * x - k*y, d(y,t,2) + ω0^2 * y - k*x] .~ [F * cos(ω*t), 0], [x,y]);
+julia> DifferentialEquation(
+    [d(x,t,2) + ω0^2 * x - k*y, d(y,t,2) + ω0^2 * y - k*x] .~ [F * cos(ω*t), 0], [x,y]
+);
 ```
 """
 mutable struct DifferentialEquation
@@ -46,7 +48,8 @@ mutable struct DifferentialEquation
         if eq.rhs isa AbstractVector || eq.lhs isa AbstractVector
             throw(
                 ArgumentError(
-                    "The equation is of the form $(typerhs)~$(typelhs) is not supported. Commenly one forgot to broadcast the equation symbol `~`.",
+                    "The equation is of the form $(typerhs)~$(typelhs) is not supported.
+                    Commenly one forgot to broadcast the equation symbol `~`."
                 ),
             )
         end
@@ -57,13 +60,15 @@ mutable struct DifferentialEquation
         typelhs = typeof(eq.lhs)
         throw(
             ArgumentError(
-                "The variables are of type $(typeof(vars)). Whereas you gave one equation of type $(typerhs)~$(typelhs). Commenly one forgot to broadcast the equation symbol `~`.",
+                "The variables are of type $(typeof(vars)). Whereas you gave one equation of
+                type $(typerhs)~$(typelhs). Commenly one forgot to broadcast the equation symbol `~`.",
             ),
         )
     end
     DifferentialEquation(lhs::Num, var::Num) = DifferentialEquation([lhs ~ Int(0)], [var])
 end
 
+"show method of the type `DifferentialEquation`"
 function Base.show(io::IO, diff_eq::DifferentialEquation)
     println(io, "System of ", length(keys(diff_eq.equations)), " differential equations")
     println(io, "Variables:       ", join(keys(diff_eq.equations), ", "))
@@ -75,9 +80,14 @@ function Base.show(io::IO, diff_eq::DifferentialEquation)
     println(io, "\n")
     return [println(io, eq) for eq in values(diff_eq.equations)]
 end
+"
+Displays the fields of the differential equation object.
+"
+Base.show(eom::DifferentialEquation) = show_fields(eom)
 
 """
 $(TYPEDSIGNATURES)
+
 Add the harmonic `ω` to the harmonic ansatz used to expand the variable `var` in `diff_eom`.
 
 ## Example
@@ -102,28 +112,27 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
 Return the dependent variables of `diff_eom`.
 """
 Symbolics.get_variables(diff_eom::DifferentialEquation)::Vector{Num} =
     collect(keys(diff_eom.equations))
 
+"""
+$(TYPEDSIGNATURES)
+
+Check if all equations in `diff_eom` are harmonic with respect to `t`. The function takes a
+differential equation system `diff_eom` and a variable `t`, and returns `true` if all equations
+are harmonic with respect to `t`, otherwise it returns `false`.
+"""
 ExprUtils.is_harmonic(diff_eom::DifferentialEquation, t::Num)::Bool =
     all([is_harmonic(eq, t) for eq in values(diff_eom.equations)])
 
-"Pretty printing of the newly defined types"
-function show_fields(object)
-    for field in fieldnames(typeof(object)) # display every field
-        display(string(field))
-        display(getfield(object, field))
-    end
-end
-
 """
 $(TYPEDSIGNATURES)
+
 Return the independent dependent variables of `diff_eom`.
 """
 function get_independent_variables(diff_eom::DifferentialEquation)
     return Num.(flatten(unique([x.val.arguments for x in keys(diff_eom.equations)])))
 end
-
-Base.show(eom::DifferentialEquation) = show_fields(eom)

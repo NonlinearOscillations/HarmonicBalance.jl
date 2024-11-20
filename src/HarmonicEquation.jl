@@ -1,4 +1,3 @@
-
 """
 $(TYPEDEF)
 
@@ -57,9 +56,9 @@ Base.show(eom::HarmonicEquation) = show_fields(eom)
 """
     harmonic_ansatz(eom::DifferentialEquation, time::Num; coordinates="Cartesian")
 
-Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the time variable.
-For each harmonic of each variable, instance(s) of `HarmonicVariable` are automatically created and named.
-
+Expand each variable of `diff_eom` using the harmonics assigned to it with `time` as the
+time variable. For each harmonic of each variable, instance(s) of `HarmonicVariable` are
+automatically created and named.
 """
 function harmonic_ansatz(diff_eom::DifferentialEquation, time::Num)
     !is_harmonic(diff_eom, time) &&
@@ -203,9 +202,7 @@ function _parameters(eom::HarmonicEquation)
     return setdiff(all_symbols, get_variables(eom), get_independent_variables(eom))
 end
 
-###
-# Extending Symbolics.jl's simplify and substitute
-###
+### Extending Symbolics.jl's simplify and substitute ###
 
 "Apply `rules` to both `equations` and `variables` field of `eom`"
 function ExprUtils.substitute_all(
@@ -273,15 +270,15 @@ end
     get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
 
 Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping
-higher-order derivatives to obtain
-a set of ODEs (the harmonic equations) governing the harmonics of `diff_eom`.
+higher-order derivatives to obtain a set of ODEs (the harmonic equations) governing the
+harmonics of `diff_eom`.
 
 The harmonics evolve in `slow_time`, the oscillating terms themselves in `fast_time`.
-If no input is used, a variable T is defined for `slow_time` and `fast_time` is taken as the independent variable
-of `diff_eom`.
+If no input is used, a variable T is defined for `slow_time` and `fast_time` is taken as
+the independent variable of `diff_eom`.
 
-By default, all products of order > 1 of `slow_time`-derivatives are dropped,
-which means the equations are linear in the time-derivatives.
+By default, all products of order > 1 of `slow_time`-derivatives are dropped, which means
+the equations are linear in the time-derivatives.
 
 # Example
 ```julia-repl
@@ -320,10 +317,14 @@ function get_harmonic_equations(
     for pair in diff_eom.harmonics
         isempty(pair[2]) && error("No harmonics specified for the variable $(pair[1])!")
     end
-    eom = harmonic_ansatz(diff_eom, fast_time) # substitute trig functions into the differential equation
-    eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree) # drop 2nd order time derivatives
-    fourier_transform!(eom, fast_time) # perform averaging over the frequencies originally specified in dEOM
-    ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2) # drop higher powers of the first-order derivatives
+    # substitute trig functions into the differential equation
+    eom = harmonic_ansatz(diff_eom, fast_time)
+    # drop 2nd order time derivatives
+    eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=degree)
+    # perform averaging over the frequencies originally specified in dEOM
+    fourier_transform!(eom, fast_time)
+    # drop higher powers of the first-order derivatives
+    ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2)
     return ft_eom_simplified
 end
 

@@ -68,7 +68,7 @@ end
             fixed;
             show_progress=false,
         )
-        @test sum(reduce(vcat, classify_branch(result, "stable"))) == 0
+        @test sum(reduce(vcat, get_class(result, "stable"))) == 0
     end
 end
 

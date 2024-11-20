@@ -1,6 +1,3 @@
-"""
-Here the methods to find a
-"""
 # multiply a peak by a number.
 #! format: off
 function Base.:*(number::T, peak::Lorentzian{T}) where {T<:Real} # multiplication operation
@@ -61,8 +58,12 @@ function evaluate(s::JacobianSpectrum{T}, ω::T) where {T<:Real}
     return sum
 end
 
-"Take a pair of harmonic variable u,v and an eigenvalue λ and eigenvector eigvec_2d of the Jacobian to generate corresponding Lorentzians.
-    IMPORTANT: The eigenvetor eigen_2d contains only the two components of the full eigenvector which correspond to the u,v pair in question."
+"""
+Take a pair of harmonic variable u,v and an eigenvalue λ and eigenvector eigvec_2d
+of the Jacobian to generate corresponding Lorentzians.
+IMPORTANT: The eigenvetor eigen_2d contains only the two components of the full eigenvector
+which correspond to the u,v pair in question.
+"""
 function _pair_to_peaks(λ, eigvec_2d::Vector; ω)
     u, v = eigvec_2d
     peak1 =
@@ -78,6 +79,11 @@ end
 _get_as(hvars::Vector{HarmonicVariable}) = findall(x -> isequal(x.type, "a"), hvars)
 
 #   Returns the spectra of all variables in `res` for `index` of `branch`.
+"""
+Here linear response is treated with the slow-flow approximation (SFA), see Chapter 5
+of JK's thesis. Linear response always appears as a sum of Lorentzians, but is inaccurate where
+these are peaked far from the drive frequency.
+"""
 function JacobianSpectrum(
     res::Result{S,P,D}; index::Int, branch::Int, force=false
 ) where {S,P,D}

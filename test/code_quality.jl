@@ -1,30 +1,31 @@
 using HarmonicBalance
 using Test
 
-# @testset "Concretely typed" begin # fails on 1.11
-#     CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
-#     if !CI
-#         using Pkg, HarmonicBalance
-#         Pkg.add(; url="https://github.com/gdalle/CheckConcreteStructs.jl")
+@testset "Concretely typed" begin
+    CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
+    julia_version = VERSION >= v"1.11.0-DEV.0" # fails on 1.11
+    if !CI && !julia_version
+        using Pkg, HarmonicBalance
+        Pkg.add(; url="https://github.com/gdalle/CheckConcreteStructs.jl")
 
-#         using CheckConcreteStructs
+        using CheckConcreteStructs
 
-#         all_concrete(HarmonicBalance.HarmonicVariable)
-#         all_concrete(HarmonicBalance.WarmUp)
-#         all_concrete(HarmonicBalance.TotalDegree)
-#         all_concrete(HarmonicBalance.Polyhedral)
-#         all_concrete(HarmonicBalance.Result)
-#         all_concrete(HarmonicBalance.Problem)
-#         all_concrete(HarmonicBalance.HarmonicEquation)
-#         all_concrete(HarmonicBalance.DifferentialEquation)
-#         all_concrete(HarmonicBalance.HarmonicVariable)
-#         all_concrete(HarmonicBalance.AdiabaticSweep)
+        all_concrete(HarmonicBalance.HarmonicVariable)
+        all_concrete(HarmonicBalance.WarmUp)
+        all_concrete(HarmonicBalance.TotalDegree)
+        all_concrete(HarmonicBalance.Polyhedral)
+        all_concrete(HarmonicBalance.Result)
+        all_concrete(HarmonicBalance.Problem)
+        all_concrete(HarmonicBalance.HarmonicEquation)
+        all_concrete(HarmonicBalance.DifferentialEquation)
+        all_concrete(HarmonicBalance.HarmonicVariable)
+        all_concrete(HarmonicBalance.AdiabaticSweep)
 
-#         all_concrete(HarmonicBalance.LinearResponse.Lorentzian)
-#         all_concrete(HarmonicBalance.LinearResponse.ResponseMatrix)
-#         all_concrete(HarmonicBalance.LinearResponse.JacobianSpectrum)
-#     end
-# end
+        all_concrete(HarmonicBalance.LinearResponse.Lorentzian)
+        all_concrete(HarmonicBalance.LinearResponse.ResponseMatrix)
+        all_concrete(HarmonicBalance.LinearResponse.JacobianSpectrum)
+    end
+end
 
 @testset "Code linting" begin
     using JET

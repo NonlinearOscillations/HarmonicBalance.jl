@@ -24,9 +24,9 @@ end
 end
 
 @testset "Computing steady states" begin
-    include("parametron.jl")
-    include("krylov.jl")
-    include("methods.jl")
+    include("steady_states/parametron.jl")
+    include("steady_states/krylov.jl")
+    include("steady_states/methods.jl")
 end
 
 @testset "Processing solutions" begin

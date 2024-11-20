@@ -18,19 +18,40 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct TotalDegree{T<:Complex} <: HarmonicBalanceMethod
+struct TotalDegree{T<:Complex} <: HarmonicBalanceMethod
     """Complex multiplying factor of the start system G(x) for the homotopy"""
-    gamma::T = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df)))
+    gamma::T
     """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
+    thread::Bool
     """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+    tracker_options::HomotopyContinuation.TrackerOptions
     """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+    endgame_options::HomotopyContinuation.EndgameOptions
     """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+    compile::Union{Bool,Symbol}
     """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+    seed::UInt32
+
+    function TotalDegree(;
+        gamma::T = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df))),
+        thread::Bool = Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32 = 0xd8e5d8df
+    ) where {T<:Complex}
+        return new{T}(gamma, thread, tracker_options, endgame_options, compile, seed)
+    end
+    function TotalDegree{T}(;
+        gamma::Complex = cis(2π * rand(Random.MersenneTwister(0xd8e5d8df),T)),
+        thread::Bool = Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32 = 0xd8e5d8df
+    ) where {T<:Complex}
+        return new{T}(gamma, thread, tracker_options, endgame_options, compile, seed)
+    end
 end
 
 """
@@ -46,19 +67,40 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct Polyhedral <: HarmonicBalanceMethod
+struct Polyhedral{T} <: HarmonicBalanceMethod
     """Boolean indicating if only non-zero solutions are considered."""
-    only_non_zero::Bool = false
+    only_non_zero::Bool
     """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
+    thread::Bool
     """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+    tracker_options::HomotopyContinuation.TrackerOptions
     """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+    endgame_options::HomotopyContinuation.EndgameOptions
     """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+    compile::Union{Bool,Symbol}
     """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+    seed::UInt32
+
+    function Polyhedral(;
+        only_non_zero::Bool=false,
+        thread::Bool=Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions=HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions=HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool,Symbol}=HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32=0xd8e5d8df
+    )
+        return new{ComplexF64}(only_non_zero, thread, tracker_options, endgame_options, compile, seed)
+    end
+    function Polyhedral{T}(;
+        only_non_zero::Bool=false,
+        thread::Bool=Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions=HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions=HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool,Symbol}=HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32=0xd8e5d8df
+    ) where {T<:Complex}
+        return new{T}(only_non_zero, thread, tracker_options, endgame_options, compile, seed)
+    end
 end
 
 """
@@ -74,21 +116,50 @@ for more information.
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef struct WarmUp{T} <: HarmonicBalanceMethod
+struct WarmUp{T} <: HarmonicBalanceMethod
     """Method used for the warmup system."""
-    warm_up_method::Union{TotalDegree{T},Polyhedral} = Polyhedral()
+    warm_up_method::Union{TotalDegree{T}, Polyhedral{T}}
     """Start parameters."""
-    start_parameters::Vector{T} = Vector{ComplexF64}()
+    start_parameters::Vector{T}
     """Boolean indicating if threading is enabled."""
-    thread::Bool = Threads.nthreads() > 1
+    thread::Bool
     """Options for the tracker."""
-    tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions()
+    tracker_options::HomotopyContinuation.TrackerOptions
     """Options for the endgame."""
-    endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions()
+    endgame_options::HomotopyContinuation.EndgameOptions
     """Compilation options."""
-    compile::Union{Bool,Symbol} = HomotopyContinuation.COMPILE_DEFAULT[]
+    compile::Union{Bool, Symbol}
     """Seed for random number generation."""
-    seed::UInt32 = 0xd8e5d8df
+    seed::UInt32
+
+    function WarmUp(;
+        warm_up_method::Union{TotalDegree, Polyhedral} = Polyhedral(),
+        start_parameters::Vector = Vector{ComplexF64}(),
+        thread::Bool = Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool, Symbol} = HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32 = 0xd8e5d8df
+    )
+        T1 = eltype(start_parameters)
+        T2 = typeof(warm_up_method).parameters[1]
+        if T1 != T2
+            @warn "The start parameters and the method parameters do not match. The start parameters are converted to the method parameters."
+            start_parameters = Vector{T2}(start_parameters)
+        end
+        return new{T2}(warm_up_method, start_parameters, thread, tracker_options, endgame_options, compile, seed)
+    end
+    function WarmUp{T}(;
+        warm_up_method::Union{TotalDegree, Polyhedral} = Polyhedral{T}(),
+        start_parameters::Vector = Vector{T}(),
+        thread::Bool = Threads.nthreads() > 1,
+        tracker_options::HomotopyContinuation.TrackerOptions = HomotopyContinuation.TrackerOptions(),
+        endgame_options::HomotopyContinuation.EndgameOptions = HomotopyContinuation.EndgameOptions(),
+        compile::Union{Bool, Symbol} = HomotopyContinuation.COMPILE_DEFAULT[],
+        seed::UInt32 = 0xd8e5d8df
+    ) where {T<:Complex}
+        return new{T}(warm_up_method, start_parameters, thread, tracker_options, endgame_options, compile, seed)
+    end
 end
 
 """

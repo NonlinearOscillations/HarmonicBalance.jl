@@ -8,19 +8,20 @@ using Test
     method = WarmUp(; warm_up_method=TotalDegree())
     @test typeof(method).parameters[1] == ComplexF64
 
-    method = WarmUp(; start_parameters=ComplexF32[0.0,0.0,0.0])
+    method = WarmUp{ComplexF32}()
     @test typeof(method).parameters[1] == ComplexF32
 
     gamma = ComplexF32(cis(2π * rand(ComplexF32)))
     warmup_method = TotalDegree(; gamma=gamma)
     method = WarmUp(;
-        warm_up_method=warmup_method,
-        start_parameters=ComplexF32[0.0,0.0,0.0])
+        warm_up_method=warmup_method, start_parameters=ComplexF32[0.0, 0.0, 0.0]
+    )
     @test typeof(method).parameters[1] == ComplexF32
 
-    @test_throws MethodError WarmUp(;
-    warm_up_method=TotalDegree(),
-     start_parameters=ComplexF32[0.0,0.0,0.0])
+    method =  WarmUp(;
+        warm_up_method=TotalDegree(), start_parameters=ComplexF32[0.0, 0.0, 0.0]
+    )
+    @test typeof(method).parameters[1] == ComplexF64
 
     @testset "compute solutions" begin
         @variables α ω ω0 λ γ t x(t)
@@ -43,25 +44,40 @@ using Test
 end
 
 @testset "Polyhedral" begin
-    @variables α ω ω0 λ γ t x(t)
-    diff_eq = DifferentialEquation(
-        d(d(x, t), t) + γ * d(x, t) + ω0^2 * (1 - λ * cos(2 * ω * t)) * x + α * x^3, x
-    )
+    method = Polyhedral()
+    @test typeof(method).parameters[1] == ComplexF64
 
-    add_harmonic!(diff_eq, x, ω) #
-    harmonic_eq = get_harmonic_equations(diff_eq)
+    method = Polyhedral{ComplexF32}(;)
+    @test typeof(method).parameters[1] == ComplexF32
 
-    fixed = HarmonicBalance.OrderedDict((α => 1.0, ω0 => 1.1, λ => 0.001, γ => 0.01))
-    varied = HarmonicBalance.OrderedDict((ω => range(0.9, 1.1, 10),))
-    result = get_steady_states(
-        harmonic_eq, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
-    )
-    @test sum(reduce(vcat, classify_branch(result, "stable"))) == 0
+    @testset "compute solutions" begin
+        @variables α ω ω0 λ γ t x(t)
+        diff_eq = DifferentialEquation(
+            d(d(x, t), t) + γ * d(x, t) + ω0^2 * (1 - λ * cos(2 * ω * t)) * x + α * x^3, x
+        )
+
+        add_harmonic!(diff_eq, x, ω) #
+        harmonic_eq = get_harmonic_equations(diff_eq)
+
+        fixed = HarmonicBalance.OrderedDict((α => 1.0, ω0 => 1.1, λ => 0.001, γ => 0.01))
+        varied = HarmonicBalance.OrderedDict((ω => range(0.9, 1.1, 10),))
+        result = get_steady_states(
+            harmonic_eq,
+            Polyhedral(; only_non_zero=true),
+            varied,
+            fixed;
+            show_progress=false,
+        )
+        @test sum(reduce(vcat, classify_branch(result, "stable"))) == 0
+    end
 end
 
 @testset "TotalDegree" begin
     using Random
     gamma = ComplexF32(cis(2π * rand(ComplexF32)))
     method = TotalDegree(; gamma=gamma)
+    @test typeof(method).parameters[1] == ComplexF32
+
+    method = TotalDegree{ComplexF32}()
     @test typeof(method).parameters[1] == ComplexF32
 end

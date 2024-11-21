@@ -24,6 +24,8 @@ ENV["GKSwstype"] = "100"
 
 include("make_md_examples.jl")
 
+include("pages.jl")
+
 makedocs(;
     sitename="HarmonicBalance.jl",
     authors="Quest group",
@@ -38,10 +40,10 @@ makedocs(;
         devbranch="master",
         devurl="dev",
     ),
-    pages = PAGES,
+    pages = pages,
     source="src",
     build="build",
-    draft=false,
+    draft=true,
     warnonly=true,
     doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib],

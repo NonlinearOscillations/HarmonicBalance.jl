@@ -1,3 +1,24 @@
+module KrylovBogoliubov
+
+using DocStringExtensions
+
+using Symbolics
+using Symbolics: unwrap, diff2term
+using SymbolicUtils: BasicSymbolic, isdiv
+
+using HarmonicBalance
+using HarmonicBalance:
+    rearrange!, flatten, _create_harmonic_variable, slow_flow, _remove_brackets
+
+using HarmonicBalance.ExprUtils:
+    get_all_terms,
+    substitute_all,
+    trig_reduce,
+    get_independent,
+    simplify_complex,
+    is_trig,
+    is_harmonic
+
 get_harmonic(var::HarmonicVariable) = var.ω
 get_harmonics(eom::HarmonicEquation) = get_harmonic.(eom.variables)
 
@@ -167,3 +188,8 @@ function take_trig_integral(x::BasicSymbolic, ω, t)
     end
 end
 take_trig_integral(x::Num, ω, t) = take_trig_integral(Symbolics.expand(unwrap(x)), ω, t)
+
+export first_order_transform!,
+    is_rearranged_standard, rearrange_standard!, get_equations, get_krylov_equations
+
+end

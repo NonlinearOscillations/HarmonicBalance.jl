@@ -21,7 +21,7 @@ julia> status HarmonicBalance
 
 Let us find the steady states of an external driven Duffing oscillator with nonlinear damping. Its equation of motion is:
 ```math
-\begin{equation} \label{eq:duffing}
+\begin{equation}
 \underbrace{\ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t)}_{\text{damped harmonic oscillator}} + \underbrace{\alpha x(t)^3}_{\text{Duffing coefficient}} = \underbrace{F \cos(\omega t)}_{\text{periodic drive}}
 \end{equation}
 ```

@@ -4,16 +4,57 @@ import mathjax3 from "markdown-it-mathjax3";
 import footnote from "markdown-it-footnote";
 import { transformerMetaWordHighlight } from '@shikijs/transformers';
 
+const baseTemp = {
+  base: 'REPLACE_ME_DOCUMENTER_VITEPRESS',// TODO: replace this in makedocs!
+}
+
+const navTemp = {
+  nav: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
+}
+
+const nav = [
+  ...navTemp.nav,
+  {
+    component: 'VersionPicker'
+  }
+]
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
+  base: baseTemp.base,
   title: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
   description: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
   cleanUrls: true,
   outDir: 'REPLACE_ME_DOCUMENTER_VITEPRESS', // This is required for MarkdownVitepress to work correctly...
+  head: [
+    [
+      "script",
+      { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-RE962QZ6DQ" },
+    ],
+    [
+      "script",
+      {},
+      `window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-RE962QZ6DQ');`,
+    ],
+    ['link', { rel: 'icon', href: '/HarmonicBalance.jl/dev/favicon.ico' }],
+    ['link', { rel: 'icon', href: 'REPLACE_ME_DOCUMENTER_VITEPRESS_FAVICON' }],
+    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
+
+    ['script', { src: `/HarmonicBalance.jl/versions.js` }],
+    ['script', { src: `${baseTemp.base}siteinfo.js` }]
+  ],
+  ignoreDeadLinks: true,
 
   markdown: {
     math: true,
+
+    // options for @mdit-vue/plugin-toc
+    // https://github.com/mdit-vue/mdit-vue/tree/main/packages/plugin-toc#options
+    toc: { level: [2, 3, 4] }, // for API page, triggered by: [[toc]]
+
     config(md) {
       md.use(tabsMarkdownPlugin),
         md.use(mathjax3),
@@ -22,30 +63,10 @@ export default defineConfig({
     theme: {
       light: "github-light",
       dark: "github-dark"
-    },
-    codeTransformers: [transformerMetaWordHighlight(),],
+    }
   },
-
-  head: [
-      [
-        "script",
-        { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-RE962QZ6DQ" },
-      ],
-      [
-        "script",
-        {},
-        `window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-RE962QZ6DQ');`,
-      ],
-    ['link', { rel: 'icon', href: '/HarmonicBalance.jl/dev/favicon.ico' }],
-    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
-  ],
-
   themeConfig: {
     outline: 'deep',
-    // https://vitepress.dev/reference/default-theme-config
     logo: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
     search: {
       provider: 'local',
@@ -53,68 +74,9 @@ export default defineConfig({
         detailedView: true
       }
     },
-
-    nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Getting Started', link: '/introduction' },
-      { text: 'Background', link: '/background/harmonic_balance' },
-      { text: 'Tutorials', link: '/tutorials' },
-      { text: 'Examples', link: '/examples' },
-      {
-        text: 'Manual', items: [
-          { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
-          { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
-          { text: 'Computing steady states', link: '/manual/methods' },
-          { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
-          { text: 'Time evolution', link: '/manual/time_dependent' },
-          { text: 'Linear response', link: '/manual/linear_response' },
-          { text: 'Plotting', link: '/manual/plotting' },
-          { text: `Saving and loading`, link: '/manual/saving' },
-        ]
-      },
-    ],
-
-    sidebar: {
-      "/introduction/": [
-        { text: 'Introduction', link: '/index' },
-        // { text: 'Overview', link: '/introduction/overview' },
-        // { text: 'Tutorials', link: '/tutorials/index' },
-        { text: 'Citation', link: '/introduction/citation' }
-      ],
-      "/background/": [
-        { text: 'The method of Harmonic Balance', link: '/background/harmonic_balance.md' },
-        { text: 'Stability and linear response', link: 'background/stability_response.md' },
-        { text: 'Limit cycles', link: 'background/limit_cycles.md' }
-      ],
-      "/tutorials/": [
-        { text: 'Steady states', link: '/tutorials/steady_states' },
-        { text: 'Classifying solutions', link: '/tutorials/classification' },
-        { text: 'Linear response', link: '/tutorials/linear_response' },
-        { text: 'Transient dynamics', link: '/tutorials/time_dependent' },
-        { text: 'Limit cycles', link: '/tutorials/limit_cycles' }
-      ],
-      "/examples/": [
-        { text: 'Wave mixing', link: '/examples/wave_mixing' },
-        { text: 'Parametric three wave mixing', link: '/examples/parametric_via_three_wave_mixing' },
-        { text: 'Parametric oscillator', link: '/examples/parametron' }
-      ],
-      "/manual/": [
-        { text: 'Entering equations of motion', link: '/manual/entering_eom.md' },
-        { text: 'Computing effective system', link: '/manual/extracting_harmonics' },
-        { text: 'Computing steady states', link: '/manual/methods' },
-        { text: 'Krylov-Bogoliubov', link: '/manual/Krylov-Bogoliubov_method' },
-        { text: 'Time evolution', link: '/manual/time_dependent' },
-        { text: 'Linear response', link: '/manual/linear_response' },
-        { text: 'Plotting', link: '/manual/plotting' },
-        { text: `Saving and loading`, link: '/manual/saving' }
-      ],
-      "/api/": []
-    },
-
-    editLink: {
-      pattern: 'https://github.com/NonlinearOscillations/HarmonicBalance.jl/edit/main/docs/src/:path',
-      text: 'Edit this page on GitHub'
-    },
+    nav,
+    sidebar: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
+    editLink: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/NonlinearOscillations/HarmonicBalance.jl' },
       { icon: 'twitter', link: 'https://x.com/Zilberberg_Phys' },

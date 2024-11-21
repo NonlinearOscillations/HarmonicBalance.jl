@@ -24,9 +24,11 @@ ENV["GKSwstype"] = "100"
 
 include("make_md_examples.jl")
 
+include("pages.jl")
+
 makedocs(;
     sitename="HarmonicBalance.jl",
-    authors="Quest",
+    authors="Quest group",
     modules=[
         HarmonicBalance,
         Base.get_extension(HarmonicBalance, :TimeEvolution),
@@ -38,6 +40,7 @@ makedocs(;
         devbranch="master",
         devurl="dev",
     ),
+    pages=pages,
     source="src",
     build="build",
     draft=false,

@@ -6,7 +6,7 @@ HarmonicBalance.jl focuses on harmonically-driven nonlinear systems, i.e., dynam
 governed by equations of motion where all explicitly time-dependent terms are harmonic. Let us take a general nonlinear system of $N$ second-order ODEs with real variables $x_i(t)$, $i = 1,2,\cdots,N$ and time $t$ as the independent variable,
 
 ```math
-\begin{equation} \label{eq:ode}
+\begin{equation}
   \ddot{\mathbf{x}}(t)+ \mathbf{F}(\mathbf{x}(t), t)=0\:.
 \end{equation}
 ```
@@ -29,7 +29,7 @@ Evidently, $\tilde{x}(\omega)$ is only nonvanishing for $\omega = \pm \omega_d$.
 
 The situation becomes more complex if nonlinear terms are present, as these cause _frequency conversion_. Suppose we add a quadratic nonlinearity $\beta x^2(t)$ to the equations of motion; an attempt to Fourier-transform gives
 ```math
-\begin{equation} \label{eq:duffingFT}
+\begin{equation}
     \text{FT}[x^2](\omega) =  \int x^2(t) e^{-i\omega t} \: dt = \int_{-\infty}^{+\infty} \tilde{x}(\omega')\tilde{x}(\omega'') \delta(\omega''+\omega'-\omega) \: d\omega' \: d\omega'' \,,
 \end{equation}
 ```
@@ -46,14 +46,14 @@ x_i(t) = \sum_{j=1}^{M_i} u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j} (T) \sin(\
 ```
 Within this space, the system is described by a finite-dimensional vector
 ```math
-\begin{equation} \label{eq:harmansatz}
+\begin{equation}
 \mathbf{u}(T) = (u_{1,1}(T), v_{1,1}(T), \ldots u_{N, M_N}(T), v_{N, M_N}(T))
 \end{equation}
 ```
 
-Under the assumption that $\mathbf{u}(T)$ evolves at much slower timescales than the oscillatory terms $\omega_{i,j} t$, we may neglect all of its higher order time derivatives. Notice that once ansatz \eqref{eq:harmansatz} is used in Eq. \eqref{eq:ode}, all terms become oscillatory - each prefactor of $\cos(\omega_{i,j} t)$ and $\sin(\omega_{i,j} t)$ thus generates a separate equation. Collecting these, we obtain a 1st order nonlinear ODEs,
+Under the assumption that $\mathbf{u}(T)$ evolves at much slower timescales than the oscillatory terms $\omega_{i,j} t$, we may neglect all of its higher order time derivatives. Notice that once the ansatz is used in the equations of motion, all terms become oscillatory - each prefactor of $\cos(\omega_{i,j} t)$ and $\sin(\omega_{i,j} t)$ thus generates a separate equation. Collecting these, we obtain a 1st order nonlinear ODEs,
 ```math
-\begin{equation} \label{eq:harmeq}
+\begin{equation}
 \frac{d\mathbf{u}(T)}{dT}  = \bar{\mathbf{F}} (\mathbf{u})\,,
 \end{equation}
 ```
@@ -73,7 +73,7 @@ As explained in [above](@ref prelude), for a periodic driving at frequency $\ome
 	
 ### Single-frequency ansatz
     
-We first attempt to describe the steady states of Eq. \eqref{eq:duffing} using only one harmonic, $\omega_d$. The starting point is the harmonic ansatz for $x$
+We first attempt to describe the steady states of the equations of motion using only one harmonic, $\omega_d$. The starting point is the harmonic ansatz for $x$
 ```math
 \begin{equation}
 	x(t) = u(T) \cos(\omega_d t) + v(T) \sin(\omega_d t)\:,
@@ -82,14 +82,14 @@ We first attempt to describe the steady states of Eq. \eqref{eq:duffing} using o
 
 with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into mechanical equations of motion results in
 ```math
-\begin{align} \label{eq:ansatz1}
+\begin{align} 
 	\left[\ddot{u} + 2 \omega_d \dot{v} + u \left(\omega_0^2 - \omega_d^2 \right) +  \frac{3 \alpha \left(u^3 + uv^2\right)}{4} + F \cos{\theta}\right] &\cos(\omega_d t)& \\
 	+ \left[\ddot{v} - 2 \omega_d \dot{u} + v \left(\omega_0^2 - \omega_d^2 \right)  +\frac{3 \alpha \left(v^3 + u^2 v\right)}{4} - F \sin{\theta}\right] &\sin(\omega_d t)& \nonumber \\
 	+ \frac{\alpha \left(u^3 - 3 u v^2\right)}{4} \cos(3 \omega_d t) +  \frac{\alpha \left(3u^2 v - v^3\right)}{4} \sin(3 \omega_d t) &= 0. \nonumber
 \end{align}
 ```
 
-We see that the $x^3$ term has generated terms that oscillate at $3\omega_d$, describing the process of frequency upconversion. We now Fourier-transform both sides of Eq. \eqref{eq:ansatz1} with respect to $\omega_d$ to obtain the harmonic equations. This process is equivalent to extracting the respective coefficients of $\cos(\omega_d t)$ and $\sin(\omega_d t)$. Here the distinction between $t$ and $T$ becomes important: since the evolution of $u(T)$ and $v(T)$ is assumed to be slow, they are treated as constant for the purpose of the Fourier transformation. Since we are interested in steady states, we drop the higher-order derivatives and rearrange the resulting equation to
+We see that the $x^3$ term has generated terms that oscillate at $3\omega_d$, describing the process of frequency upconversion. We now Fourier-transform both sides of the above equations with respect to $\omega_d$ to obtain the harmonic equations. This process is equivalent to extracting the respective coefficients of $\cos(\omega_d t)$ and $\sin(\omega_d t)$. Here the distinction between $t$ and $T$ becomes important: since the evolution of $u(T)$ and $v(T)$ is assumed to be slow, they are treated as constant for the purpose of the Fourier transformation. Since we are interested in steady states, we drop the higher-order derivatives and rearrange the resulting equation to
 ```math
 \begin{equation}
 	\frac{d}{dT} \begin{pmatrix} u \\ v  \end{pmatrix} = \frac{1}{8 \omega_d} \begin{pmatrix} 4 v \left(\omega_0^2-\omega_d^2 \right) + 3 \alpha \left(v^3 + u^2 v  \right) - 4 F \sin{\theta}  \\ 4 u \left(\omega_d^2-\omega_0^2 \right)  - 3 \alpha \left(u^3 + u v^2 \right) - 4 F \cos{\theta}  \end{pmatrix} \,.
@@ -100,7 +100,7 @@ Steady states can now be found by setting the l.h.s. to zero, i.e., assuming $u(
 
 ### Sidenote: perturbative approach
 
-The steady states describe a response that may be recast as $x_0(t) = X_0 \cos(\omega_d t + \phi)$, where $X_0=\sqrt{u^2+v^2}$ and $\phi=-\text{atan}(v/u)$. Frequency conversion from $\omega_d$ to $3 \omega_d$ can be found by setting $x(t) \equiv x_0(t) + \delta x(t)$ with $|\delta x(t)|\ll|x_0(t)|$ and expanding Eq. \eqref{eq:duffing} to first-order in $\delta x(t)$. The resulting equation
+The steady states describe a response that may be recast as $x_0(t) = X_0 \cos(\omega_d t + \phi)$, where $X_0=\sqrt{u^2+v^2}$ and $\phi=-\text{atan}(v/u)$. Frequency conversion from $\omega_d$ to $3 \omega_d$ can be found by setting $x(t) \equiv x_0(t) + \delta x(t)$ with $|\delta x(t)|\ll|x_0(t)|$ and expanding the equations of motion to first-order in $\delta x(t)$. The resulting equation
 ```math
 \begin{equation}
     \delta \ddot{x}(t) + \left[\omega_0^2 + \frac{3 \alpha X_0^2}{4} \right]\delta x(t) = - \frac{\alpha X_0^3}{4} \cos(3 \omega_d t + 3 \phi)\,,
@@ -116,7 +116,7 @@ An approach in the spirit of harmonic balance is to use both harmonics $\omega_d
 	x(t) = u_1(T) \cos(\omega_d t) + v_1(T) \sin(\omega_d t) + u_2(T) \cos(3 \omega_d t) + v_2(T) \sin(3\omega_d t)\:,
 \end{equation}
 ```
-with $u_1, u_2, v_1, v_2$ being the harmonic variables. As before we substitute the ansatz into Eq. \eqref{eq:duffing}, drop second derivatives with respect to $T$ and Fourier-transform both sides. Now, the respective coefficients correspond to $\cos(\omega_d t)$, $\sin(\omega_d t)$, $\cos(3 \omega_d t)$ and $\sin(3\omega_d t)$. Rearranging, we obtain
+with $u_1, u_2, v_1, v_2$ being the harmonic variables. As before we substitute the ansatz into the equations of motion, drop second derivatives with respect to $T$ and Fourier-transform both sides. Now, the respective coefficients correspond to $\cos(\omega_d t)$, $\sin(\omega_d t)$, $\cos(3 \omega_d t)$ and $\sin(3\omega_d t)$. Rearranging, we obtain
 
 ```math
 	\begin{align}

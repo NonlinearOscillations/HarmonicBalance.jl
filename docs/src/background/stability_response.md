@@ -8,7 +8,7 @@ x_i(t) = \sum_{j=1}^{M_i} u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j} (T) \sin(\
 ```
 This means the system is now described using a discrete set of variables $u_{i,j}$ and $v_{i,j}$. Constructing the vector 
 ```math
-\begin{equation} \label{eq:harmvar}
+\begin{equation}
 \mathbf{u}(T) = (u_{1,1}(T), v_{1,1}(T), \ldots u_{N,M_N}(T), v_{N, M_N}(T))\,,
 \end{equation}
 ``` 

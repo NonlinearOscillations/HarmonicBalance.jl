@@ -40,7 +40,7 @@ makedocs(;
         devbranch="master",
         devurl="dev",
     ),
-    pages = pages,
+    pages=pages,
     source="src",
     build="build",
     draft=true,

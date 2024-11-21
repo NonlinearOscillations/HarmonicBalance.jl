@@ -26,7 +26,7 @@ include("make_md_examples.jl")
 
 makedocs(;
     sitename="HarmonicBalance.jl",
-    authors="Quest",
+    authors="Quest group",
     modules=[
         HarmonicBalance,
         Base.get_extension(HarmonicBalance, :TimeEvolution),
@@ -38,6 +38,7 @@ makedocs(;
         devbranch="master",
         devurl="dev",
     ),
+    pages = PAGES,
     source="src",
     build="build",
     draft=false,

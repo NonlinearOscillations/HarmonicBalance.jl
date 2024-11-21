@@ -32,10 +32,13 @@ using Symbolics:
     get_variables,
     Differential,
     unwrap,
-    wrap
+    wrap,
+    diff2term,
+    var_from_nested_derivative,
+    lower_varname
 using SymbolicUtils: SymbolicUtils
 
-include("ExprUtils/ExprUtils.jl")
+include("modules/ExprUtils/ExprUtils.jl")
 using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
 
 # symbolics equations
@@ -111,19 +114,19 @@ include("saving.jl")
 include("transform_solutions.jl")
 include("plotting_Plots.jl")
 
-include("HC_wrapper.jl")
+include("modules/HC_wrapper.jl")
 using .HC_wrapper
 
-include("LinearResponse/LinearResponse.jl")
+include("modules/LinearResponse/LinearResponse.jl")
 using .LinearResponse
 
-include("LimitCycles/LimitCycles.jl")
+include("modules/LimitCycles/LimitCycles.jl")
 using .LimitCycles
 
-include("KrylovBogoliubov/KrylovBogoliubov.jl")
+include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 
-include("FFTWExt.jl")
+include("modules/FFTWExt.jl")
 using .FFTWExt
 
 # Precompilation setup

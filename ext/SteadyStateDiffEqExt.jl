@@ -7,6 +7,15 @@ using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS,
 using LinearAlgebra: norm, eigvals
 using SteadyStateDiffEq.SciMLBase.SciMLStructures: Tunable, replace
 
+"""
+    steady_state_sweep(prob::SteadyStateProblem, alg::DynamicSS; varied::Pair, kwargs...)
+
+Sweeps through a range of parameter values using a dynamic steady state solver `DynamicSS`
+of the `SteadyStateDiffEq.jl` package. Given a steady state problem and a parameter to vary,
+computes the steady state solution for each value in the sweep range. The solutions are
+returned as a vector where each element corresponds to the steady state found at that
+parameter value.
+"""
 function HarmonicBalance.steady_state_sweep(
     prob::SteadyStateProblem, alg::DynamicSS; varied::Pair, kwargs...
 )
@@ -25,6 +34,15 @@ function HarmonicBalance.steady_state_sweep(
     return result
 end
 
+"""
+    steady_state_sweep(prob_np::NonlinearProblem, prob_ss::SteadyStateProblem,
+                      alg_np, alg_ss::DynamicSS; varied::Pair, kwargs...)
+
+Performs a parameter sweep by combining nonlinear root `alg_np` and steady state solvers `alg_ss`.
+For each parameter value, it first attempts a direct nonlinear root solver and checks its
+stability. If the solution is unstable or not found, it switches to a dynamic steady state solver.
+This hybrid approach is much faster then only using a steady state solver.
+"""
 function HarmonicBalance.steady_state_sweep(
     prob_np::NonlinearProblem,
     prob_ss::SteadyStateProblem,

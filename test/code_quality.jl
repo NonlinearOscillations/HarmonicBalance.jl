@@ -1,6 +1,4 @@
-using HarmonicBalance
-using Test
-
+|
 @testset "Concretely typed" begin
     CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
     julia_version = VERSION >= v"1.11.0-DEV.0" # fails on 1.11

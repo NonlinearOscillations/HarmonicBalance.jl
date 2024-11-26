@@ -11,5 +11,4 @@ docs/build/**
 examples/jdp.mplstyle
 docs/node_modules/** 
 docs/package-lock.json
-*.ipynb
 examples/parametron_result.jld2

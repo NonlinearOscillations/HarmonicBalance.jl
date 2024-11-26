@@ -26,15 +26,26 @@ mutable struct Problem{F}
     "The HarmonicEquation object used to generate this `Problem`."
     eom::HarmonicEquation
 
-    function Problem(variables, parameters, system, jacobian)
+    function Problem(variables, parameters, system::HC.System, jacobian)
         return new{typeof(jacobian)}(variables, parameters, system, jacobian)
     end # incomplete initialization for user-defined symbolic systems
-    function Problem(variables, parameters, system, jacobian, eom)
+    function Problem(variables, parameters, system, jacobian, eom::HarmonicEquation)
         return new{typeof(jacobian)}(variables, parameters, system, jacobian, eom)
+    end
+    function Problem(eqs, vars, params, jacobian)
+        S = HC.System(eqs, vars, params)
+        return new{typeof(jacobian)}(vars, params, S, jacobian)
+    end
+    function Problem(eqs, vars, params)
+        S = HC.System(eqs, vars, params)
+        jacobian = Symbolics.jacobian(eqs, vars)
+        return new{typeof(jacobian)}(vars, params, S, jacobian)
     end
 end
 
-Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
+
+
+Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.variables)
 
 function Base.show(io::IO, p::Problem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")

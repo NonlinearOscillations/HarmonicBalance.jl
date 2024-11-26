@@ -26,11 +26,13 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
+QuantumCumulants = "35bcea6d-e19f-57db-af74-8011de6c7255"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [extensions]
+CumulantExt = "QuantumCumulants"
 ModelingToolkitExt = "ModelingToolkit"
 SteadyStateDiffEqExt = "SteadyStateDiffEq"
 TimeEvolution = "OrdinaryDiffEqTsit5"
@@ -59,6 +61,7 @@ Peaks = "0.5"
 Plots = "1.39"
 PrecompileTools = "1.2"
 ProgressMeter = "1.7.2"
+QuantumCumulants = "0.3.7"
 SteadyStateDiffEq = "2.3.2"
 SymbolicUtils = "3.5"
 Symbolics = "6.4"

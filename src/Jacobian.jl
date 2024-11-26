@@ -13,7 +13,13 @@ function _compile_Jacobian(
     swept_parameters::OrderedDict,
     fixed_parameters::OrderedDict,
 )::JacobianFunction(soltype)
-    if "Hopf" ∈ getfield.(prob.eom.variables, :type)
+    haseom = try
+        getproperty(prob, :eom)
+        true
+    catch
+        false
+    end
+    if haseom && "Hopf" ∈ getfield.(prob.eom.variables, :type)
         compiled_J = prob.jacobian
     elseif !is_identity(prob.jacobian)
         compiled_J = compile_matrix(

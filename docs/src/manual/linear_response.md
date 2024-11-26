@@ -8,7 +8,7 @@ The methodology used is explained in [Jan Kosata phd thesis](https://www.doi.org
 
 The Jacobian is used to evaluate stability of the solutions. It can be shown explicitly,
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.get_Jacobian
 ```
 
@@ -16,7 +16,7 @@ HarmonicBalance.get_Jacobian
 
 The response to white noise can be shown with `plot_linear_response`. Depending on the `order` argument, different methods are used. 
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.LinearResponse.plot_linear_response
 ```
 

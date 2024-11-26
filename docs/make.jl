@@ -1,6 +1,7 @@
 CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
 
 using HarmonicBalance
+
 using Documenter
 using DocumenterVitepress
 using DocumenterCitations

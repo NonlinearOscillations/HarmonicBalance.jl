@@ -15,7 +15,7 @@ DifferentialEquation
 HarmonicVariable
 HarmonicEquation
 ```
-```@docs
+```@docs; canonical=false
 rearrange_standard
 rearrange_standard!
 first_order_transform!

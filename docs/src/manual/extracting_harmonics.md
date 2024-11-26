@@ -6,7 +6,7 @@ Once a `DifferentialEquation` is defined and its harmonics specified, one can ex
 The harmonic equations use an additional time variable specified as `slow_time` in `get_harmonic_equations`. This is essentially a label distinguishing the time dependence of the harmonic variables (expected to be slow)
 from that of the oscillating terms (expected to be fast). When the equations are Fourier-transformed to remove oscillating terms, `slow_time` is treated as a constant. Such an approach is exact when looking for steady states. 
 
-```@docs
+```@docs; canonical=false
 get_harmonic_equations
 HarmonicBalance.harmonic_ansatz
 HarmonicBalance.slow_flow
@@ -18,7 +18,7 @@ HarmonicBalance.drop_powers
 
 The equations governing the harmonics are stored using the two following structs. When going from the original to the harmonic equations, the harmonic ansatz $x_i(t) = \sum_{j=1}^M u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j}(T) \sin(\omega_{i,j} t)$ is used. Internally, each pair $(u_{i,j}, v_{i,j})$ is stored as a `HarmonicVariable`. This includes the identification of $\omega_{i,j}$ and $x_i(t)$, which is needed to later reconstruct $x_i(t)$.
 
-```@docs
+```@docs; canonical=false
 HarmonicVariable
 ```
 
@@ -26,6 +26,6 @@ When the full set of equations of motion is expanded using the harmonic ansatz, 
 
 A `HarmonicEquation` can be either parsed into a steady-state `Problem` or solved using a dynamical ODE solver.
 
-```@docs
+```@docs; canonical=false
 HarmonicEquation
 ```

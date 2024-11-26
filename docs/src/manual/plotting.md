@@ -2,7 +2,7 @@
 
 The key method for visualization is `transform_solutions`, which parses a string into a symbolic expression and evaluates it for every steady state solution. 
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.transform_solutions
 ```
 
@@ -11,7 +11,7 @@ HarmonicBalance.transform_solutions
 The function `plot` is multiple-dispatched to plot 1D and 2D datasets. 
 In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`. 
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
 ```
 
@@ -21,7 +21,7 @@ HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
 
 In many problems, rather than in any property of the solutions themselves, we are interested in the phase diagrams, encoding the number of (stable) solutions in different regions of the parameter space. `plot_phase_diagram` handles this for 1D and 2D datasets.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.plot_phase_diagram
 ```
 
@@ -29,6 +29,6 @@ HarmonicBalance.plot_phase_diagram
 
 Sometimes, it is useful to plot the quadratures of the steady states (u, v) in function of a swept parameter. This is done with `plot_spaghetti`.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.plot_spaghetti
 ```

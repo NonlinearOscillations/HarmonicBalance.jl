@@ -34,4 +34,13 @@ function export_results_dict(res::Result)
     return M  
 end
 
+# Example for some result obtained by result = get_steady_states(harmonic_eq2, varied, fixed)
+
+MM = export_results_dict(result);
+
+save("dict_version.jld2", Dict("solution_matrix" => MM, "classes" => result.classes,  
+        "swept_parameters" => result.swept_parameters, "jacobian"=>result.jacobian, 
+         "num_solutions" => length(result.solutions[1,1])))
+
+
 

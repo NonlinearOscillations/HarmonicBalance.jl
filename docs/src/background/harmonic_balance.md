@@ -1,9 +1,8 @@
 # [The method of harmonic balance](@id intro_hb)
+HarmonicBalance.jl focuses on sytems with equations of motion that are subject to time-dependent terms of harmonic type.
 
-## [Frequency conversion in oscillating nonlinear systems](@id prelude)
-
-HarmonicBalance.jl focuses on harmonically-driven nonlinear systems, i.e., dynamical systems
-governed by equations of motion where all explicitly time-dependent terms are harmonic. Let us take a general nonlinear system of $N$ second-order ODEs with real variables $x_i(t)$, $i = 1,2,\cdots,N$ and time $t$ as the independent variable,
+## [Harmonic generation in oscillating nonlinear systems](@id prelude)
+Let us take a general nonlinear system of $N$ second-order ODEs with real variables $x_i(t)$, $i = 1,2,\cdots,N$, and time $t$ as the independent variable,
 
 ```math
 \begin{equation}
@@ -11,29 +10,29 @@ governed by equations of motion where all explicitly time-dependent terms are ha
 \end{equation}
 ```
 
-The vector $\mathbf{x}(t) = (x_1(t), ..., x_N(t))^{\text T}$ fully describes the state of the system.  Physically, $\mathbf{x}(t)$ encompasses the amplitudes of either point-like or collective oscillators (e.g., mechanical resonators, voltage oscillations in RLC circuits, an oscillating electrical dipole moment, or standing modes of an optical cavity). 
+The vector $\mathbf{x}(t) = (x_1(t), ..., x_N(t))^{\text T}$ fully describes the state of the system.  In physics, the coordinates $\mathbf{x}(t)$ encode the amplitudes of oscillators, e.g., mechanical resonators, voltage oscillations in RLC circuits, oscillating electrical dipole moments, or standing modes of an optical cavity. 
 
-As the simplest example, let us first solve the harmonic oscillator in frequency space. The equation of motion is
+As an example, let us first solve the harmonic oscillator in frequency space. The equation of motion is
 ```math
 \begin{equation}
 \ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t) = F \cos(\omega_d t)
 \end{equation}
 ```
-where $\gamma$ is the damping coefficient and $\omega_0$ the natural frequency. Fourier-transforming both sides of this equation gives
+where $\gamma$ is the damping coefficient and $\omega_0$ the natural frequency. Fourier-transforming both sides of this equation yields
 ```math
 \begin{equation}
 (\omega_0^2 - \omega^2 + i \omega \gamma) \tilde{x}(\omega) = \frac{F}{2} \left[ \delta(\omega + \omega_d) + \delta(\omega - \omega_d) \right] \,.
 \end{equation}
 ```
-Evidently, $\tilde{x}(\omega)$ is only nonvanishing for $\omega = \pm \omega_d$. The system thus responds at the driving frequency only - the behaviour can be captured by a single harmonic. This illustrates the general point that _linear systems are exactly solvable_ by transforming to Fourier space, where the equations are diagonal.
+Evidently, $\tilde{x}(\omega)$ is only nonvanishing for $\omega = \pm \omega_d$. The system thus responds solely at the driving frequency, i.e., the time evolution can be captured by a single harmonic. This illustrates the general point that _linear systems are exactly solvable_ by transforming to Fourier space, where the equations are diagonal.
 
-The situation becomes more complex if nonlinear terms are present, as these cause _frequency conversion_. Suppose we add a quadratic nonlinearity $\beta x^2(t)$ to the equations of motion; an attempt to Fourier-transform gives
+The situation becomes more complex if nonlinear terms are present, as these cause _frequency conversion_. Suppose we add a quadratic nonlinearity $\beta x^2(t)$ to the equations of motion; attempting to Fourier-transform, now, leads to
 ```math
 \begin{equation}
     \text{FT}[x^2](\omega) =  \int x^2(t) e^{-i\omega t} \: dt = \int_{-\infty}^{+\infty} \tilde{x}(\omega')\tilde{x}(\omega'') \delta(\omega''+\omega'-\omega) \: d\omega' \: d\omega'' \,,
 \end{equation}
 ```
-which couples all harmonics $\omega, \omega', \omega''$ such that $\omega + \omega' + \omega'' = 0$. To lowest order, this means the induced motion at the drive frequency generates a higher harmonic, $\omega_d \rightarrow 2\omega_d$. To higher orders however, the frequency conversion propagates through the spectrum, _coupling an infinite number of harmonics_. The system is not solvable in Fourier space anymore!
+which couples all harmonics $\omega, \omega', \omega''$ such that $\omega + \omega' + \omega'' = 0$. To lowest order, this means that the induced motion at the drive frequency generates a higher harmonic, $\omega_d \rightarrow 2\omega_d$. The frequency conversion couples the response at different frequencies and propagates through the spectrum, thus, _coupling an infinite number of harmonics_. Hence, the system is not easily solvable in Fourier space anymore!
 
 
 ## Harmonic ansatz & harmonic equations
@@ -47,19 +46,19 @@ x_i(t) = \sum_{j=1}^{M_i} u_{i,j}  (T)  \cos(\omega_{i,j} t)+ v_{i,j} (T) \sin(\
 Within this space, the system is described by a finite-dimensional vector
 ```math
 \begin{equation}
-\mathbf{u}(T) = (u_{1,1}(T), v_{1,1}(T), \ldots u_{N, M_N}(T), v_{N, M_N}(T))
+\mathbf{u}(T) = (u_{1,1}(T), v_{1,1}(T), \ldots u_{N, M_N}(T), v_{N, M_N}(T))\,.
 \end{equation}
 ```
 
-Under the assumption that $\mathbf{u}(T)$ evolves at much slower timescales than the oscillatory terms $\omega_{i,j} t$, we may neglect all of its higher order time derivatives. Notice that once the ansatz is used in the equations of motion, all terms become oscillatory - each prefactor of $\cos(\omega_{i,j} t)$ and $\sin(\omega_{i,j} t)$ thus generates a separate equation. Collecting these, we obtain a 1st order nonlinear ODEs,
+Under the assumption that $\mathbf{u}(T)$ evolves at much slower timescales than the oscillatory harmonics, we may neglect all of its higher order time derivatives. Notice that once the ansatz is used in the equations of motion, all terms become oscillatory - each prefactor of $\cos(\omega_{i,j} t)$ and $\sin(\omega_{i,j} t)$ thus generates a separate equation. Collecting these, we obtain a set of coupled 1st order nonlinear ODEs,
 ```math
 \begin{equation}
 \frac{d\mathbf{u}(T)}{dT}  = \bar{\mathbf{F}} (\mathbf{u})\,,
 \end{equation}
 ```
-which we call the _harmonic equations_. The main purpose of HarmonicBalance.jl is to obtain and solve them. We are primarily interested in _steady states_ $\mathbf{u}_0$ defined by $\bar{\mathbf{F}}(\mathbf{u}_0) = 0$.
+which we call the _harmonic equations_. The main purpose of HarmonicBalance.jl is to obtain and solve these Harmonic equations. We are primarily interested in _steady states_ $\mathbf{u}_0$ defined by $\bar{\mathbf{F}}(\mathbf{u}_0) = 0$.
 
-The process of obtaining the harmonic equations is best shown on an example.
+The process of obtaining the harmonic equations is best shown using the example below:
 
 ## [Example: the Duffing oscillator](@id Duffing_harmeq)
 
@@ -69,18 +68,18 @@ Here, we derive the harmonic equations for a single Duffing resonator, governed 
     \ddot{x}(t) + \omega_0^2 x(t) + \alpha x^3(t) = F \cos(\omega_d t + \theta)\,.
 \end{equation}
 ```
-As explained in [above](@ref prelude), for a periodic driving at frequency $\omega_d$ and a weak nonlinearity $\alpha$, we expect the response at frequency $\omega_d$ to dominate, followed by a response at $3\omega_d$ due to frequency conversion.
+As explained [above](@ref prelude), for a periodic driving at frequency $\omega_d$ and a weak nonlinearity $\alpha$, we expect the response at frequency $\omega_d$ to dominate, followed by a response at $3\omega_d$ due to frequency conversion.
 	
 ### Single-frequency ansatz
     
-We first attempt to describe the steady states of the equations of motion using only one harmonic, $\omega_d$. The starting point is the harmonic ansatz for $x$
+We first attempt to describe the steady states of the Duffing equations of motion using only a single harmonic, $\omega_d$, in the ansatz, i.e., our starting point is the following harmonic ansatz for $x$
 ```math
 \begin{equation}
 	x(t) = u(T) \cos(\omega_d t) + v(T) \sin(\omega_d t)\:,
 \end{equation}
 ```
 
-with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into mechanical equations of motion results in
+with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into the Duffing equation of motion results in
 ```math
 \begin{align} 
 	\left[\ddot{u} + 2 \omega_d \dot{v} + u \left(\omega_0^2 - \omega_d^2 \right) +  \frac{3 \alpha \left(u^3 + uv^2\right)}{4} + F \cos{\theta}\right] &\cos(\omega_d t)& \\
@@ -89,14 +88,14 @@ with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equiva
 \end{align}
 ```
 
-We see that the $x^3$ term has generated terms that oscillate at $3\omega_d$, describing the process of frequency upconversion. We now Fourier-transform both sides of the above equations with respect to $\omega_d$ to obtain the harmonic equations. This process is equivalent to extracting the respective coefficients of $\cos(\omega_d t)$ and $\sin(\omega_d t)$. Here the distinction between $t$ and $T$ becomes important: since the evolution of $u(T)$ and $v(T)$ is assumed to be slow, they are treated as constant for the purpose of the Fourier transformation. Since we are interested in steady states, we drop the higher-order derivatives and rearrange the resulting equation to
+We see that the $x^3$ term has generated terms that oscillate at $3\omega_d$, describing the process of frequency upconversion. We now Fourier-transform both sides of the above equations with respect to $\omega_d$ to obtain the harmonic equations. This process is equivalent to extracting the respective coefficients of $\cos(\omega_d t)$ and $\sin(\omega_d t)$. Here, the distinction between $t$ and $T$ becomes important: since the evolution of $u(T)$ and $v(T)$ is assumed to be slow, they are treated as constant for the purpose of the Fourier transformation. Since we are interested in steady states, we drop the higher-order derivatives and rearrange the resulting equation to
 ```math
 \begin{equation}
 	\frac{d}{dT} \begin{pmatrix} u \\ v  \end{pmatrix} = \frac{1}{8 \omega_d} \begin{pmatrix} 4 v \left(\omega_0^2-\omega_d^2 \right) + 3 \alpha \left(v^3 + u^2 v  \right) - 4 F \sin{\theta}  \\ 4 u \left(\omega_d^2-\omega_0^2 \right)  - 3 \alpha \left(u^3 + u v^2 \right) - 4 F \cos{\theta}  \end{pmatrix} \,.
 \end{equation}
 ```
 
-Steady states can now be found by setting the l.h.s. to zero, i.e., assuming $u(T)$ and $v(T)$ constant and neglecting any transient behaviour. This results in a set of 2 nonlinear polynomial equations of order 3, for which the maximum number of solutions set by [Bézout's theorem](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem) is $3^2=9$. Depending on the parameters, the number of real solutions is known to be between 1 and 3.
+Steady states can now be found by setting the l.h.s. to zero, i.e., assuming $u(T)$ and $v(T)$ constant and neglecting any transient behaviour. This results in a set of 2 nonlinear polynomial equations of order 3, for which the maximum number of solutions set by [Bézout's theorem](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem) is $3^2=9$. Depending on the parameters, the number of real solutions is known to be between 1 and 3 [[see proof](https://www.sciencedirect.com/science/article/pii/S0021782423001563?via%3Dihub)].
 
 ### Sidenote: perturbative approach
 

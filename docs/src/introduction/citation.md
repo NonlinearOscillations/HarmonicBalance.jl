@@ -9,3 +9,10 @@ The limit cycle finding algorithm is based on the work of [this paper](https://d
 > **Limit cycles as stationary states of an extended harmonic balance ansatz**
 > J. del Pino, J. Košata, and O. Zilberberg, 
 > Phys. Rev. Res. 6, 033180 (2024).
+
+For more context and details on the type of systems studied using the package, we recommend reading [this book](https://global.oup.com/academic/product/classical-and-quantum-parametric-phenomena-9780192862709?cc=de&lang=en&):
+> **Classical and Quantum Parametric Phenomena**
+> A. Eichler and O. Zilberberg, 
+> Oxford University Press (2023).
+
+And visiting our [group's homepage](https://www.zilberberg.uni-konstanz.de/home/index.php?id=intro).

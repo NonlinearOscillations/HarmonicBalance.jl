@@ -5,7 +5,7 @@ layout: home
 
 hero:
   name: HarmonicBalance.jl
-  text: Efficient Floquet expansions for nonlinear driven systems
+  text: Multi-frequency Floquet expansions for nonlinear systems
   tagline: A Julia suite for nonlinear dynamics using harmonic balance
   actions:
     - theme: brand
@@ -23,10 +23,10 @@ hero:
 
 features:
   - title: Non-equilibrium steady states
-    details: Compute all stationary states in a one or two-dimensional parameter sweep.
+    details: Compute all stationary attractors and produce a complete phase diagram of your system
   - title: Linear Response
-    details: Explore the fluctuations on top of the non-equilibrium steady states.
+    details: Explore the excitations on top of each stationary state
   - title: Limit Cycles
-    details: Find limit cycles involving many frequencies.
+    details: Find limit cycles involving many frequencies
 ---
 ```

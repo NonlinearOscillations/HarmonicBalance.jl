@@ -230,7 +230,7 @@ function _get_raw_solution(
         bar = Progress(
             length(parameter_values);
             dt=1,
-            desc="Solving via $method homotopy ...",
+            desc="Solving via $(nameof(typeof(method))) homotopy ...",
             barlen=50,
         )
     end

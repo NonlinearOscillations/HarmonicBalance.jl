@@ -44,7 +44,7 @@ makedocs(;
     pages=pages,
     source="src",
     build="build",
-    draft=true,
+    draft=false,
     warnonly=true,
     doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib],

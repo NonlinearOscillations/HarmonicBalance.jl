@@ -7,7 +7,7 @@ having called `get_harmonic_equations`, we need to set all time-derivatives to z
 
 Once defined, a `Problem` can be solved for a set of input parameters using `get_steady_states` to obtain `Result`.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.Problem
 get_steady_states
 HarmonicBalance.Result

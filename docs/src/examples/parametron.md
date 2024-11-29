@@ -68,10 +68,9 @@ In `get_steady_states`, the default method `WarmUp()` initiates the homotopy in 
 
 After solving the system, we can save the full output of the simulation and the model (e.g. symbolic expressions for the harmonic equations) into a file
 
-````@example parametron
+```julia
 HarmonicBalance.save("parametron_result.jld2", result);
-nothing #hide
-````
+```
 
 During the execution of `get_steady_states`, different solution branches are classified by their proximity in complex space, with subsequent filtering of real (physically acceptable solutions). In addition, the stability properties of each steady state is assessed from the eigenvalues of the Jacobian matrix. All this information can be succinctly represented in a 1D plot via
 

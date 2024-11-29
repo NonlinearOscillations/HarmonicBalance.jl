@@ -1,5 +1,5 @@
 # [The method of harmonic balance](@id intro_hb)
-HarmonicBalance.jl focuses on sytems with equations of motion that are subject to time-dependent terms of harmonic type.
+HarmonicBalance.jl focuses on systems with equations of motion that are subject to time-dependent terms of harmonic type.
 
 ## [Harmonic generation in oscillating nonlinear systems](@id prelude)
 Let us take a general nonlinear system of $N$ second-order ODEs with real variables $x_i(t)$, $i = 1,2,\cdots,N$, and time $t$ as the independent variable,
@@ -15,7 +15,7 @@ The vector $\mathbf{x}(t) = (x_1(t), ..., x_N(t))^{\text T}$ fully describes the
 As an example, let us first solve the harmonic oscillator in frequency space. The equation of motion is
 ```math
 \begin{equation}
-\ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t) = F \cos(\omega_d t)
+\ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t) = F \cos(\omega_d t),
 \end{equation}
 ```
 where $\gamma$ is the damping coefficient and $\omega_0$ the natural frequency. Fourier-transforming both sides of this equation yields
@@ -24,7 +24,7 @@ where $\gamma$ is the damping coefficient and $\omega_0$ the natural frequency. 
 (\omega_0^2 - \omega^2 + i \omega \gamma) \tilde{x}(\omega) = \frac{F}{2} \left[ \delta(\omega + \omega_d) + \delta(\omega - \omega_d) \right] \,.
 \end{equation}
 ```
-Evidently, $\tilde{x}(\omega)$ is only nonvanishing for $\omega = \pm \omega_d$. The system thus responds solely at the driving frequency, i.e., the time evolution can be captured by a single harmonic. This illustrates the general point that _linear systems are exactly solvable_ by transforming to Fourier space, where the equations are diagonal.
+Evidently, $\tilde{x}(\omega)$ is only non-vanishing for $\omega = \pm \omega_d$. The system thus responds solely at the driving frequency, i.e., the time evolution can be captured by a single harmonic. This illustrates the general point that _linear systems are exactly solvable_ by transforming to Fourier space, where the equations are diagonal.
 
 The situation becomes more complex if nonlinear terms are present, as these cause _frequency conversion_. Suppose we add a quadratic nonlinearity $\beta x^2(t)$ to the equations of motion; attempting to Fourier-transform, now, leads to
 ```math
@@ -32,7 +32,7 @@ The situation becomes more complex if nonlinear terms are present, as these caus
     \text{FT}[x^2](\omega) =  \int x^2(t) e^{-i\omega t} \: dt = \int_{-\infty}^{+\infty} \tilde{x}(\omega')\tilde{x}(\omega'') \delta(\omega''+\omega'-\omega) \: d\omega' \: d\omega'' \,,
 \end{equation}
 ```
-which couples all harmonics $\omega, \omega', \omega''$ such that $\omega + \omega' + \omega'' = 0$. To lowest order, this means that the induced motion at the drive frequency generates a higher harmonic, $\omega_d \rightarrow 2\omega_d$. The frequency conversion couples the response at different frequencies and propagates through the spectrum, thus, _coupling an infinite number of harmonics_. Hence, the system is not easily solvable in Fourier space anymore!
+which couples all harmonics $\omega, \omega', \omega''$ such that $\omega + \omega' + \omega'' = 0$. To the lowest order, this means that the induced motion at the drive frequency generates a higher harmonic, $\omega_d \rightarrow 2\omega_d$. The frequency conversion couples the response at different frequencies and propagates through the spectrum, thus, _coupling an infinite number of harmonics_. Hence, the system is not easily solvable in Fourier space anymore!
 
 
 ## Harmonic ansatz & harmonic equations
@@ -78,7 +78,6 @@ We first attempt to describe the steady states of the Duffing equations of motio
 	x(t) = u(T) \cos(\omega_d t) + v(T) \sin(\omega_d t)\:,
 \end{equation}
 ```
-
 with the harmonic variables $u$ and $v$. The _slow time_ $T$ is, for now, equivalent to $t$. Substituting this ansatz into the Duffing equation of motion results in
 ```math
 \begin{align} 
@@ -130,5 +129,5 @@ with $u_1, u_2, v_1, v_2$ being the harmonic variables. As before we substitute 
 	\end{split}
 	\end{align}
 ```
-In contrast to the single-frequency ansatz,  we now have 4 equations of order 3, allowing up to $3^4=81$ solutions (the number of unique real ones is again generally far smaller). The larger number of solutions is explained by higher harmonics which cannot be captured perturbatively by the single-frequency ansatz. In particular, those where the $3 \omega_d$ component is significant. Such solutions appear, e.g., for $\omega_d \approx \omega_0 / 3$ where the generated $3 \omega_d$ harmonic is close to the natural resonant frequency. See the [examples](@ref Duffing) for numerical results.
+In contrast to the single-frequency ansatz, we now have 4 equations of order 3, allowing up to $3^4=81$ solutions (the number of unique real ones is again generally far smaller). The larger number of solutions is explained by higher harmonics which cannot be captured perturbatively by the single-frequency ansatz. In particular, those where the $3 \omega_d$ component is significant. Such solutions appear, e.g., for $\omega_d \approx \omega_0 / 3$ where the generated $3 \omega_d$ harmonic is close to the natural resonant frequency. See the [examples](@ref Duffing) for numerical results.
 	

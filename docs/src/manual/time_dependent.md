@@ -17,6 +17,6 @@ HarmonicBalance.plot(::OrdinaryDiffEqTsit5.ODESolution, ::Any, ::HarmonicEquatio
 ## Miscellaneous
 Using a time-dependent simulation can verify solution stability in cases where the Jacobian is too expensive to compute.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.is_stable
 ```

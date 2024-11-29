@@ -22,10 +22,10 @@ The equations governing the harmonics are stored using the two following structs
 HarmonicVariable
 ```
 
-When the full set of equations of motion is expanded using the harmonic ansatz, the result is stored as a `HarmonicEquation`. For an initial equation of motion consisting of $M$ variables, each expanded in $N$ harmonics, the resulting `HarmonicEquation` holds $2NM$ equations of $2NM$ variables. Each symbol not corresponding to a variable is identified as a parameter. 
+When the full set of equations of motion is expanded using the harmonic ansatz, the result is stored as a `HarmonicEquation`. For an initial equation of motion consisting of $M$ variables, each expanded in $N$ harmonics, the resulting `HarmonicEquation` holds $2NM$ equations of $2NM$ variables. Each symbol not corresponding to a variable is identified as a parameter.
 
 A `HarmonicEquation` can be either parsed into a steady-state `Problem` or solved using a dynamical ODE solver.
 
 ```@docs; canonical=false
 HarmonicEquation
-```
+```\

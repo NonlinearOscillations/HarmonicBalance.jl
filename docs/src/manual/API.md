@@ -15,18 +15,21 @@ DifferentialEquation
 HarmonicVariable
 HarmonicEquation
 ```
-```@docs; canonical=false
+
+```@docs
 rearrange_standard
 rearrange_standard!
 first_order_transform!
 is_rearranged_standard
 get_equations
 ```
+
 ```@docs
 get_harmonic_equations
 get_krylov_equations
 add_harmonic!
 ```
+
 ```@docs
 get_independent_variables
 get_variables
@@ -39,6 +42,7 @@ get_steady_states
 ```
 
 ### Methods
+
 ```@docs
 WarmUp
 TotalDegree
@@ -46,12 +50,14 @@ Polyhedral
 ```
 
 ### Access solutions
+
 ```@docs
 get_single_solution
 transform_solutions
 ```
 
 ### Classify
+
 ```@docs
 classify_solutions!
 get_class
@@ -66,6 +72,7 @@ plot_spaghetti
 ```
 
 ## Limit cycles
+
 ```@docs
 get_limit_cycles
 get_cycle_variables
@@ -84,9 +91,10 @@ plot_linear_response
 plot_rotframe_jacobian_response
 ```
 
-## Extentsions
+## Extensions
 
 ### OrdinaryDiffEq
+
 ```@docs
 AdiabaticSweep
 follow_branch
@@ -94,10 +102,12 @@ plot_1D_solutions_branch
 ```
 
 ### SteadyStateSweep
+
 ```@docs
 steady_state_sweep
 ```
 
 ### ModelingToolkit
+
 ```@docs
 ```

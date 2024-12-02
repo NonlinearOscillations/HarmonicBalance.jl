@@ -41,6 +41,7 @@ makedocs(;
         devbranch="master",
         devurl="dev",
     ),
+    checkdocs=:exports,
     pages=pages,
     source="src",
     build="build",

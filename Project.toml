@@ -38,7 +38,7 @@ TimeEvolution = "OrdinaryDiffEqTsit5"
 [compat]
 Aqua = "0.8"
 BijectiveHilbert = "0.3.0"
-DSP = "0.7.9"
+DSP = "0.7.9, 0.8"
 DelimitedFiles = "1.9"
 Distances = "0.10.11"
 DocStringExtensions = "0.9.3"

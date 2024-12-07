@@ -26,11 +26,13 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
+DynamicalSystemsBase = "6e36e845-645a-534a-86f2-f5d4aa5a06b4"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [extensions]
+DynamicalSystemsBaseExt = "DynamicalSystemsBase"
 ModelingToolkitExt = "ModelingToolkit"
 SteadyStateDiffEqExt = "SteadyStateDiffEq"
 TimeEvolution = "OrdinaryDiffEqTsit5"

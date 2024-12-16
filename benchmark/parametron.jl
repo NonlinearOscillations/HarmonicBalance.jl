@@ -1,41 +1,60 @@
 using HarmonicBalance
-using BenchmarkTools
+using HomotopyContinuation
 
-using Random
-const SEED = 0xd8e5d8df
-Random.seed!(SEED)
+@variables ω₀ γ λ α ω t x(t)
 
-@variables Ω γ λ F x θ η α ω0 ω t T ψ
-@variables x(t)
+natural_equation = d(d(x, t), t) + γ * d(x, t) + (ω₀^2 - λ * cos(2 * ω * t)) * x + α * x^3
+diff_eq = DifferentialEquation(natural_equation, x)
 
-natural_equation =
-    d(d(x, t), t) +
-    γ * d(x, t) +
-    Ω^2 * (1 - λ * cos(2 * ω * t + ψ)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
-forces = F * cos(ω * t + θ)
-dEOM = DifferentialEquation(natural_equation + forces, x)
-add_harmonic!(dEOM, x, ω)
+add_harmonic!(diff_eq, x, ω);
 
-@btime harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
-
-fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0)
-varied = ω => range(0.9, 1.1, 100)
-
+harmonic_eq = get_harmonic_equations(diff_eq)
 prob = HarmonicBalance.Problem(harmonic_eq)
-@btime res = get_steady_states(prob, WarmUp(), varied, fixed; show_progress=false) # 380.126 ms (925069 allocations: 50.84 MiB)
-@btime res = get_steady_states(
-    prob, WarmUp(; compile=true), varied, fixed; show_progress=false
+
+fixed = (ω₀ => 1.0, γ => 0.002, α => 1.0)
+varied = (ω => range(0.99, 1.01, 100), λ => range(1e-6, 0.03, 100))
+
+track_options = HomotopyContinuation.TrackerOptions(;
+    parameters=:conservative,
+    automatic_differentiation=3,
+    max_steps=20_000,
+    min_step_size=1e-48,
 )
-@btime res = get_steady_states(
-    prob, Polyhedral(; only_non_zero=true), varied, fixed; show_progress=false
+end_options = HomotopyContinuation.EndgameOptions(; refine_steps=10)
+method = WarmUp(; compile=true, tracker_options=track_options, endgame_options=end_options)
+result_2D = get_steady_states(prob, method, varied, fixed; show_progress=false)
+plot_phase_diagram(result_2D; class="stable")
+
+# loose some solutions
+track_options = HomotopyContinuation.TrackerOptions(;
+    parameters=:fast, extended_precision=false
 )
-@btime res = get_steady_states(
-    prob, Polyhedral(; only_non_zero=false), varied, fixed; show_progress=false
-) # 382.672 ms (930906 allocations: 51.16 MiB)
-@btime res = get_steady_states(
-    prob, TotalDegree(; compile=true), varied, fixed; show_progress=false
-) # 378.314 ms (904817 allocations: 49.63 MiB)
-@btime res = get_steady_states(prob, TotalDegree(), varied, fixed; show_progress=false)# 379.858 ms (925130 allocations: 50.86 MiB)
-plot(res; y="u1")
+end_options = HomotopyContinuation.EndgameOptions(;
+    endgame_start=0.0, only_nonsingular=true
+)
+method = WarmUp(; compile=true, tracker_options=track_options, endgame_options=end_options)
+result_2D = get_steady_states(prob, method, varied, fixed; show_progress=false)
+plot_phase_diagram(result_2D; class="stable")
+
+@btime $get_steady_states($prob, $WarmUp(), $varied, $fixed; show_progress=false)
+# 1.029 s (4495544 allocations: 445.47 MiB)
+
+@btime $get_steady_states(
+    $prob, $WarmUp(; compile=true), $varied, $fixed; show_progress=false
+) # 953.323 ms (4490408 allocations: 442.09 MiB)
+
+track_options = HomotopyContinuation.TrackerOptions(; parameters=:fast)
+method = WarmUp(; compile=true, tracker_options=track_options)
+@btime $get_steady_states($prob, $method, $varied, $fixed; show_progress=false) #  747.007 ms (4460916 allocations: 438.87 MiB)
+
+track_options = HomotopyContinuation.TrackerOptions(; parameters=:fast)
+end_options = HomotopyContinuation.EndgameOptions(; endgame_start=0.0)
+method = WarmUp(; compile=true, tracker_options=track_options, endgame_options=end_options)
+@btime $get_steady_states($prob, $method, $varied, $fixed; show_progress=false) # 734.310 ms (4460118 allocations: 438.81 MiB)
+
+track_options = HomotopyContinuation.TrackerOptions(;
+    parameters=:fast, extended_precision=false
+)
+end_options = HomotopyContinuation.EndgameOptions(; endgame_start=0.0)
+method = WarmUp(; compile=true, tracker_options=track_options, endgame_options=end_options)
+@btime $get_steady_states($prob, $method, $varied, $fixed; show_progress=false) # 734.310 ms (4460118 allocations: 438.81 MiB)

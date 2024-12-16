@@ -4,7 +4,7 @@ All of the types native to `HarmonicBalance.jl` can be saved into a `.jld2` file
 
 The function `export_csv` saves a .csv file which can be plot elsewhere.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.save
 HarmonicBalance.load
 HarmonicBalance.export_csv

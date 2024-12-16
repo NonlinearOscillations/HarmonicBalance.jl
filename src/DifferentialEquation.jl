@@ -137,6 +137,11 @@ function get_independent_variables(diff_eom::DifferentialEquation)
     return Num.(flatten(unique([x.val.arguments for x in keys(diff_eom.equations)])))
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the equations of `eom`.
+"""
 get_equations(eom::DifferentialEquation) = collect(values(eom.equations))
 
 """

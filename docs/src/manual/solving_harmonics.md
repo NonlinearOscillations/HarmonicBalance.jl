@@ -7,7 +7,7 @@ having called `get_harmonic_equations`, we need to set all time-derivatives to z
 
 Once defined, a `Problem` can be solved for a set of input parameters using `get_steady_states` to obtain `Result`.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.Problem
 get_steady_states
 HarmonicBalance.Result
@@ -19,7 +19,7 @@ The solutions in `Result` are accompanied by similarly-sized boolean arrays stor
 
 By default, classes "physical", "stable" and "binary\_labels" are created. User-defined classification is possible with `classify_solutions!`.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.classify_solutions!
 ```
 
@@ -35,6 +35,6 @@ The function `sort_solutions` goes over the the raw output of `get_steady_states
 
 Currently, `sort_solutions` is compatible with 1D and 2D arrays of solution sets.
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.sort_solutions
 ```

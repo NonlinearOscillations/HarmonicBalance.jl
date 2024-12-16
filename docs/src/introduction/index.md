@@ -1,6 +1,5 @@
 # Installation
-
-It is easy to install HarmonicBalance.jl as we are registered in the Julia General registry.
+Assuming that you are all [set up with a Julia and Jupyter](#Setting-Up-Julia-and-Jupyter-Notebooks), it is easy to install HarmonicBalance.jl, as we are registered in the Julia General registry. 
 You can simply run the following command in the Julia REPL:
 ```julia
 julia> using Pkg
@@ -46,3 +45,19 @@ plot(result, "sqrt(u1^2 + v1^2)")
 ```
 
 If you want learn more on what you can do with HarmonicBalance.jl, check out the [tutorials](@ref tutorials). We also have collected some [examples](@ref examples) of different physical systems.
+
+------------------------------------------------
+# Setting Up Julia and Jupyter Notebooks
+
+To ensure a smooth experience with our package, please follow these steps to set up Julia and Jupyter notebooks. Once these steps are completed, you can proceed to install and use our package seamlessly.
+
+1.  **Download Julia**: Visit the [Julia Downloads page](https://julialang.org) and download the latest stable release for your operating system.
+2.  **Install Julia**: Follow the installation instructions for your platform:
+3.  Open Julia and enter the package manager by typing `]` in the Julia REPL.
+4.  Add the `IJulia` package, which integrates Julia with Jupyter:
+   ```julia
+   add IJulia
+   ```
+5.  Once installed, `IJulia` will automatically set up Julia as a Jupyter kernel.
+
+

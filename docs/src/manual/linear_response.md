@@ -8,7 +8,7 @@ The methodology used is explained in [Jan Kosata phd thesis](https://www.doi.org
 
 The Jacobian is used to evaluate stability of the solutions. It can be shown explicitly,
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.get_Jacobian
 ```
 
@@ -16,7 +16,7 @@ HarmonicBalance.get_Jacobian
 
 The response to white noise can be shown with `plot_linear_response`. Depending on the `order` argument, different methods are used. 
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.LinearResponse.plot_linear_response
 ```
 
@@ -27,7 +27,7 @@ The simplest way to extract the linear response of a steady state is to evaluate
 The advantage of this method is that for a given parameter set, only one matrix diagonalization is needed to fully describe the response spectrum. However, the method is inaccurate for response frequencies far from the frequencies used in the harmonic ansatz (it relies on the response oscillating slowly in the rotating frame). 
 
 Behind the scenes, the spectra are stored using the dedicated structs `Lorentzian` and `JacobianSpectrum`.
-```@docs
+```@docs; canonical=false
 HarmonicBalance.LinearResponse.JacobianSpectrum
 HarmonicBalance.LinearResponse.Lorentzian
 ```
@@ -36,7 +36,7 @@ HarmonicBalance.LinearResponse.Lorentzian
 
 Setting `order > 1` increases the accuracy of the response spectra. However, unlike for the Jacobian, here we must perform a matrix inversion for each response frequency.  
 
-```@docs
+```@docs; canonical=false
 HarmonicBalance.LinearResponse.ResponseMatrix
 HarmonicBalance.get_response
 HarmonicBalance.LinearResponse.get_response_matrix

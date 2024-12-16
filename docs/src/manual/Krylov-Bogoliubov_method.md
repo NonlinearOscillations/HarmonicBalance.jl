@@ -14,7 +14,7 @@ To compute the Krylov-Bogoliubov averaging method within your system, utilize th
 
 ### Function Reference
 
-```@docs
+```@docs; canonical=false
 get_krylov_equations
 ```
 

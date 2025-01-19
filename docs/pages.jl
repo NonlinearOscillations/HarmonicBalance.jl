@@ -14,9 +14,10 @@ pages = [
         "Transient Dynamics" => "tutorials/time_dependent.md",
         "Limit Cycles" => "tutorials/limit_cycles.md",
         "Examples" => [
-        "Wave Mixing" => "examples/wave_mixing.md"
-        "Parametric Three Wave Mixing" => "examples/parametric_via_three_wave_mixing.md"
-        "Parametric Oscillator" => "examples/parametron.md"
+        "Wave Mixing" => "examples/wave_mixing.md",
+        "Parametric Three Wave Mixing" => "examples/parametric_via_three_wave_mixing.md",
+        "Parametric Oscillator" => "examples/parametron.md",
+        "State Dependent Perturbation" => "examples/state_dependendent_perturbation.md",
         ],
     ],
     "Resources" => [

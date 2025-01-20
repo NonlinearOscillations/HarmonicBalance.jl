@@ -17,7 +17,7 @@ pages = [
         "Wave Mixing" => "examples/wave_mixing.md",
         "Parametric Three Wave Mixing" => "examples/parametric_via_three_wave_mixing.md",
         "Parametric Oscillator" => "examples/parametron.md",
-        "State Dependent Perturbation" => "examples/state_dependendent_perturbation.md",
+        "State Dependent Perturbation" => "examples/state_dependent_perturbation.md",
         ],
     ],
     "Resources" => [

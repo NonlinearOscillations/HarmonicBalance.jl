@@ -154,10 +154,12 @@ plot!(
 )
 
 # Let us assume that the antisymmetrcic mode is in the parametric non-zero amplitude state. We will dress the symmetric mode with the non-zero amplitude solution of the antisymmetric mode.
-equations_xa =
-    [d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + (α / 4) * xa^3]
-equations_xs =
-    [d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + (α / 4) * xs^3]
+equations_xa = [
+    d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + (α / 4) * xa^3
+]
+equations_xs = [
+    d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + (α / 4) * xs^3
+]
 system_xa = DifferentialEquation(equations_xa, [xa])
 system_xs = DifferentialEquation(equations_xs, [xs])
 add_harmonic!(system_xa, xa, ω)

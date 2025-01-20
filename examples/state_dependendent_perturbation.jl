@@ -1,46 +1,96 @@
 # # State dependent perturbation of the parametron
 
-# In this example, we will show how we can understand the bifurcation lines of two coupled duffing resonotors with a global parametric drive.
+# In this example, we will show how we can understand the bifurcation lines of two coupled duffing resonotors with a global parametric drive. This example is part of the paper [Ameye et al. (arXiv:2501.08793)](https://www.arxiv.org/abs/2501.08793).
 
-# We load the following packages into our environment:
+# Let us load the following packages into our environment:
 
-using HarmonicBalance;
-
+using HarmonicBalance, Plots;
 HB = HarmonicBalance;
-using HarmonicBalance: Result, OrderedDict
-
-using Plots
-c = :viridis;
-cticks = 0:9;
 crange = (0, 9);
 
-# Later, we will need to classification the solutions of our perturbations. Hence, we define our own classification function:
+# Later, we will need to classify the solutions of our perturbation. To make this work, we define our own classification functions:
 
 function my_classify_default!(result)
     my_classify_solutions!(result, HB.is_physical, "physical")
     my_classify_solutions!(result, HB.is_stable, "stable")
-    HB.order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant
+    return HB.order_branches!(result, ["physical", "stable"]) # shuffle the branches to have relevant
 end
-function my_classify_solutions!(res::Result, f::Function, name::String)
+function my_classify_solutions!(res::HB.Result, f::Function, name::String)
     values = my_classify_solutions(res, f)
-    res.classes[name] = values
+    return res.classes[name] = values
 end
-function my_classify_solutions(res::Result, f::Function)
+function my_classify_solutions(res::HB.Result, f::Function)
     values = similar(res.solutions, BitVector)
     for (idx, soln) in enumerate(res.solutions)
         values[idx] = [
-            f(my_get_single_solution(res, index=idx, branch=b), res) for
-            b = 1:length(soln)
+            f(my_get_single_solution(res; index=idx, branch=b), res) for b in 1:length(soln)
         ]
     end
-    values
+    return values
 end
 function my_get_single_solution(res; index, branch)
-    sol = get_single_solution(res, index=index, branch=branch)
-    merge(sol, Dict(ua => A[CartesianIndex(index)][1], va => A[CartesianIndex(index)][2]))
+    sol = get_single_solution(res; index=index, branch=branch)
+    return merge(
+        sol, Dict(ua => A[CartesianIndex(index)][1], va => A[CartesianIndex(index)][2])
+    )
 end
 
-# The system in in the normal mode basis is given by:
+# We will consider two coupled linearly coupled parametrons, i.e., Duffing resonators with a global parametric drive. The equations of motion are given by:
+# ```math
+# \ddot{x}_1 + (\omega_0^2 - \lambda \cos(2\omega t)) x_1 + \gamma \dot{x}_1 + \alpha x_1^3 -J x_2 = 0
+# \ddot{x}_2 + (\omega_0^2 - \lambda \cos(2\omega t)) x_2 + \gamma \dot{x}_2 + \alpha x_2^3 -J x_1 = 0
+# ```
+# where $x_1$ and $x_2$ are the two induidual modes. The system is parametrized by the following parameters: $\omega_0$ (bare frequency), $\omega$ (drive frequency), $\lambda$ (parametric drive amplitude), $\alpha$ (nonlinearity), $J$ (coupling strength), and $\gamma$ (damping).
+
+# With HarmonicBalance.jl, we can easily solve the phase diagram of the system in the limit where the modes oscillate at the frequency $\omega$:
+
+@variables t x1(t) x2(t);
+@variables ω0 ω λ α J γ;
+equations = [
+    d(d(x1, t), t) + (ω0^2 - λ * cos(2 * ω * t)) * x1 + γ * d(x1, t) + α * x1^3 - J * x2,
+    d(d(x2, t), t) + (ω0^2 - λ * cos(2 * ω * t)) * x2 + γ * d(x2, t) + α * x2^3 - J * x1,
+]
+system = DifferentialEquation(equations, [x1, x2])
+add_harmonic!(system, x1, ω)
+add_harmonic!(system, x2, ω)
+harmonic_normal = get_harmonic_equations(system);
+
+# We sweep over the system where we both increase the drive frequency $\omega$ and the parametric drive amplitude $\lambda$:
+
+res = 80
+fixed = HB.OrderedDict(Dict(ω0 => 1.0, α => 1.0, J => 0.005, γ => 0.005))
+varied = HB.OrderedDict((ω => range(0.99, 1.01, res), λ => range(1e-6, 0.03, res)))
+# method = TotalDegree()
+result_ωλ = get_steady_states(harmonic_normal, varied, fixed; show_progress=false);
+plot_phase_diagram(result_ωλ; class="stable")
+
+# The phase diagram shows the number of stable steady states in the $\omega-\lambda$ plane. We find a familiar structure with two Arnold tongues (also known as Mathieu stability zones) around the drive frequency $\omega_s=\sqrt{\omega_0^2-J}$ and $\omega_s=\sqrt{\omega_0^2+J}$.
+
+λ_bif(ω, ω0, γ) = 2 * sqrt((ω^2 - ω0^2)^2 + γ^2 * ω^2)
+plot_phase_diagram(result_ωλ; class="stable", xlims=(0.99, 1.01), ylims=(1e-6, 0.03))
+plot!(
+    ω -> λ_bif(ω, √(fixed[ω0]^2 + fixed[J]), fixed[γ]),
+    range(0.99, 1.01, res);
+    label="",
+    c=:black,
+    ls=:dash,
+)
+plot!(
+    ω -> λ_bif(ω, √(fixed[ω0]^2 - fixed[J]), fixed[γ]),
+    range(0.99, 1.01, res);
+    label="",
+    c=:black,
+    ls=:dash,
+)
+
+# These frequencies where the lobes are centered around corresponds to the normal mode frequency of the coupled system. Indeed, when resonators are strongly coupled, the system is better described in the normal mode basis. However, in addition, we also find additional bifurcation lines in the phase diagram. These bifurcation lines we would like to understand with a state-dependent perturbation.
+
+# As the system, in the strongly coupled limit, is better described in the normal mode basis, let's us consider the symmetric and antisymmetric modes $x_s = (x_1 + x_2)/\sqrt{2}$ and $x_a = (x_1 - x_2)/\sqrt{2}$, respectively. The equations of motion in this basis are given by:
+# ```math
+# \ddot{x}_s + (\omega_0^2 - J - \lambda \cos(2\omega t)) x_s + \gamma \dot{x}_s + \frac{\alpha}{4} (x_s^3 + 3 * x_a^2 * x_s) = 0
+# \ddot{x}_a + (\omega_0^2 + J - \lambda \cos(2\omega t)) x_a + \gamma \dot{x}_a + \frac{\alpha}{4} (x_a^3 + 3 * x_s^2 * x_a)= 0
+# ```
+# Note that the system couples nonlinearly through the Kerr medium. However, solving the full system with HarmonicBalance.jl, expanding the normal modes in the the frequency $\omega$ yields the same phase diagram:
 
 @variables t xs(t) xa(t);
 @variables ω0 ω λ α J γ;
@@ -56,40 +106,54 @@ equations = [
 ]
 system = DifferentialEquation(equations, [xs, xa])
 
-# We will consider the averaged system were both the symmetric and antisymmetric mode are expanded in the frequency $\omega$:
-
 add_harmonic!(system, xs, ω)
 add_harmonic!(system, xa, ω)
 harmonic_normal = get_harmonic_equations(system);
 
-# We compute the steady states of the system for a range of $\omega$ and $\lambda$ values:
-
-res = 80
-fixed_ωλ = Dict(ω0 => 1.0, α => 1.0, J => 0.005, γ => 0.005) |> OrderedDict
-varied_ωλ = (ω => range(0.99, 1.01, res), λ => range(1e-6, 0.03, res)) |> OrderedDict
-
 method = TotalDegree()
 result_ωλ_normal = get_steady_states(
-    harmonic_normal,
-    method,
-    varied_ωλ,
-    fixed_ωλ,
-    show_progress=false,
+    harmonic_normal, method, varied, fixed; show_progress=false
 );
 
-# We plot the number of stable steady states in the $\omega-\lambda$ plane using:
+plot_phase_diagram(result_ωλ_normal; class="stable")
 
-plot_phase_diagram(result_ωλ_normal, class="stable")
+# We would like to predict the addtional bifurcation lines above by doing a proper perturbation of the nonlinear coupling. Hence, we consider the uncoupled system by removing the coupled terms in the equations of motion.
 
-# We consider the uncoupled system by removing the coupled terms in the equations of motion:
-
-@variables t xa(t);
+@variables t xa(t) xs(t);
 @variables ω0 ω λ α J;
-equations_xa =
-    [d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + (α / 4) * xa^3]
-equations_xs =
-    [d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + (α / 4) * xs^3]
+equations_xa = [
+    d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + α * xa^3
+]
+equations_xs = [
+    d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + α * xs^3
+]
+system_uncoupled = DifferentialEquation(append!(equations_xs, equations_xa), [xs, xa])
+add_harmonic!(system_uncoupled, xa, ω)
+add_harmonic!(system_uncoupled, xs, ω)
+harmonic_uncoupled = get_harmonic_equations(system_uncoupled);
 
+plot_phase_diagram(
+    get_steady_states(harmonic_uncoupled, method, varied, fixed);
+    class="stable",
+    xlims=(0.99, 1.01),
+    ylims=(1e-6, 0.03),
+)
+plot!(
+    ω -> λ_bif(ω, √(fixed[ω0]^2 + fixed[J]), fixed[γ]),
+    range(0.99, 1.01, res);
+    label="",
+    c=:black,
+    ls=:dash,
+)
+plot!(
+    ω -> λ_bif(ω, √(fixed[ω0]^2 - fixed[J]), fixed[γ]),
+    range(0.99, 1.01, res);
+    label="",
+    c=:black,
+    ls=:dash,
+)
+
+# Let us assume that the antisymmetrcic mode is in the parametric non-zero amplitude state. We will dress the symmetric mode with the non-zero amplitude solution of the antisymmetric mode.
 system_xa = DifferentialEquation(equations_xa, [xa])
 system_xs = DifferentialEquation(equations_xs, [xs])
 add_harmonic!(system_xa, xa, ω)
@@ -97,18 +161,16 @@ add_harmonic!(system_xs, xs, ω)
 harmonic_antisym = get_harmonic_equations(system_xa);
 harmonic_sym = get_harmonic_equations(system_xs);
 
+# The uncoupled antisysmmetic mode will have a typical parametron phase diagram around the frequency $\omega_a$. We are interested in the non-zero amplitude solution which we will consider as the zeroth order in the perturbation.
 
-# The uncoupled antisysmmetic mode will have a typical parametron phase diagram around the frequency $\omega_a$. We are interested in the non-zero amplitude solution which we will consider as the zeroth orcer in the perturbation.
-
-result_ωλ_antisym =
-    get_steady_states(harmonic_antisym, varied_ωλ, fixed_ωλ);
+result_ωλ_antisym = get_steady_states(harmonic_antisym, varied, fixed);
 
 classify_solutions!(result_ωλ_antisym, "sqrt(u1^2 + v1^2) > 1e-3", "not_zero")
-plot_phase_diagram(result_ωλ_antisym, class=["stable","not_zero"])
+plot_phase_diagram(result_ωλ_antisym; class=["stable", "not_zero"])
 
 # We filter the non-zero amplitude solution and store it in a matrix $A$:
 
-branch_mat = HB._get_mask(result_ωλ_antisym, ["stable", "not_zero"], []) .|> findfirst
+branch_mat = findfirst.(HB._get_mask(result_ωλ_antisym, ["stable", "not_zero"], []))
 A = map(CartesianIndices(result_ωλ_antisym.solutions)) do idx
     branch = branch_mat[idx]
     if isnothing(branch)
@@ -125,28 +187,26 @@ heatmap(map(v -> v[1]^2 + v[2]^2, A)')
 @variables T u2(T) v2(T) ua va
 harmonic_tmp = deepcopy(harmonic_sym)
 harmonic_tmp.equations = HB.Symbolics.substitute(
-    HB.rearrange_standard(harmonic_normal).equations[1:2],
-    Dict(u2 => ua, v2 => va),
+    HB.rearrange_standard(harmonic_normal).equations[1:2], Dict(u2 => ua, v2 => va)
 )
 harmonic_tmp.parameters = push!(harmonic_tmp.parameters, ua, va)
 prob = HarmonicBalance.Problem(harmonic_tmp)
 
-
 # We will sweep over the $\omega-\lambda$ plane and substitute the non-zero amplitude solution of the antisymmetric mode into the coupled equations of thesymmetric mode.
 
-all_keys = cat(collect(keys(varied_ωλ)), collect(keys(fixed_ωλ)), dims=1)
+all_keys = cat(collect(keys(varied)), collect(keys(fixed)); dims=1)
 permutation =
-    filter(
-        !isempty,
-        [findall(x -> isequal(x, par), all_keys) for par in prob.parameters],
-    ) .|> first
+    first.(
+        filter(
+            !isempty, [findall(x -> isequal(x, par), all_keys) for par in prob.parameters]
+        )
+    )
 
-param_ranges = collect(values(varied_ωλ))
-input_array = collect(Iterators.product(param_ranges..., values(fixed_ωλ)...))
+param_ranges = collect(values(varied))
+input_array = collect(Iterators.product(param_ranges..., values(fixed)...))
 input_array = getindex.(input_array, [permutation])
 input_array = HB.tuple_to_vector.(input_array)
-input_array =
-    map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array))
+input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array))
 
 # Solving for the steady states of the dressed symmetric mode:
 function solve_perturbed_system(prob, input)
@@ -163,12 +223,19 @@ function solve_perturbed_system(prob, input)
     rounded_solutions = HB.HomotopyContinuation.solutions.(result_full)
     solutions = HB.pad_solutions(rounded_solutions)
 
-    J_variables = cat(prob.variables, collect(keys(varied_ωλ)), [ua, va], dims=1)
-    compiled_J = HB.compile_matrix(prob.jacobian, J_variables, rules=fixed_ωλ)
+    J_variables = cat(prob.variables, collect(keys(varied)), [ua, va]; dims=1)
+    compiled_J = HB.compile_matrix(prob.jacobian, J_variables; rules=fixed)
     compiled_J = HB.JacobianFunction(HB.solution_type(solutions))(compiled_J)
-    result = HB.Result(solutions, varied_ωλ, fixed_ωλ, prob, Dict(),
-    zeros(Int64, size(solutions)...),
-    compiled_J, HB.seed(method));
+    result = HB.Result(
+        solutions,
+        varied,
+        fixed,
+        prob,
+        Dict(),
+        zeros(Int64, size(solutions)...),
+        compiled_J,
+        HB.seed(method),
+    )
 
     my_classify_default!(result)
     return result
@@ -176,8 +243,8 @@ end
 result = solve_perturbed_system(prob, input_array)
 
 plot(
-    plot_phase_diagram(result_ωλ_normal, class=["stable"],colorbar=false),
-    plot_phase_diagram(result, class=["stable"],colorbar=false),
+    plot_phase_diagram(result_ωλ_normal; class=["stable"], colorbar=false),
+    plot_phase_diagram(result; class=["stable"], colorbar=false);
     clim=crange,
     size=(800, 300),
 )

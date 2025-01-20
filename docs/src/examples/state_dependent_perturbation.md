@@ -139,7 +139,7 @@ result_ωλ_normal = get_steady_states(
 plot_phase_diagram(result_ωλ_normal; class="stable")
 ````
 
-We would like to predict the addtional bifurcation lines above by doing a proper perturbation of the nonlinear coupling. Hence, we consider the uncoupled system by removing the coupled terms in the equations of motion.
+We would like to predict the additional bifurcation lines above by doing a proper perturbation of the nonlinear coupling. Hence, we consider the uncoupled system by removing the coupled terms in the equations of motion.
 
 ````@example state_dependent_perturbation
 @variables t xa(t) xs(t);

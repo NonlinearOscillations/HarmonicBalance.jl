@@ -63,6 +63,7 @@ SteadyStateDiffEq = "2.4.1"
 SymbolicUtils = "3.11"
 Symbolics = "6.23"
 TestExtras = "0.3"
+NaNMath = "1.1"
 julia = "1.10.0"
 
 [extras]

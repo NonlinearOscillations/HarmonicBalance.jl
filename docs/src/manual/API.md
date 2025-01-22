@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = HarmonicBalance
-```
-
 # [API](@id doc-API)
 
 **Table of contents**
@@ -11,6 +7,7 @@ CurrentModule = HarmonicBalance
 ## System objects and types
 
 ```@docs
+HarmonicBalance.d
 DifferentialEquation
 HarmonicVariable
 HarmonicEquation
@@ -67,6 +64,7 @@ get_class
 
 ```@docs
 plot
+plot!
 plot_phase_diagram
 plot_spaghetti
 ```
@@ -110,4 +108,5 @@ steady_state_sweep
 ### ModelingToolkit
 
 ```@docs
+ODEProblem
 ```

@@ -7,6 +7,7 @@ are identified as parameters. Information on which variable is to be expanded in
 `DifferentialEquation.equations` stores a dictionary assigning variables to equations. This information is necessary because the harmonics belonging to a variable are later used to Fourier-transform its corresponding ODE.
 
 ```@docs; canonical=false
+HarmonicBalance.d
 DifferentialEquation
 add_harmonic!
 get_variables(::DifferentialEquation)

@@ -26,7 +26,7 @@ ENV["GKSwstype"] = "100"
 include("make_md_examples.jl")
 
 include("pages.jl")
-
+ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
 makedocs(;
     sitename="HarmonicBalance.jl",
     authors="Quest group",
@@ -35,6 +35,7 @@ makedocs(;
         Base.get_extension(HarmonicBalance, :TimeEvolution),
         Base.get_extension(HarmonicBalance, :ModelingToolkitExt),
         Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt),
+        HarmonicBalance.LinearResponse,
     ],
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
@@ -45,8 +46,8 @@ makedocs(;
     pages=pages,
     source="src",
     build="build",
-    draft=false,
-    warnonly=true,
+    draft=!CI,
+    warnonly=[:linkcheck, :cross_references],
     doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib],
 )

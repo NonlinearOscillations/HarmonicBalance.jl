@@ -41,3 +41,9 @@ HarmonicBalance.LinearResponse.ResponseMatrix
 HarmonicBalance.get_response
 HarmonicBalance.LinearResponse.get_response_matrix
 ```
+
+```@autodocs
+Modules = [HarmonicBalance.LinearResponse]
+Private = false
+Order = [:function]
+```

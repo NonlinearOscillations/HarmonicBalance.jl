@@ -105,7 +105,7 @@ These frequencies where the lobes are centered around corresponds to the normal 
 As the system, in the strongly coupled limit, is better described in the normal mode basis, let's us consider the symmetric and antisymmetric modes $x_s = (x_1 + x_2)/2$ and $x_a = (x_1 - x_2)/2$, respectively. The equations of motion in this basis are given by:
 ```math
 \begin{aligned}
-& \ddot{x}_s + (\omega_0^2 - J - \lambda \cos(2\omega t)) x_s + \gamma \dot{x}_s + \alpha (x_s^3 + 3 * x_a^2 * x_s) = 0
+& \ddot{x}_s + (\omega_0^2 - J - \lambda \cos(2\omega t)) x_s + \gamma \dot{x}_s + \alpha (x_s^3 + 3 * x_a^2 * x_s) = 0\\
 & \ddot{x}_a + (\omega_0^2 + J - \lambda \cos(2\omega t)) x_a + \gamma \dot{x}_a + \alpha (x_a^3 + 3 * x_s^2 * x_a)= 0
 \end{aligned}
 ```
@@ -246,7 +246,8 @@ param_ranges = collect(values(varied))
 input_array = collect(Iterators.product(param_ranges..., values(fixed)...))
 input_array = getindex.(input_array, [permutation])
 input_array = HB.tuple_to_vector.(input_array)
-input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array))
+input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array));
+nothing #hide
 ````
 
 Solving for the steady states of the dressed symmetric mode:

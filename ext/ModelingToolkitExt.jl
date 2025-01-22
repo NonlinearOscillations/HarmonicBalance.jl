@@ -1,5 +1,7 @@
 module ModelingToolkitExt
 
+using DocStringExtensions
+
 export ODESystem, ODEProblem, SteadyStateProblem, NonlinearProblem
 
 using HarmonicBalance:

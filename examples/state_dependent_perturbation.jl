@@ -37,10 +37,12 @@ end
 
 # We will consider two coupled linearly coupled parametrons, i.e., Duffing resonators with a global parametric drive. The equations of motion are given by:
 # ```math
-# \ddot{x}_1 + (\omega_0^2 - \lambda \cos(2\omega t)) x_1 + \gamma \dot{x}_1 + \alpha x_1^3 -J x_2 = 0
-# \ddot{x}_2 + (\omega_0^2 - \lambda \cos(2\omega t)) x_2 + \gamma \dot{x}_2 + \alpha x_2^3 -J x_1 = 0
+# \begin{aligned}
+# & \ddot{x}_1 + (\omega_0^2 - \lambda \cos(2\omega t)) x_1 + \gamma \dot{x}_1 + \alpha x_1^3 -J x_2 = 0\\
+# & \ddot{x}_2 + (\omega_0^2 - \lambda \cos(2\omega t)) x_2 + \gamma \dot{x}_2 + \alpha x_2^3 -J x_1 = 0
+# \end{aligned}
 # ```
-# where $x_1$ and $x_2$ are the two induidual modes. The system is parametrized by the following parameters: $\omega_0$ (bare frequency), $\omega$ (drive frequency), $\lambda$ (parametric drive amplitude), $\alpha$ (nonlinearity), $J$ (coupling strength), and $\gamma$ (damping).
+# where $x_1$ and $x_2$ are the two individual modes. The system is characterized by several parameters. The parameter `ω₀` represents the bare frequency of the system, which is the natural frequency at which the system oscillates in the absence of any external driving force. The parameter `ω` denotes the drive frequency, which is the frequency of an external driving force applied to the system. The parameter `λ` stands for the amplitude of the parametric drive, which modulates the natural frequency  periodically. The parameter `α` represents the nonlinearity of the system, indicating how the system's response deviates from a linear behavior. The parameter `J` signifies the coupling strength, which measures the interaction strength between different parts or modes of the system. Finally, the parameter `γ` denotes the damping, which quantifies the rate at which the system loses energy to its surroundings.
 
 # With HarmonicBalance.jl, we can easily solve the phase diagram of the system in the limit where the modes oscillate at the frequency $\omega$:
 
@@ -53,15 +55,15 @@ equations = [
 system = DifferentialEquation(equations, [x1, x2])
 add_harmonic!(system, x1, ω)
 add_harmonic!(system, x2, ω)
-harmonic_normal = get_harmonic_equations(system);
+harmonic_normal = get_harmonic_equations(system)
 
 # We sweep over the system where we both increase the drive frequency $\omega$ and the parametric drive amplitude $\lambda$:
 
 res = 80
-fixed = HB.OrderedDict(Dict(ω0 => 1.0, α => 1.0, J => 0.005, γ => 0.005))
+fixed = HB.OrderedDict(ω0 => 1.0, α => 1.0, J => 0.005, γ => 0.005)
 varied = HB.OrderedDict((ω => range(0.99, 1.01, res), λ => range(1e-6, 0.03, res)))
-# method = TotalDegree()
-result_ωλ = get_steady_states(harmonic_normal, varied, fixed; show_progress=false);
+method = TotalDegree()
+result_ωλ = get_steady_states(harmonic_normal, method, varied, fixed; show_progress=false);
 plot_phase_diagram(result_ωλ; class="stable")
 
 # The phase diagram shows the number of stable steady states in the $\omega-\lambda$ plane. We find a familiar structure with two Arnold tongues (also known as Mathieu stability zones) around the drive frequency $\omega_s=\sqrt{\omega_0^2-J}$ and $\omega_s=\sqrt{\omega_0^2+J}$.
@@ -85,10 +87,12 @@ plot!(
 
 # These frequencies where the lobes are centered around corresponds to the normal mode frequency of the coupled system. Indeed, when resonators are strongly coupled, the system is better described in the normal mode basis. However, in addition, we also find additional bifurcation lines in the phase diagram. These bifurcation lines we would like to understand with a state-dependent perturbation.
 
-# As the system, in the strongly coupled limit, is better described in the normal mode basis, let's us consider the symmetric and antisymmetric modes $x_s = (x_1 + x_2)/\sqrt{2}$ and $x_a = (x_1 - x_2)/\sqrt{2}$, respectively. The equations of motion in this basis are given by:
+# As the system, in the strongly coupled limit, is better described in the normal mode basis, let's us consider the symmetric and antisymmetric modes $x_s = (x_1 + x_2)/2$ and $x_a = (x_1 - x_2)/2$, respectively. The equations of motion in this basis are given by:
 # ```math
-# \ddot{x}_s + (\omega_0^2 - J - \lambda \cos(2\omega t)) x_s + \gamma \dot{x}_s + \frac{\alpha}{4} (x_s^3 + 3 * x_a^2 * x_s) = 0
-# \ddot{x}_a + (\omega_0^2 + J - \lambda \cos(2\omega t)) x_a + \gamma \dot{x}_a + \frac{\alpha}{4} (x_a^3 + 3 * x_s^2 * x_a)= 0
+# \begin{aligned}
+# & \ddot{x}_s + (\omega_0^2 - J - \lambda \cos(2\omega t)) x_s + \gamma \dot{x}_s + \alpha (x_s^3 + 3 * x_a^2 * x_s) = 0\\
+# & \ddot{x}_a + (\omega_0^2 + J - \lambda \cos(2\omega t)) x_a + \gamma \dot{x}_a + \alpha (x_a^3 + 3 * x_s^2 * x_a)= 0
+# \end{aligned}
 # ```
 # Note that the system couples nonlinearly through the Kerr medium. However, solving the full system with HarmonicBalance.jl, expanding the normal modes in the the frequency $\omega$ yields the same phase diagram:
 
@@ -98,11 +102,11 @@ equations = [
     d(d(xs, t), t) +
     (ω0^2 - J - λ * cos(2 * ω * t)) * xs +
     γ * d(xs, t) +
-    (α / 4) * (xs^3 + 3 * xa^2 * xs),
+    α * (xs^3 + 3 * xa^2 * xs),
     d(d(xa, t), t) +
     (ω0^2 + J - λ * cos(2 * ω * t)) * xa +
     γ * d(xa, t) +
-    (α / 4) * (xa^3 + 3 * xs^2 * xa),
+    α * (xa^3 + 3 * xs^2 * xa),
 ]
 system = DifferentialEquation(equations, [xs, xa])
 
@@ -155,10 +159,10 @@ plot!(
 
 # Let us assume that the antisymmetrcic mode is in the parametric non-zero amplitude state. We will dress the symmetric mode with the non-zero amplitude solution of the antisymmetric mode.
 equations_xa = [
-    d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + (α / 4) * xa^3
+    d(d(xa, t), t) + (ω0^2 + J - λ * cos(2 * ω * t)) * xa + γ * d(xa, t) + α * xa^3
 ]
 equations_xs = [
-    d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + (α / 4) * xs^3
+    d(d(xs, t), t) + (ω0^2 - J - λ * cos(2 * ω * t)) * xs + γ * d(xs, t) + α * xs^3
 ]
 system_xa = DifferentialEquation(equations_xa, [xa])
 system_xs = DifferentialEquation(equations_xs, [xs])
@@ -212,7 +216,7 @@ param_ranges = collect(values(varied))
 input_array = collect(Iterators.product(param_ranges..., values(fixed)...))
 input_array = getindex.(input_array, [permutation])
 input_array = HB.tuple_to_vector.(input_array)
-input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array))
+input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array));
 
 # Solving for the steady states of the dressed symmetric mode:
 function solve_perturbed_system(prob, input)

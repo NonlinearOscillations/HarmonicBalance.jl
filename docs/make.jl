@@ -26,7 +26,7 @@ ENV["GKSwstype"] = "100"
 include("make_md_examples.jl")
 
 include("pages.jl")
-ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
+
 makedocs(;
     sitename="HarmonicBalance.jl",
     authors="Quest group",

@@ -8,7 +8,7 @@ function trig_reduce(x)
     x = simplify_exp_products(x) # simplify products of exps
     x = exp_to_trig(x)
     x = Num(simplify_complex(expand(x)))
-    return simplify_fractions(x) # (a*c^2 + b*c)/c^2 = (a*c + b)/c
+    return x# simplify_fractions(x)# (a*c^2 + b*c)/c^2 = (a*c + b)/c
 end
 
 "Return true if `f` is a sin or cos."

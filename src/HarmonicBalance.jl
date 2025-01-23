@@ -126,9 +126,6 @@ using .LimitCycles
 include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 
-include("modules/FFTWExt.jl")
-using .FFTWExt
-
 # Precompilation setup
 using PrecompileTools: @setup_workload, @compile_workload
 @setup_workload begin

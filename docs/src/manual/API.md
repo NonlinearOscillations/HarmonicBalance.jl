@@ -79,15 +79,16 @@ add_pairs!
 
 ## Linear Response
 
+```@autodocs
+Modules = [HarmonicBalance.LinearResponse]
+Private = false
+Order = [:function]
+```
+
 ```@docs
 get_Jacobian
 ```
 
-```@docs
-plot_eigenvalues
-plot_linear_response
-plot_rotframe_jacobian_response
-```
 
 ## Extensions
 
@@ -99,14 +100,32 @@ follow_branch
 plot_1D_solutions_branch
 ```
 
+```@autodocs; canonical=false
+Modules = [Base.get_extension(HarmonicBalance, :TimeEvolution)]
+Private = false
+Order = [:function]
+```
+
 ### SteadyStateSweep
 
 ```@docs
 steady_state_sweep
 ```
 
+```@autodocs; canonical=false
+Modules = [Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)]
+Private = false
+Order = [:function]
+```
+
 ### ModelingToolkit
 
 ```@docs
 ODEProblem
+```
+
+```@autodocs; canonical=false
+Modules = [Base.get_extension(HarmonicBalance, :ModelingToolkitExt)]
+Private = false
+Order = [:function]
 ```

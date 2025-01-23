@@ -1,13 +1,7 @@
 using OrdinaryDiffEqTsit5: ODEProblem, solve, ODESolution
 
 """
-    ODEProblem(
-            eom::HarmonicEquation;
-            fixed_parameters,
-            u0::Vector,
-            sweep::AdiabaticSweep,
-            timespan::Tuple
-            )
+    $(TYPEDSIGNATURES)
 
 Creates an ODEProblem object used by OrdinaryDiffEqTsit5.jl from the equations in `eom` to simulate time-evolution within `timespan`.
 `fixed_parameters` must be a dictionary mapping parameters+variables to numbers (possible to use a solution index, e.g. solutions[x][y] for branch y of solution x).

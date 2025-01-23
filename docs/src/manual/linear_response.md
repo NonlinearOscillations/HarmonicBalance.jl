@@ -27,6 +27,7 @@ The simplest way to extract the linear response of a steady state is to evaluate
 The advantage of this method is that for a given parameter set, only one matrix diagonalization is needed to fully describe the response spectrum. However, the method is inaccurate for response frequencies far from the frequencies used in the harmonic ansatz (it relies on the response oscillating slowly in the rotating frame). 
 
 Behind the scenes, the spectra are stored using the dedicated structs `Lorentzian` and `JacobianSpectrum`.
+
 ```@docs; canonical=false
 HarmonicBalance.LinearResponse.JacobianSpectrum
 HarmonicBalance.LinearResponse.Lorentzian
@@ -38,12 +39,6 @@ Setting `order > 1` increases the accuracy of the response spectra. However, unl
 
 ```@docs; canonical=false
 HarmonicBalance.LinearResponse.ResponseMatrix
-HarmonicBalance.get_response
+HarmonicBalance.LinearResponse.get_response
 HarmonicBalance.LinearResponse.get_response_matrix
-```
-
-```@autodocs
-Modules = [HarmonicBalance.LinearResponse]
-Private = false
-Order = [:function]
 ```

@@ -36,7 +36,7 @@ function declare_parameter(var::Num)
     return eval(var_sym)
 end
 
-"""
+@doc """
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.ODESystem from a HarmonicEquation.
@@ -66,7 +66,7 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
     return sys
 end
 
-"""
+@doc """
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.ODESystem from a DifferentialEquation.
@@ -97,7 +97,7 @@ function ModelingToolkit.ODESystem(diff_eq::DifferentialEquation)
     return sys
 end
 
-"""
+@doc """
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.ODEProblem from a DifferentialEquation.
@@ -120,7 +120,7 @@ function ModelingToolkit.ODEProblem(
     return prob
 end
 
-"""
+@doc """
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.NonlinearProblem from a DifferentialEquation.
@@ -132,7 +132,7 @@ function ModelingToolkit.NonlinearProblem(
     return NonlinearProblem(ss_prob)
 end
 
-"""
+@doc """
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.SteadyStateProblem from a DifferentialEquation.

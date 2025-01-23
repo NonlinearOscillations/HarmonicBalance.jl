@@ -89,7 +89,6 @@ Order = [:function]
 get_Jacobian
 ```
 
-
 ## Extensions
 
 ### OrdinaryDiffEq
@@ -112,20 +111,11 @@ Order = [:function]
 steady_state_sweep
 ```
 
-```@autodocs; canonical=false
-Modules = [Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)]
-Private = false
-Order = [:function]
-```
-
 ### ModelingToolkit
 
 ```@docs
 ODEProblem
-```
-
-```@autodocs; canonical=false
-Modules = [Base.get_extension(HarmonicBalance, :ModelingToolkitExt)]
-Private = false
-Order = [:function]
+ModelingToolkit.ODESystem
+ModelingToolkit.SciMLBase.SteadyStateProblem
+ModelingToolkit.SciMLBase.NonlinearProblem
 ```

@@ -23,6 +23,14 @@ jobs:
         statuses: write
     name: Documentation
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version:
+          - 'lts'
+        os:
+          - ubuntu-latest
+        arch:
+          - x64
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2

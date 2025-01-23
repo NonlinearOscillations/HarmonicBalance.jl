@@ -3,8 +3,7 @@
     CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
     julia_version = VERSION >= v"1.11.0-DEV.0" # fails on 1.11
     if !CI && !julia_version
-        using Pkg, HarmonicBalance
-        Pkg.add(; url="https://github.com/gdalle/CheckConcreteStructs.jl")
+        using HarmonicBalance
 
         using CheckConcreteStructs
 

@@ -61,3 +61,46 @@ prob = Problem(harmonic_eq)
     @test wrapped_jac′(complex_vars...) isa Matrix{ComplexF64}
     @test wrapped_jac′(float_vars...) isa Matrix{ComplexF64}
 end
+
+@testset "NaNMath" begin
+    # https://github.com/NonlinearOscillations/HarmonicBalance.jl/issues/357
+    using HarmonicBalance
+
+    @variables t x1(t) x2(t)
+    @variables b c m γ ψ
+
+    equations = [
+        m * d(d(x1, t), t) +
+        2 * b * x1 +
+        γ * d(x1, t) +
+        4 * x1^3 +
+        3 * c * Base.cos(ψ)^3 * x1^2 +
+        4 * x2^2 * x1 +
+        3 * c * (Base.cos(ψ) * Base.sin(ψ)^2 - 1) * x2^2 -
+        6 * c * Base.cos(ψ)^2 * Base.sin(ψ) * x1 * x2,
+        m * d(d(x2, t), t) + 2 * b * x2 + γ * d(x2, t) + 4 * x2^3 -
+        3 * c * Base.sin(ψ)^3 * x2^2 +
+        c * (-6 + 3 / 2 * Base.cos(ψ) - 3 / 2 * Base.cos(3 * ψ)) * x1 * x2 +
+        4 * x1^2 * x2 - 3 * c * Base.cos(ψ)^2 * Base.sin(ψ) * x1^2,
+    ]
+    system = DifferentialEquation(equations, [x1, x2])
+
+    add_harmonic!(system, x1, 0)
+    add_harmonic!(system, x2, 0)
+
+    harmonic_normal = get_harmonic_equations(system)
+
+    fixed = (γ => 0.01, m => 1, c => -3.5, b => -2) # fixed parameters
+    varied = (ψ => range(0.01, 2, 100)) # range of parameter values
+
+    method = TotalDegree()
+    result_asym = get_steady_states(harmonic_normal, method, varied, fixed)
+    get_steady_states(harmonic_normal, method, varied, fixed)
+
+    @testset "smaller test" begin
+        using Symbolics
+        m = [cos(ψ) -sin(ψ); sin(ψ) cos(ψ)]
+        jacfunc = Symbolics.build_function(m, ψ; expression=Val(false))[1]
+        jacfunc((0 + 0.1im))
+    end
+end

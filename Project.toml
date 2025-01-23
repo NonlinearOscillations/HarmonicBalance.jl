@@ -27,6 +27,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
@@ -62,6 +63,7 @@ ProgressMeter = "1.7.2"
 SteadyStateDiffEq = "2.4.1"
 SymbolicUtils = "3.11"
 Symbolics = "6.23"
+NaNMath = "1.1"
 TestExtras = "0.3"
 julia = "1.10.0"
 

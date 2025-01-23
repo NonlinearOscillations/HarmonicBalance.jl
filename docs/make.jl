@@ -54,7 +54,7 @@ makedocs(;
     warnonly=if CI
         [:linkcheck, :cross_references]
     else
-        [:linkcheck, :cross_references, :missing_docs,:docs_block]
+        [:linkcheck, :cross_references, :missing_docs, :docs_block]
     end,
     doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib],

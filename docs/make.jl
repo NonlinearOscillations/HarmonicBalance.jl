@@ -11,6 +11,10 @@ using ModelingToolkit
 using OrdinaryDiffEqTsit5
 using SteadyStateDiffEq
 
+TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
+ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
+SteadyStateDiffEqExt = Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
+
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "refs.bib");
     style=:numeric,  # default
@@ -32,9 +36,10 @@ makedocs(;
     authors="Quest group",
     modules=[
         HarmonicBalance,
-        Base.get_extension(HarmonicBalance, :TimeEvolution),
-        Base.get_extension(HarmonicBalance, :ModelingToolkitExt),
-        Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt),
+        TimeEvolution,
+        ModelingToolkitExt,
+        SteadyStateDiffEqExt,
+        HarmonicBalance.LinearResponse,
     ],
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
@@ -45,8 +50,12 @@ makedocs(;
     pages=pages,
     source="src",
     build="build",
-    draft=false,
-    warnonly=true,
+    draft=!CI,
+    warnonly=if CI
+        [:linkcheck, :cross_references]
+    else
+        [:linkcheck, :cross_references, :missing_docs, :docs_block]
+    end,
     doctest=false,  # We test it in the CI, no need to run it here
     plugins=[bib],
 )

@@ -13,10 +13,12 @@ function _closest_branch_index(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Return the indexes and values following stable branches along a 1D sweep.
 When a no stable solutions are found (e.g. in a bifurcation), the next stable solution is calculated by time evolving the previous solution (quench).
-Keyword arguments
 
+## Keyword arguments
   - `y`:  Dependent variable expression (parsed into Symbolics.jl) to evaluate the followed solution branches on .
   - `sweep`: Direction for the sweeping of solutions. A `right` (`left`) sweep proceeds from the first (last) solution, ordered as the sweeping parameter.
   - `tf`: time to reach steady

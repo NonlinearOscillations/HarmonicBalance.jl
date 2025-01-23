@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = HarmonicBalance
-```
-
 # [API](@id doc-API)
 
 **Table of contents**
@@ -11,6 +7,7 @@ CurrentModule = HarmonicBalance
 ## System objects and types
 
 ```@docs
+HarmonicBalance.d
 DifferentialEquation
 HarmonicVariable
 HarmonicEquation
@@ -67,6 +64,7 @@ get_class
 
 ```@docs
 plot
+plot!
 plot_phase_diagram
 plot_spaghetti
 ```
@@ -81,14 +79,14 @@ add_pairs!
 
 ## Linear Response
 
-```@docs
-get_Jacobian
+```@autodocs
+Modules = [HarmonicBalance.LinearResponse]
+Private = false
+Order = [:function]
 ```
 
 ```@docs
-plot_eigenvalues
-plot_linear_response
-plot_rotframe_jacobian_response
+get_Jacobian
 ```
 
 ## Extensions
@@ -101,6 +99,12 @@ follow_branch
 plot_1D_solutions_branch
 ```
 
+```@autodocs; canonical=false
+Modules = [Base.get_extension(HarmonicBalance, :TimeEvolution)]
+Private = false
+Order = [:function]
+```
+
 ### SteadyStateSweep
 
 ```@docs
@@ -110,4 +114,8 @@ steady_state_sweep
 ### ModelingToolkit
 
 ```@docs
+ODEProblem
+ModelingToolkit.ODESystem
+ModelingToolkit.SciMLBase.SteadyStateProblem
+ModelingToolkit.SciMLBase.NonlinearProblem
 ```

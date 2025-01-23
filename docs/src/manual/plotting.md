@@ -13,6 +13,7 @@ In 1D, the solutions are colour-coded according to the branches obtained by `sor
 
 ```@docs; canonical=false
 HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
+HarmonicBalance.plot!
 ```
 
 

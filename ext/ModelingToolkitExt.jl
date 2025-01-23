@@ -1,5 +1,7 @@
 module ModelingToolkitExt
 
+using DocStringExtensions
+
 export ODESystem, ODEProblem, SteadyStateProblem, NonlinearProblem
 
 using HarmonicBalance:
@@ -34,6 +36,11 @@ function declare_parameter(var::Num)
     return eval(var_sym)
 end
 
+@doc """
+$(TYPEDSIGNATURES)
+
+Creates and ModelingToolkit.ODESystem from a HarmonicEquation.
+"""
 function ModelingToolkit.ODESystem(eom::HarmonicEquation)
     if !is_rearranged(eom) # check if time-derivatives of the variable are on the right hand side
         eom = rearrange_standard(eom)
@@ -59,6 +66,11 @@ function ModelingToolkit.ODESystem(eom::HarmonicEquation)
     return sys
 end
 
+@doc """
+$(TYPEDSIGNATURES)
+
+Creates and ModelingToolkit.ODESystem from a DifferentialEquation.
+"""
 function ModelingToolkit.ODESystem(diff_eq::DifferentialEquation)
     diff_eq = deepcopy(diff_eq)
     if !is_rearranged_standard(diff_eq)
@@ -85,6 +97,11 @@ function ModelingToolkit.ODESystem(diff_eq::DifferentialEquation)
     return sys
 end
 
+@doc """
+$(TYPEDSIGNATURES)
+
+Creates and ModelingToolkit.ODEProblem from a DifferentialEquation.
+"""
 function ModelingToolkit.ODEProblem(
     eom::Union{HarmonicEquation,DifferentialEquation},
     u0,
@@ -103,6 +120,11 @@ function ModelingToolkit.ODEProblem(
     return prob
 end
 
+@doc """
+$(TYPEDSIGNATURES)
+
+Creates and ModelingToolkit.NonlinearProblem from a DifferentialEquation.
+"""
 function ModelingToolkit.NonlinearProblem(
     eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
 )
@@ -110,6 +132,11 @@ function ModelingToolkit.NonlinearProblem(
     return NonlinearProblem(ss_prob)
 end
 
+@doc """
+$(TYPEDSIGNATURES)
+
+Creates and ModelingToolkit.SteadyStateProblem from a DifferentialEquation.
+"""
 function ModelingToolkit.SteadyStateProblem(
     eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
 )

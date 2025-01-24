@@ -1,6 +1,7 @@
 using HarmonicBalance;
 HB = HarmonicBalance;
 using Test
+# using BenchmarkTools
 
 @variables t T x(t) y(t) # symbolic variables
 @variables ω ω0 γ F α λ ψ θ η
@@ -19,6 +20,8 @@ add_harmonic!(diff_eom, x, ω) # x will rotate at ω
 
 harmonic_eq1 = get_krylov_equations(diff_eom; order=1)
 harmonic_eq2 = get_krylov_equations(diff_eom; order=2)
+# @btime get_krylov_equations(diff_eom; order=2)
+# @profview get_krylov_equations(diff_eom; order=2)
 
 @testset "show method" begin
     print_variable = HB._show_ansatz(harmonic_eq1)

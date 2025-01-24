@@ -105,7 +105,7 @@ function get_krylov_equations(
         D₁ = take_trig_integral.(Ḋ₁, get_harmonics(eom), fast_time)
         D₁ = D₁ - average.(D₁, fast_time)
 
-        Gₜ = trig_reduce.(Fₜ′ * D₁)
+        Gₜ = Fₜ′ * D₁ # trig_reduce.(Fₜ′ * D₁)
         G₀ = average.(Gₜ, fast_time)
         eom.equations = F₀ + G₀ .~ getfield.(eom.equations, :rhs)
     end

@@ -29,7 +29,6 @@ using Symbolics:
     Differential,
     @variables,
     arguments,
-    simplify_fractions,
     substitute,
     term,
     expand,

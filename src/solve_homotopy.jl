@@ -67,7 +67,7 @@ function get_steady_states(
 )
     Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
-    decalare_variables(prob)
+    declare_variables(prob)
 
     swept_parameters = prob.swept_parameters
     fixed_parameters = prob.fixed_parameters
@@ -77,10 +77,6 @@ function get_steady_states(
     )
     solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
 
-    compiled_J = _compile_Jacobian(
-        prob, solution_type(solutions), swept_parameters, unique_fixed
-    )
-
     result = Result(
         solutions,
         swept_parameters,
@@ -88,7 +84,7 @@ function get_steady_states(
         prob,
         Dict(),
         zeros(Int64, size(solutions)...),
-        compiled_J,
+        prob.compiled_J,
         seed(method),
     )
 

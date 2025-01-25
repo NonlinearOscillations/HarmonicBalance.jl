@@ -64,5 +64,5 @@ end
 
     add_harmonic!(diff_eq, x, ω)
     harmonic_eq = get_harmonic_equations(diff_eq; jacobian=false)
-    @test HarmonicBalance.hasnan(harmonic_eq.Jacobian)
+    @test HarmonicBalance.hasnan(harmonic_eq.jacobian)
 end

@@ -18,7 +18,10 @@ HomotopyContinuationProblem(
 )
 ```
 """
-mutable struct HomotopyContinuationProblem{Jac,ParType<:Number} <: Problem
+mutable struct HomotopyContinuationProblem{
+    Jac<:JacobianFunction(Float64), # HC.jl only supports Float64
+    ParType<:Number
+} <: Problem
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."
@@ -56,18 +59,14 @@ end
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
 function HarmonicBalance.HomotopyContinuationProblem(
-    eom::HarmonicEquation,
-    swept::AbstractDict,
-    fixed::AbstractDict;
-    compute_Jacobian::Bool=true,
+    eom::HarmonicEquation, swept::AbstractDict, fixed::AbstractDict
 )
     S = HomotopyContinuation.System(eom)
-    vars_orig = get_variables(eom)
-    vars_new = declare_variable.(var_name.(vars_orig))
-
+    vars_new = declare_variables(eom)
     swept, fixed = promote_types(swept, fixed)
 
-    jac = compute_Jacobian ? eom.Jacobian : dummy_symbolic_Jacobian(length(eom.variables))
+    jac = _compile_Jacobian(eom, Float64, swept, fixed)
+    # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
     return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
 end
 
@@ -85,6 +84,6 @@ function _free_symbols(p::Problem)::Vector{Num}
     return cat(p.variables, collect(keys(p.swept_parameters)); dims=1)
 end
 
-function decalare_variables(p::Problem)
+function declare_variables(p::Problem)
     return declare_variable.(string.(cat(p.parameters, p.variables; dims=1)))
 end

@@ -22,9 +22,12 @@ using HarmonicBalance:
     get_implicit_Jacobian,
     _free_symbols,
     OrderedDict,
-    promote_types
+    promote_types,
+    declare_variables,
+    JacobianFunction
 
 using HarmonicBalance.ExprUtils: get_all_terms
+using HomotopyContinuation: HomotopyContinuation
 
 include("gauge_fixing.jl")
 include("analysis.jl")

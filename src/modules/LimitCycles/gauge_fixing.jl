@@ -29,20 +29,26 @@ function get_cycle_variables(eom::HarmonicEquation, ω_lc::Num)
 end
 
 """
-    Obtain the Jacobian of `eom` with a gauge-fixed variable `fixed_var`.
-    `fixed_var` marks the variable which is fixed to zero due to U(1) symmetry.
-    This leaves behind a finite degeneracy of solutions (see Chapter 6 of Jan's thesis).
+Obtain the Jacobian of `eom` with a gauge-fixed variable `fixed_var`.
+`fixed_var` marks the variable which is fixed to zero due to U(1) symmetry.
+This leaves behind a finite degeneracy of solutions (see Chapter 6 of Jan's thesis).
 
-    For limit cycles, we always use an 'implicit' Jacobian - a function which only returns the numerical Jacobian when a numerical solution
-    is inserted. Finding the analytical Jacobian is usually extremely time-consuming.
+For limit cycles, we always use an 'implicit' Jacobian - a function which only returns the
+numerical Jacobian when a numerical solution is inserted. Finding the analytical Jacobian
+is usually extremely time-consuming.
 """
 function _gaugefixed_Jacobian(
-    eom::HarmonicEquation, fixed_var::HarmonicVariable; sym_order, rules
+    eom::HarmonicEquation, fixed_var::HarmonicVariable, soltype; sym_order, rules
 )
     rules = Dict(rules)
     setindex!(rules, 0, _remove_brackets(fixed_var))
     jac = get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
-    return jac
+    return JacobianFunction(soltype)(jac)
+end
+
+function _choose_fixed(eom, ω_lc)
+    vars = get_cycle_variables(eom, ω_lc)
+    return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
 """
@@ -51,51 +57,35 @@ $(TYPEDSIGNATURES)
 Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a limit cycle frequency `ω_lc`.
 """
-function _cycle_Problem(eom::HarmonicEquation, swept, fixed, ω_lc::Num)
+function limit_cycle_problem(
+    eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc::Num
+)
     eom = deepcopy(eom) # do not mutate eom
-    isempty(get_cycle_variables(eom, ω_lc)) ? error("No Hopf variables found!") : nothing
-    if !any(isequal.(eom.parameters, ω_lc))
-        error(ω_lc, " is not a parameter of the harmonic equation!")
-    else
-        nothing
-    end
+    well_constructed_eom(eom, ω_lc)
 
     # eliminate one of the u,v variables (gauge fixing)
     fixed_var = _choose_fixed(eom, ω_lc) # remove the HV of the lowest subharmonic
 
-    # get the Hopf Jacobian before altering anything - this is the usual Jacobian but the entries corresponding
+    # get the Hopf Jacobian before altering anything:
+    # this is the usual Jacobian but the entries corresponding
     # to the fixed variable are removed
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = HomotopyContinuationProblem(eom, swept, fixed; compute_Jacobian=false)
-    return p
-end
-
-function _choose_fixed(eom, ω_lc)
-    vars = get_cycle_variables(eom, ω_lc)
-    return first(vars) # This is arbitrary; better would be to substitute with values
-end
-
-function limit_cycle_problem(
-    eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc
-)
+    S = HomotopyContinuation.System(eom)
+    vars_new = declare_variables(eom)
     swept, fixed = promote_types(swept, fixed)
-    prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
+
     jacobian = _gaugefixed_Jacobian(
         eom, # this is not gauge_fixed
-        _choose_fixed(eom, ω_lc);
-        sym_order=_free_symbols(prob),
+        _choose_fixed(eom, ω_lc),
+        Float64; # HC.jl only supports Float64 as solution type
+        sym_order=_free_symbols(eom, swept),
         rules=fixed,
     )
+
     return HomotopyContinuationProblem(
-        prob.variables,
-        prob.parameters,
-        prob.swept_parameters,
-        prob.fixed_parameters,
-        prob.system,
-        jacobian,
-        prob.eom,
+        vars_new, eom.parameters, swept, fixed, S, jacobian, eom
     )
 end
 function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
@@ -106,9 +96,11 @@ end
     get_limit_cycles(
         eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed, ω_lc; kwargs...)
 
-Variant of `get_steady_states` for a limit cycle problem characterised by a Hopf frequency (usually called ω_lc)
+Variant of `get_steady_states` for a limit cycle problem characterised by a Hopf frequency
+(usually called ω_lc).
 
-Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assumption of distinct harmonic variables corresponding to distinct harmonics.
+Solutions with ω_lc = 0 are labelled unphysical since this contradicts the assumption of
+distinct harmonic variables corresponding to distinct harmonics.
 """
 function get_limit_cycles(eom::HarmonicEquation, swept, fixed, ω_lc; kwargs...)
     prob = limit_cycle_problem(eom, swept, fixed, ω_lc)
@@ -167,13 +159,15 @@ function _classify_limit_cycles!(res::Result, ω_lc::Num)
         find_branch_order(map(.*, res.classes["unique_cycle"], res.classes["physical"])),
         unique_stable,
     )
-    return order_branches!(res, vcat(unique_stable, unique_unstable)) # shuffle to have relevant branches first
+    # ∨ shuffle to have relevant branches first
+    return order_branches!(res, vcat(unique_stable, unique_unstable))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Fix the gauge in `eom` where `ω_lc` is the limit cycle frequency by constraining `fixed_var` to zero and promoting `ω_lc` to a variable.
+Fix the gauge in `eom` where `ω_lc` is the limit cycle frequency by constraining `fixed_var`
+to zero and promoting `ω_lc` to a variable.
 """
 function _fix_gauge!(eom::HarmonicEquation, ω_lc::Num, fixed_var::HarmonicVariable)
     new_symbol = HarmonicBalance.declare_variable(
@@ -190,3 +184,13 @@ function _fix_gauge!(eom::HarmonicEquation, ω_lc::Num, fixed_var::HarmonicVaria
 end
 
 _fix_gauge!(x::Num, fixed_var) = substitute_all(x, _remove_brackets(fixed_var) => 0)
+
+function well_constructed_eom(eom::HarmonicEquation, ω_lc::Num)
+    isempty(get_cycle_variables(eom, ω_lc)) ? error("No Hopf variables found!") : nothing
+    if !any(isequal.(eom.parameters, ω_lc))
+        error(ω_lc, " is not a parameter of the harmonic equation!")
+    else
+        nothing
+    end
+    return nothing
+end

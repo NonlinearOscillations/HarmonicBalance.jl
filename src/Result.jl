@@ -15,7 +15,7 @@ struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType),F1}
     "The parameters fixed throughout the solutions."
     fixed_parameters::OrderedDict{Num,ParType}
     "The `Problem` used to generate this."
-    problem::HomotopyContinuationProblem{F1,ParType}
+    problem::HomotopyContinuationProblem{F,ParType}
     """
     Maps strings such as \"stable\", \"physical\" etc to arrays of values,
     classifying the solutions (see method `classify_solutions!`).

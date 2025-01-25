@@ -20,14 +20,18 @@ harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
 method = HarmonicBalance.WarmUp(; seed=SEED)
 
 @testset "undriven parametron" begin
-    fixed = OrderedDict(Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0)
+    fixed = OrderedDict(
+        Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0
+    )
     varied = OrderedDict(ω => range(0.9, 1.1, 20))
     @test substitute(
         sum(harmonic_eq.parameters), merge(Dict(fixed), Dict(varied[ω] => 0))
     ) isa Number
 
     @testset "Problem" begin
-        prob = HarmonicBalance.HomotopyContinuationProblem(harmonic_eq,OrderedDict(varied), OrderedDict(fixed))
+        prob = HarmonicBalance.HomotopyContinuationProblem(
+            harmonic_eq, OrderedDict(varied), OrderedDict(fixed)
+        )
 
         @test length(harmonic_eq.equations) == 2
         @test length(prob.variables) == 2
@@ -55,7 +59,9 @@ method = HarmonicBalance.WarmUp(; seed=SEED)
     end
 
     @testset "implicit jacobian" begin
-        p = HarmonicBalance.HomotopyContinuationProblem(harmonic_eq, varied, fixed; compute_Jacobian=false)
+        p = HarmonicBalance.HomotopyContinuationProblem(
+            harmonic_eq, varied, fixed; compute_Jacobian=false
+        )
         res = get_steady_states(p, method; show_progress=false)
     end
 

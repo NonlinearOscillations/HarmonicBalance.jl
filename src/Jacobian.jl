@@ -126,7 +126,9 @@ function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
 end
 
 function get_implicit_Jacobian(p::Problem)
-    return get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p), rules=p.fixed_parameters)
+    return get_implicit_Jacobian(
+        p.eom; sym_order=_free_symbols(p), rules=p.fixed_parameters
+    )
 end
 
 function dummy_symbolic_Jacobian(n::Int)::Matrix{Num}

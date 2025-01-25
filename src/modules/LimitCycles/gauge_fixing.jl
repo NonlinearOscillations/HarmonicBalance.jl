@@ -77,7 +77,9 @@ function _choose_fixed(eom, ω_lc)
     return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
-function limit_cycle_problem(eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc)
+function limit_cycle_problem(
+    eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc
+)
     swept, fixed = promote_types(swept, fixed)
     prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
     jacobian = _gaugefixed_Jacobian(

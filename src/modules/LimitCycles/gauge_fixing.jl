@@ -51,7 +51,7 @@ $(TYPEDSIGNATURES)
 Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a limit cycle frequency `ω_lc`.
 """
-function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
+function _cycle_Problem(eom::HarmonicEquation, swept, fixed, ω_lc::Num)
     eom = deepcopy(eom) # do not mutate eom
     isempty(get_cycle_variables(eom, ω_lc)) ? error("No Hopf variables found!") : nothing
     if !any(isequal.(eom.parameters, ω_lc))
@@ -68,7 +68,7 @@ function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = Problem(eom; compute_Jacobian=false)
+    p = HomotopyContinuationProblem(eom, swept, fixed; compute_Jacobian=false)
     return p
 end
 
@@ -77,15 +77,27 @@ function _choose_fixed(eom, ω_lc)
     return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
-function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
-    prob = _cycle_Problem(eom, ω_lc) # the eom in this problem is gauge-fixed
+function limit_cycle_problem(eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc)
+    swept, fixed = promote_types(swept, fixed)
+    prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
     jacobian = _gaugefixed_Jacobian(
         eom, # this is not gauge_fixed
         _choose_fixed(eom, ω_lc);
-        sym_order=_free_symbols(prob, OrderedDict(swept)),
+        sym_order=_free_symbols(prob),
         rules=fixed,
     )
-    return Problem(prob.variables, prob.parameters, prob.system, jacobian, prob.eom)
+    return HomotopyContinuationProblem(
+        prob.variables,
+        prob.parameters,
+        prob.swept_parameters,
+        prob.fixed_parameters,
+        prob.system,
+        jacobian,
+        prob.eom,
+    )
+end
+function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
+    return limit_cycle_problem(eom, OrderedDict(swept), OrderedDict(fixed), ω_lc)
 end
 
 """
@@ -119,7 +131,7 @@ function get_limit_cycles(
     return get_limit_cycles(eom, method, swept, fixed, ω_lc; kwargs...)
 end
 function get_limit_cycles(
-    prob::Problem,
+    prob::HomotopyContinuationProblem,
     method::HarmonicBalanceMethod,
     swept,
     fixed,
@@ -127,9 +139,7 @@ function get_limit_cycles(
     classify_default=true,
     kwargs...,
 )
-    result = get_steady_states(
-        prob, method, swept, fixed; classify_default=classify_default, kwargs...
-    )
+    result = get_steady_states(prob, method; classify_default=classify_default, kwargs...)
     classify_default ? _classify_limit_cycles!(result, ω_lc) : nothing
     return result
 end

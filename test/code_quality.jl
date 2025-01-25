@@ -12,7 +12,7 @@
         all_concrete(HarmonicBalance.TotalDegree)
         all_concrete(HarmonicBalance.Polyhedral)
         all_concrete(HarmonicBalance.Result)
-        all_concrete(HarmonicBalance.Problem)
+        all_concrete(HarmonicBalance.HomotopyContinuationProblem)
         all_concrete(HarmonicBalance.HarmonicEquation)
         all_concrete(HarmonicBalance.DifferentialEquation)
         all_concrete(HarmonicBalance.HarmonicVariable)

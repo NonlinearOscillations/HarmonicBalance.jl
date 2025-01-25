@@ -20,12 +20,26 @@ mutable struct HarmonicEquation
 
     # use a self-referential constructor with _parameters
     function HarmonicEquation(equations, variables, nat_eq)
-        return (x = new(equations, variables, Num[], nat_eq, dummy_symbolic_Jacobian(length(variables)));
-        x.parameters = _parameters(x);
-        x)
+        return (
+            x = new(
+                equations,
+                variables,
+                Num[],
+                nat_eq,
+                dummy_symbolic_Jacobian(length(variables)),
+            );
+            x.parameters = _parameters(x);
+            x
+        )
     end
     function HarmonicEquation(equations, variables, parameters, natural_equation)
-        return new(equations, variables, parameters, natural_equation, dummy_symbolic_Jacobian(length(variables)))
+        return new(
+            equations,
+            variables,
+            parameters,
+            natural_equation,
+            dummy_symbolic_Jacobian(length(variables)),
+        )
     end
 end
 

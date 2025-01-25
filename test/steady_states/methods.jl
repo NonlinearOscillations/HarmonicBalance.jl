@@ -34,7 +34,7 @@ using Test
 
         fixed = HarmonicBalance.OrderedDict((α => 1.0, ω0 => 1.1, λ => 0.01, γ => 0.01))
         varied = HarmonicBalance.OrderedDict((ω => range(0.9, 1.1, 20),))
-        prob = HarmonicBalance.Problem(harmonic_eq)
+        prob = HarmonicBalance.HomotopyContinuationProblem(harmonic_eq, varied, fixed)
 
         unique_fixed, input_array = HarmonicBalance._prepare_input_params(
             prob, varied, fixed

@@ -59,17 +59,18 @@ A steady state result for 1000 parameter points
 
 """
 function get_steady_states(
-    prob::Problem,
-    method::HarmonicBalanceMethod,
-    swept_parameters::OrderedDict,
-    fixed_parameters::OrderedDict;
+    prob::HomotopyContinuationProblem,
+    method::HarmonicBalanceMethod;
     show_progress=true,
     sorting="nearest",
     classify_default=true,
 )
     Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
-    declare_variable.(string.(cat(prob.parameters, prob.variables; dims=1)))
+    decalare_variables(prob)
+
+    swept_parameters = prob.swept_parameters
+    fixed_parameters = prob.fixed_parameters
 
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
@@ -100,29 +101,35 @@ function get_steady_states(
 end
 
 function get_steady_states(
-    p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
-)
-    return get_steady_states(p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...)
-end
-function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
-    return get_steady_states(Problem(eom), method, swept, fixed; kwargs...)
+    return get_steady_states(
+        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
+        method;
+        kwargs...,
+    )
 end
-function get_steady_states(eom::HarmonicEquation, pairs::Dict; kwargs...)
+function get_steady_states(eom::HarmonicEquation, pairs::Union{Dict,OrderedDict}; kwargs...)
     swept = filter(x -> length(x[2]) > 1, pairs)
     fixed = filter(x -> length(x[2]) == 1, pairs)
     return get_steady_states(eom, swept, fixed; kwargs...)
 end
 function get_steady_states(
-    eom::HarmonicEquation, method::HarmonicBalanceMethod, pairs::Dict; kwargs...
+    eom::HarmonicEquation,
+    method::HarmonicBalanceMethod,
+    pairs::Union{Dict,OrderedDict};
+    kwargs...,
 )
     swept = filter(x -> length(x[2]) > 1, pairs)
     fixed = filter(x -> length(x[2]) == 1, pairs)
     return get_steady_states(eom, method, swept, fixed; kwargs...)
 end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
-    return get_steady_states(Problem(eom), WarmUp(), swept, fixed; kwargs...)
+    return get_steady_states(
+        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
+        WarmUp();
+        kwargs...,
+    )
 end
 
 function get_solutions(prob, method, input_array; show_progress)

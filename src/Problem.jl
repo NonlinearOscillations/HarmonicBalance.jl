@@ -1,3 +1,4 @@
+abstract type Problem end
 
 """
 $(TYPEDEF)
@@ -9,14 +10,23 @@ $(TYPEDFIELDS)
 
 #  Constructors
 ```julia
-Problem(eom::HarmonicEquation)
+HomotopyContinuationProblem(
+    eom::HarmonicEquation,
+    swept::AbstractDict,
+    fixed::AbstractDict;
+    compute_Jacobian::Bool=true,
+)
 ```
 """
-mutable struct Problem{Jac}
+mutable struct HomotopyContinuationProblem{Jac,ParType<:Number} <: Problem
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."
     parameters::Vector{Num}
+    "The swept parameters in the homotopy."
+    swept_parameters::OrderedDict{Num,Vector{ParType}}
+    "The fixed parameters in the homotopy."
+    fixed_parameters::OrderedDict{Num,ParType}
     "The input object for HomotopyContinuation.jl solver methods."
     system::HC.System
     """
@@ -27,28 +37,43 @@ mutable struct Problem{Jac}
     "The HarmonicEquation object used to generate this `Problem`."
     eom::HarmonicEquation
 
-    function Problem(variables, parameters, system, jacobian)
-        return new{typeof(jacobian)}(variables, parameters, system, jacobian)
+    function HomotopyContinuationProblem(
+        variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian
+    ) where {K,V}
+        return new{typeof(jacobian),V}(
+            variables, parameters, swept, fixed, system, jacobian
+        )
     end # incomplete initialization for user-defined symbolic systems
-    function Problem(variables, parameters, system, jacobian, eom)
-        return new{typeof(jacobian)}(variables, parameters, system, jacobian, eom)
+    function HomotopyContinuationProblem(
+        variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian, eom
+    ) where {K,V}
+        return new{typeof(jacobian),V}(
+            variables, parameters, swept, fixed, system, jacobian, eom
+        )
     end
 end
 
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
-function HarmonicBalance.Problem(eom::HarmonicEquation; compute_Jacobian::Bool=true)
+function HarmonicBalance.HomotopyContinuationProblem(
+    eom::HarmonicEquation,
+    swept::AbstractDict,
+    fixed::AbstractDict;
+    compute_Jacobian::Bool=true,
+)
     S = HomotopyContinuation.System(eom)
     vars_orig = get_variables(eom)
     vars_new = declare_variable.(var_name.(vars_orig))
 
+    swept, fixed = promote_types(swept, fixed)
+
     jac = compute_Jacobian ? eom.Jacobian : dummy_symbolic_Jacobian(length(eom.variables))
-    return Problem(vars_new, eom.parameters, S, jac, eom)
+    return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
 end
 
 Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
 
-function Base.show(io::IO, p::Problem)
+function Base.show(io::IO, p::HomotopyContinuationProblem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")
     println(io, "Variables: ", join(string.(p.variables), ", "))
     println(io, "Parameters: ", join(string.(p.parameters), ", "))
@@ -56,6 +81,10 @@ function Base.show(io::IO, p::Problem)
 end
 
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)
-function _free_symbols(p::Problem, varied::OrderedDict)
-    return cat(p.variables, collect(keys(varied)); dims=1)
+function _free_symbols(p::Problem)::Vector{Num}
+    return cat(p.variables, collect(keys(p.swept_parameters)); dims=1)
+end
+
+function decalare_variables(p::Problem)
+    return declare_variable.(string.(cat(p.parameters, p.variables; dims=1)))
 end

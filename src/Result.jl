@@ -7,7 +7,7 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType),F1}
+struct Result{SolType<:Number,ParType<:Number,D,F<:JacobianFunction(SolType)}
     "The variable values of steady-state solutions."
     solutions::Array{Vector{Vector{SolType}},D}
     "Values of all parameters for all solutions."
@@ -53,7 +53,7 @@ function Result(
     partype = parameter_type(swept_parameters, fixed_parameters)
     dim = ndims(solutions)
 
-    return Result{soltype,partype,dim,typeof(jacobian),typeof(problem.jacobian)}(
+    return Result{soltype,partype,dim,typeof(jacobian)}(
         solutions,
         swept_parameters,
         fixed_parameters,

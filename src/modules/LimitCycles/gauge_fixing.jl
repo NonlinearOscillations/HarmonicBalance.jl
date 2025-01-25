@@ -79,7 +79,7 @@ function limit_cycle_problem(
     jacobian = _gaugefixed_Jacobian(
         eom, # this is not gauge_fixed
         _choose_fixed(eom, ω_lc),
-        Float64; # HC.jl only supports Float64 as solution type
+        ComplexF64; # HC.jl only supports Float64 as solution type
         sym_order=_free_symbols(eom, swept),
         rules=fixed,
     )

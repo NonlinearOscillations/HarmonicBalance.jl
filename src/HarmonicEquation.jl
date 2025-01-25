@@ -366,7 +366,7 @@ function _remove_brackets(eom::HarmonicEquation)
 end
 
 function _free_symbols(eom::HarmonicEquation, swept::OrderedDict)::Vector{Num}
-    return cat(eom.variables, collect(keys(swept)); dims=1)
+    return cat(declare_variables(eom), collect(keys(swept)); dims=1)
 end
 
 function declare_variables(eom::HarmonicEquation)

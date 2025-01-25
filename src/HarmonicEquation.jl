@@ -187,6 +187,16 @@ end
 
 """
 $(TYPEDSIGNATURES)
+Rearrange `eom` to the standard form, such that the derivatives of the variables are on one side.
+"""
+function rearrange_standard!(eom::HarmonicEquation)
+    tmp_eom = rearrange_standard(eom::HarmonicEquation)
+    eom.equations = tmp_eom.equations
+    return eom
+end
+
+"""
+$(TYPEDSIGNATURES)
 Get the internal symbols of the independent variables of `eom`.
 """
 function Symbolics.get_variables(eom::HarmonicEquation)::Vector{Num}

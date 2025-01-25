@@ -53,3 +53,13 @@ end
     # add_harmonic!(dEOM, y, ω)
     @test_throws ErrorException get_harmonic_equations(dEOM)
 end
+
+@testset "" begin
+    @variables ω1, t, ω, F, γ, λ, x(t), y(t)
+    eqs = [d(x, t, 2) + (ω1^2 - λ * cos(2 * ω * t)) * x + γ * d(x, t)]
+    diff_eq = DifferentialEquation(eqs, [x])
+
+    add_harmonic!(diff_eq, x, ω)
+    harmonic_eq = get_harmonic_equations(diff_eq, jacobian=false)
+    @test HarmonicBalance.hasnan(harmonic_eq.Jacobian)
+end

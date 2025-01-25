@@ -15,7 +15,7 @@ function _compile_Jacobian(
 )::JacobianFunction(soltype)
     if "Hopf" ∈ getfield.(prob.eom.variables, :type)
         compiled_J = prob.jacobian
-    elseif !is_identity(prob.jacobian)
+    elseif !hasnan(prob.jacobian)
         compiled_J = compile_matrix(
             prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
         )
@@ -56,6 +56,11 @@ function get_Jacobian(eom::HarmonicEquation)::Matrix{Num}
 
     return get_Jacobian(lhs, vars)
 end
+
+function add_jacobian!(eom::HarmonicEquation)
+    eom.Jacobian .= get_Jacobian(eom)
+end
+
 
 " Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "
 function get_Jacobian(diff_eom::DifferentialEquation)::Matrix{Num}
@@ -123,4 +128,8 @@ end
 
 function get_implicit_Jacobian(p::Problem, swept, fixed)
     return get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p, swept), rules=fixed)
+end
+
+function dummy_symbolic_Jacobian(n::Int)::Matrix{Num}
+    return Num.(float.(collect(LinearAlgebra.I(n))) .* NaN)
 end

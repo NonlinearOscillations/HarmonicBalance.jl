@@ -39,7 +39,7 @@ using Symbolics:
 using SymbolicUtils: SymbolicUtils
 
 include("modules/ExprUtils/ExprUtils.jl")
-using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
+using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, hasnan
 
 # symbolics equations
 export @variables, d

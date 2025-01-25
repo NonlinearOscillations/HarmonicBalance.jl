@@ -62,5 +62,8 @@ macro eqsym(expr)
 end
 
 is_identity(A::Matrix{Num}) = (@eqsym A == Matrix{Num}(LinearAlgebra.I, size(A)...))
+hasnan(x::Matrix{Num}) = any(my_isnan, unwrap.(x))
+my_isnan(x) = isnan(x)
+my_isnan(x::BasicSymbolic) = false
 
 end

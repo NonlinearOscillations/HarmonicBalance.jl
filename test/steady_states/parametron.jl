@@ -54,7 +54,7 @@ method = HarmonicBalance.WarmUp(; seed=SEED)
     end
 
     @testset "implicit jacobian" begin
-        p = HarmonicBalance.Problem(harmonic_eq; Jacobian=false)
+        p = HarmonicBalance.Problem(harmonic_eq; compute_Jacobian=false)
         res = get_steady_states(p, method, varied, fixed; show_progress=false)
     end
 

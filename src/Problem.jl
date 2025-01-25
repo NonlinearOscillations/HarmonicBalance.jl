@@ -9,20 +9,21 @@ $(TYPEDFIELDS)
 
 #  Constructors
 ```julia
-Problem(eom::HarmonicEquation; Jacobian=true) # find and store the symbolic Jacobian
-Problem(eom::HarmonicEquation; Jacobian=false) # ignore the Jacobian
+Problem(eom::HarmonicEquation)
 ```
 """
-mutable struct Problem{F}
+mutable struct Problem{Jac}
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."
     parameters::Vector{Num}
     "The input object for HomotopyContinuation.jl solver methods."
     system::HC.System
-    "The Jacobian matrix (possibly symbolic).
-    If `false`, the Jacobian is ignored (may be calculated implicitly after solving)."
-    jacobian::F
+    """
+    The Jacobian matrix (possibly symbolic or compiled function).
+    If `Matrix{Nan}` and implicit function is compiled when a `Result` is created.
+    """
+    jacobian::Jac
     "The HarmonicEquation object used to generate this `Problem`."
     eom::HarmonicEquation
 
@@ -32,6 +33,17 @@ mutable struct Problem{F}
     function Problem(variables, parameters, system, jacobian, eom)
         return new{typeof(jacobian)}(variables, parameters, system, jacobian, eom)
     end
+end
+
+"Constructor for the type `Problem` (to be solved by HomotopyContinuation)
+from a `HarmonicEquation`."
+function HarmonicBalance.Problem(eom::HarmonicEquation; compute_Jacobian::Bool=true)
+    S = HomotopyContinuation.System(eom)
+    vars_orig = get_variables(eom)
+    vars_new = declare_variable.(var_name.(vars_orig))
+
+    jac = compute_Jacobian ? eom.Jacobian : dummy_symbolic_Jacobian(length(eom.variables))
+    return Problem(vars_new, eom.parameters, S, jac, eom)
 end
 
 Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
@@ -46,19 +58,4 @@ end
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)
 function _free_symbols(p::Problem, varied::OrderedDict)
     return cat(p.variables, collect(keys(varied)); dims=1)
-end
-
-"Constructor for the type `Problem` (to be solved by HomotopyContinuation)
-from a `HarmonicEquation`."
-function HarmonicBalance.Problem(eom::HarmonicEquation; Jacobian::Bool=true)
-    S = HomotopyContinuation.System(eom)
-    if Jacobian == true
-        J = HarmonicBalance.get_Jacobian(eom)
-    else
-        # this possibly has variables in the denominator and cannot be used for solving
-        J = Num.(float.(collect(LinearAlgebra.I(length(eom.variables)))))
-    end
-    vars_orig = get_variables(eom)
-    vars_new = declare_variable.(var_name.(vars_orig))
-    return Problem(vars_new, eom.parameters, S, J, eom)
 end

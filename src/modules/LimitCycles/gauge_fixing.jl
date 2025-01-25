@@ -50,7 +50,6 @@ $(TYPEDSIGNATURES)
 
 Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a limit cycle frequency `ω_lc`.
-`explicit_Jacobian=true` attempts to derive a symbolic Jacobian (usually not possible).
 """
 function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     eom = deepcopy(eom) # do not mutate eom
@@ -69,7 +68,7 @@ function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = Problem(eom; Jacobian=false)
+    p = Problem(eom; compute_Jacobian=false)
     return p
 end
 

@@ -16,7 +16,7 @@ mutable struct HarmonicEquation
     "The natural equation (before the harmonic ansatz was used)."
     natural_equation::DifferentialEquation
     "The Jacobian of the natural equation."
-    Jacobian::Matrix{Num}
+    jacobian::Matrix{Num}
 
     # use a self-referential constructor with _parameters
     function HarmonicEquation(equations, variables, nat_eq)
@@ -363,4 +363,13 @@ function _remove_brackets(eom::HarmonicEquation)
     variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
     equations_lhs = Num.(getfield.(eom.equations, :lhs) - getfield.(eom.equations, :rhs))
     return substitute_all(equations_lhs, variable_rules)
+end
+
+function _free_symbols(eom::HarmonicEquation, swept::OrderedDict)::Vector{Num}
+    return cat(declare_variables(eom), collect(keys(swept)); dims=1)
+end
+
+function declare_variables(eom::HarmonicEquation)
+    vars_orig = get_variables(eom)
+    return declare_variable.(var_name.(vars_orig))
 end

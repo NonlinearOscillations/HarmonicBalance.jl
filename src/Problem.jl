@@ -18,7 +18,10 @@ HomotopyContinuationProblem(
 )
 ```
 """
-mutable struct HomotopyContinuationProblem{Jac,ParType<:Number} <: Problem
+mutable struct HomotopyContinuationProblem{
+    Jac<:JacobianFunction(ComplexF64), # HC.jl only supports Float64
+    ParType<:Number,
+} <: Problem
     "The harmonic variables to be solved for."
     variables::Vector{Num}
     "All symbols which are not the harmonic variables."
@@ -56,18 +59,16 @@ end
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
 function HarmonicBalance.HomotopyContinuationProblem(
-    eom::HarmonicEquation,
-    swept::AbstractDict,
-    fixed::AbstractDict;
-    compute_Jacobian::Bool=true,
+    eom::HarmonicEquation, swept::AbstractDict, fixed::AbstractDict
 )
     S = HomotopyContinuation.System(eom)
-    vars_orig = get_variables(eom)
-    vars_new = declare_variable.(var_name.(vars_orig))
+    vars_new = declare_variables(eom)
 
     swept, fixed = promote_types(swept, fixed)
+    check_fixed_and_sweep(eom, swept, fixed)
 
-    jac = compute_Jacobian ? eom.Jacobian : dummy_symbolic_Jacobian(length(eom.variables))
+    jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)
+    # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
     return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
 end
 
@@ -85,6 +86,37 @@ function _free_symbols(p::Problem)::Vector{Num}
     return cat(p.variables, collect(keys(p.swept_parameters)); dims=1)
 end
 
-function decalare_variables(p::Problem)
+function declare_variables(p::Problem)
     return declare_variable.(string.(cat(p.parameters, p.variables; dims=1)))
+end
+
+function check_fixed_and_sweep(
+    eom::Union{HomotopyContinuationProblem,HarmonicEquation}, sweeps, fixed_parameters
+)
+    variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
+    if any([var_name(var) ∈ variable_names for var in get_variables(eom)])
+        error("Cannot fix one of the variables!")
+    end
+    # sweeping takes precedence over fixed_parameters
+    unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
+
+    # fixed order of parameters
+    all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)); dims=1)
+    # the order of parameters we have now does not correspond to that in prob!
+    # get the order from prob and construct a permutation to rearrange our parameters
+    error = ArgumentError("Some input parameters are missing or appear more than once!")
+    permutation = try
+        # find the matching position of each parameter
+        p = [findall(x -> isequal(x, par), all_keys) for par in eom.parameters]
+        all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!
+        p = getindex.(p, 1) # all exist once -> flatten
+        # ∨ parameters sorted wrong!
+        isequal(all_keys[getindex.(p, 1)], eom.parameters) || throw(error)
+        # ∨ extra parameters present!
+        #isempty(setdiff(all_keys, prob.parameters)) || throw(error)
+        p
+    catch
+        throw(error)
+    end
+    return unique_fixed, permutation
 end

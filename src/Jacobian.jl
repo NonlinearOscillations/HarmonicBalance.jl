@@ -1,5 +1,3 @@
-const JacobianFunction(T) = FunctionWrapper{Matrix{T},Tuple{Vector{T}}}
-
 """
 Compile the Jacobian from `prob`, inserting `fixed_parameters`.
 Returns a function that takes a vector of variables and `swept_parameters` to give the Jacobian.
@@ -7,6 +5,24 @@ The order of the vector is first the variables, then the swept parameters.
 For LC variables called "hopf", the Jacobian is already compiled.
 For Type stability the function is wrapped in a FunctionWrapper.
 """
+function _compile_Jacobian(
+    eom::HarmonicEquation,
+    soltype::DataType,
+    swept::OrderedDict,
+    fixed::OrderedDict,
+)::JacobianFunction(soltype)
+    if "Hopf" ∈ getfield.(eom.variables, :type)
+        compiled_J = eom.jacobian
+    elseif !hasnan(eom.jacobian)
+        compiled_J = compile_matrix(
+            eom.jacobian, _free_symbols(eom, swept); rules=fixed
+        )
+    else
+        compiled_J = get_implicit_Jacobian(eom; sym_order=_free_symbols(eom, swept), rules=fixed)
+    end
+    return JacobianFunction(soltype)(compiled_J)
+end
+
 function _compile_Jacobian(
     prob::Problem,
     soltype::DataType,
@@ -58,7 +74,7 @@ function get_Jacobian(eom::HarmonicEquation)::Matrix{Num}
 end
 
 function add_jacobian!(eom::HarmonicEquation)
-    return eom.Jacobian .= get_Jacobian(eom)
+    return eom.jacobian .= get_Jacobian(eom)
 end
 
 " Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "

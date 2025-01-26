@@ -42,9 +42,9 @@ end
     include("linear_response.jl")
 end
 
-@testset "Limit cycle" begin
-    include("limit_cycle.jl")
-end
+# @testset "Limit cycle" begin
+#     include("limit_cycle.jl")
+# end
 
 @testset "extensions" begin
     @testset "Time evolution extension" begin

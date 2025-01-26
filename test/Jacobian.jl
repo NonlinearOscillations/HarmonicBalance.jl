@@ -22,7 +22,7 @@ prob = HomotopyContinuationProblem(harmonic_eq, varied, fixed)
     complex_vars = [1.0 + 0im, 1.0 + 0im, 1.0 + 0im]
     float_vars = [1.0, 1.0, 1.0]
 
-    J = substitute_all.(prob.jacobian, Ref(fixed))
+    J = substitute_all.(eom.jacobian, Ref(fixed))
     jacfunc = build_function(J, _free_symbols(prob); expression=Val(false))[1]
     wrapped_jac = FunctionWrapper{Matrix{ComplexF64},Tuple{Vector{ComplexF64}}}(jacfunc)
     @test wrapped_jac(complex_vars) isa Matrix{ComplexF64}

@@ -126,7 +126,7 @@ using .LimitCycles
 include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 
-Precompilation setup
+# Precompilation setup
 using PrecompileTools: @setup_workload, @compile_workload
 @setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the

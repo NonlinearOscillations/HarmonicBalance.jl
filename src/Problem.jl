@@ -76,7 +76,9 @@ function HarmonicBalance.HomotopyContinuationProblem(
     if compile_jacobian
         jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)
         # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
-        return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
+        return HomotopyContinuationProblem(
+            vars_new, eom.parameters, swept, fixed, S, jac, eom
+        )
     else
         return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S)
     end

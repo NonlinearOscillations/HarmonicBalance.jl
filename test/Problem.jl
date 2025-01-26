@@ -19,11 +19,7 @@ using Test
     @test_throws UndefRefError prob.eom
 
     prob = HarmonicBalance.HomotopyContinuationProblem(
-        [x, y],
-        Num[],
-        OrderedDict{Num,Vector{Float64}}(),
-        OrderedDict{Num,Float64}(),
-        F,
+        [x, y], Num[], OrderedDict{Num,Vector{Float64}}(), OrderedDict{Num,Float64}(), F
     )
     @test_throws UndefRefError prob.jacobian
 end

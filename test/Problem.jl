@@ -13,7 +13,7 @@ using Test
         OrderedDict{Num,Vector{Float64}}(),
         OrderedDict{Num,Float64}(),
         F,
-        HarmonicBalance.JacobianFunction(ComplexF64)(x->x),
+        HarmonicBalance.JacobianFunction(ComplexF64)(x -> x),
     )
     @test_throws UndefRefError prob.eom
 end

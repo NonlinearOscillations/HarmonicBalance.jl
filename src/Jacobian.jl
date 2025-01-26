@@ -6,19 +6,16 @@ For LC variables called "hopf", the Jacobian is already compiled.
 For Type stability the function is wrapped in a FunctionWrapper.
 """
 function _compile_Jacobian(
-    eom::HarmonicEquation,
-    soltype::DataType,
-    swept::OrderedDict,
-    fixed::OrderedDict,
+    eom::HarmonicEquation, soltype::DataType, swept::OrderedDict, fixed::OrderedDict
 )::JacobianFunction(soltype)
     if "Hopf" ∈ getfield.(eom.variables, :type)
         compiled_J = eom.jacobian
     elseif !hasnan(eom.jacobian)
-        compiled_J = compile_matrix(
-            eom.jacobian, _free_symbols(eom, swept); rules=fixed
-        )
+        compiled_J = compile_matrix(eom.jacobian, _free_symbols(eom, swept); rules=fixed)
     else
-        compiled_J = get_implicit_Jacobian(eom; sym_order=_free_symbols(eom, swept), rules=fixed)
+        compiled_J = get_implicit_Jacobian(
+            eom; sym_order=_free_symbols(eom, swept), rules=fixed
+        )
     end
     return JacobianFunction(soltype)(compiled_J)
 end

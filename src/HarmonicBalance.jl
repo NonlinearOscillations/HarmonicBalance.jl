@@ -126,17 +126,17 @@ using .LimitCycles
 include("modules/KrylovBogoliubov.jl")
 using .KrylovBogoliubov
 
-# Precompilation setup
-# using PrecompileTools: @setup_workload, @compile_workload
-# @setup_workload begin
-#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-#     # precompile file and potentially make loading faster.
-#     @compile_workload begin
-#         # all calls in this block will be precompiled, regardless of whether
-#         # they belong to your package or not (on Julia 1.8 and higher)
-#         include("precompilation.jl")
-#     end
-# end
+Precompilation setup
+using PrecompileTools: @setup_workload, @compile_workload
+@setup_workload begin
+    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+    # precompile file and potentially make loading faster.
+    @compile_workload begin
+        # all calls in this block will be precompiled, regardless of whether
+        # they belong to your package or not (on Julia 1.8 and higher)
+        include("precompilation.jl")
+    end
+end
 
 # Error hint for extensions stubs
 function __init__()

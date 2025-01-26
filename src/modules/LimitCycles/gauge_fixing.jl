@@ -37,12 +37,12 @@ end
     is inserted. Finding the analytical Jacobian is usually extremely time-consuming.
 """
 function _gaugefixed_Jacobian(
-    eom::HarmonicEquation, fixed_var::HarmonicVariable; sym_order, rules
+    eom::HarmonicEquation, fixed_var::HarmonicVariable, soltype::DataType; sym_order, rules
 )
     rules = Dict(rules)
     setindex!(rules, 0, _remove_brackets(fixed_var))
     jac = get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
-    return jac
+    return JacobianFunction(soltype)(jac)
 end
 
 """
@@ -68,8 +68,8 @@ function _cycle_Problem(eom::HarmonicEquation, swept, fixed, ω_lc::Num)
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = HomotopyContinuationProblem(eom, swept, fixed; compute_Jacobian=false)
-    return p
+    p = HomotopyContinuationProblem(eom, swept, fixed; compile_jacobian=false)
+    return eom, p
 end
 
 function _choose_fixed(eom, ω_lc)
@@ -81,10 +81,11 @@ function limit_cycle_problem(
     eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc
 )
     swept, fixed = promote_types(swept, fixed)
-    prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
+    gauge_fixed_eom, prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
     jacobian = _gaugefixed_Jacobian(
         eom, # this is not gauge_fixed
-        _choose_fixed(eom, ω_lc);
+        _choose_fixed(eom, ω_lc),
+        ComplexF64; # HC.jl only supports F64
         sym_order=_free_symbols(prob),
         rules=fixed,
     )
@@ -95,7 +96,7 @@ function limit_cycle_problem(
         prob.fixed_parameters,
         prob.system,
         jacobian,
-        prob.eom,
+        gauge_fixed_eom, # should this be gauge-fixed?
     )
 end
 function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
@@ -144,30 +145,6 @@ function get_limit_cycles(
     result = get_steady_states(prob, method; classify_default=classify_default, kwargs...)
     classify_default ? _classify_limit_cycles!(result, ω_lc) : nothing
     return result
-end
-
-# if abs(ω_lc) < tol, set all classifications to false
-# TOLERANCE HARDCODED FOR NOW
-function _classify_limit_cycles!(res::Result, ω_lc::Num)
-    ω_lc_idx = findfirst(x -> isequal(x, ω_lc), res.problem.variables)
-    for idx in CartesianIndices(res.solutions),
-        c in filter(x -> x != "binary_labels", keys(res.classes))
-
-        res.classes[c][idx] .*= abs.(getindex.(res.solutions[idx], ω_lc_idx)) .> 1e-10
-    end
-
-    classify_unique!(res, ω_lc)
-
-    unique_stable = find_branch_order(
-        map(.*, res.classes["stable"], res.classes["unique_cycle"])
-    )
-
-    # branches which are unique but never stable
-    unique_unstable = setdiff(
-        find_branch_order(map(.*, res.classes["unique_cycle"], res.classes["physical"])),
-        unique_stable,
-    )
-    return order_branches!(res, vcat(unique_stable, unique_unstable)) # shuffle to have relevant branches first
 end
 
 """

@@ -19,8 +19,8 @@ HomotopyContinuationProblem(
 ```
 """
 mutable struct HomotopyContinuationProblem{
-    Jac<:JacobianFunction(ComplexF64), # HC.jl only supports Float64
     ParType<:Number,
+    Jac<:JacobianFunction(ComplexF64), # HC.jl only supports Float64
 } <: Problem
     "The harmonic variables to be solved for."
     variables::Vector{Num}
@@ -43,14 +43,21 @@ mutable struct HomotopyContinuationProblem{
     function HomotopyContinuationProblem(
         variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian
     ) where {K,V}
-        return new{typeof(jacobian),V}(
+        return new{V,typeof(jacobian)}(
             variables, parameters, swept, fixed, system, jacobian
+        )
+    end # incomplete initialization for user-defined symbolic systems
+    function HomotopyContinuationProblem(
+        variables, parameters, swept, fixed::OrderedDict{K,V}, system
+    ) where {K,V}
+        return new{V,JacobianFunction(ComplexF64)}(
+            variables, parameters, swept, fixed, system
         )
     end # incomplete initialization for user-defined symbolic systems
     function HomotopyContinuationProblem(
         variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian, eom
     ) where {K,V}
-        return new{typeof(jacobian),V}(
+        return new{V,typeof(jacobian)}(
             variables, parameters, swept, fixed, system, jacobian, eom
         )
     end
@@ -59,17 +66,20 @@ end
 "Constructor for the type `Problem` (to be solved by HomotopyContinuation)
 from a `HarmonicEquation`."
 function HarmonicBalance.HomotopyContinuationProblem(
-    eom::HarmonicEquation, swept::AbstractDict, fixed::AbstractDict
+    eom::HarmonicEquation, swept::AbstractDict, fixed::AbstractDict; compile_jacobian=true
 )
     S = HomotopyContinuation.System(eom)
     vars_new = declare_variables(eom)
 
     swept, fixed = promote_types(swept, fixed)
     check_fixed_and_sweep(eom, swept, fixed)
-
-    jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)
-    # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
-    return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
+    if compile_jacobian
+        jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)
+        # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
+        return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S, jac, eom)
+    else
+        return HomotopyContinuationProblem(vars_new, eom.parameters, swept, fixed, S)
+    end
 end
 
 Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
@@ -78,7 +88,7 @@ function Base.show(io::IO, p::HomotopyContinuationProblem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")
     println(io, "Variables: ", join(string.(p.variables), ", "))
     println(io, "Parameters: ", join(string.(p.parameters), ", "))
-    return println(io, "Symbolic Jacobian: ", !(p.jacobian == false))
+    return nothing
 end
 
 # assume this order of variables in all compiled function (transform_solutions, Jacobians)

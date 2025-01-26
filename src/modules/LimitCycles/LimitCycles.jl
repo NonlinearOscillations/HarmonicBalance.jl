@@ -22,7 +22,8 @@ using HarmonicBalance:
     get_implicit_Jacobian,
     _free_symbols,
     OrderedDict,
-    promote_types
+    promote_types,
+    JacobianFunction
 
 using HarmonicBalance.ExprUtils: get_all_terms
 

@@ -1,4 +1,5 @@
 using HarmonicBalance
+using HarmonicBalance: OrderedDict
 using Test
 
 @testset "Problem without EOM" begin
@@ -16,4 +17,13 @@ using Test
         HarmonicBalance.JacobianFunction(ComplexF64)(x -> x),
     )
     @test_throws UndefRefError prob.eom
+
+    prob = HarmonicBalance.HomotopyContinuationProblem(
+        [x, y],
+        Num[],
+        OrderedDict{Num,Vector{Float64}}(),
+        OrderedDict{Num,Float64}(),
+        F,
+    )
+    @test_throws UndefRefError prob.jacobian
 end

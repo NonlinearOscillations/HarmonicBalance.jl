@@ -15,7 +15,7 @@ mutable struct HarmonicEquation
     parameters::Vector{Num}
     "The natural equation (before the harmonic ansatz was used)."
     natural_equation::DifferentialEquation
-    "The Jacobian of the natural equation."
+    "The Jacobian of the harmonic equations."
     jacobian::Matrix{Num}
 
     # use a self-referential constructor with _parameters

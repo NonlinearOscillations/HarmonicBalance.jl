@@ -219,6 +219,7 @@ input_array = HB.tuple_to_vector.(input_array)
 input_array = map(idx -> push!(input_array[idx], A[idx]...), CartesianIndices(input_array));
 
 # Solving for the steady states of the dressed symmetric mode:
+
 function solve_perturbed_system(prob, input)
     result_full = HB.ProgressMeter.@showprogress map(input_array) do input
         HB.HomotopyContinuation.solve(
@@ -233,8 +234,9 @@ function solve_perturbed_system(prob, input)
     rounded_solutions = HB.HomotopyContinuation.solutions.(result_full)
     solutions = HB.pad_solutions(rounded_solutions)
 
+    jacobian = HarmonicBalance.get_Jacobian(harmonic_tmp)
     J_variables = cat(prob.variables, collect(keys(varied)), [ua, va]; dims=1)
-    compiled_J = HB.compile_matrix(prob.jacobian, J_variables; rules=fixed)
+    compiled_J = HB.compile_matrix(jacobian, J_variables; rules=fixed)
     compiled_J = HB.JacobianFunction(HB.solution_type(solutions))(compiled_J)
     result = HB.Result(
         solutions,

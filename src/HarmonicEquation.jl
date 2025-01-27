@@ -15,7 +15,7 @@ mutable struct HarmonicEquation
     parameters::Vector{Num}
     "The natural equation (before the harmonic ansatz was used)."
     natural_equation::DifferentialEquation
-    "The Jacobian of the harmonic equations."
+    "The Jacobian of the natural equation."
     jacobian::Matrix{Num}
 
     # use a self-referential constructor with _parameters
@@ -199,6 +199,16 @@ function rearrange_standard(eom::HarmonicEquation)
     tvar = get_independent_variables(eom)[1]
     dvars = d(get_variables(eom), tvar)
     return rearrange(eom, dvars)
+end
+
+"""
+$(TYPEDSIGNATURES)
+Rearrange `eom` to the standard form, such that the derivatives of the variables are on one side.
+"""
+function rearrange_standard!(eom::HarmonicEquation)
+    tmp_eom = rearrange_standard(eom::HarmonicEquation)
+    eom.equations = tmp_eom.equations
+    return eom
 end
 
 """

@@ -29,6 +29,17 @@ function parameter_type(sweeps::OrderedDict, fixed_parameters::OrderedDict)
     return common_type(input_array)
 end
 
+function promote_types(sweeps::OrderedDict, fixed_parameters::OrderedDict{K}) where {K}
+    param_ranges = collect(values(sweeps))
+    iter = Iterators.product(param_ranges..., values(fixed_parameters)...)
+    types = Iterators.flatten(unique(unique(typeof.(ps)) for ps in iter))
+    T = promote_type(types...)
+
+    promoted_sweeps = OrderedDict{K,Vector{T}}((keys(sweeps) .=> values(sweeps))...)
+    promoted_fixed = OrderedDict{K,T}(fixed_parameters)
+    return promoted_sweeps, promoted_fixed
+end
+
 "Remove occurrences of `sweeps` elements from `fixed_parameters`."
 function filter_duplicate_parameters(sweeps, fixed_parameters)
     new_params = copy(fixed_parameters)

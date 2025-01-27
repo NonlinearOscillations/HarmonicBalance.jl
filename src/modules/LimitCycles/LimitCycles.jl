@@ -8,7 +8,7 @@ using HarmonicBalance
 using HarmonicBalance:
     HarmonicBalanceMethod,
     WarmUp,
-    Problem,
+    HomotopyContinuationProblem,
     Result,
     get_steady_states,
     order_branches!,
@@ -21,7 +21,9 @@ using HarmonicBalance:
     var_name,
     get_implicit_Jacobian,
     _free_symbols,
-    OrderedDict
+    OrderedDict,
+    promote_types,
+    JacobianFunction
 
 using HarmonicBalance.ExprUtils: get_all_terms
 

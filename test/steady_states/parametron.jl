@@ -1,4 +1,5 @@
 using HarmonicBalance
+using HarmonicBalance: OrderedDict
 using Symbolics
 #using Test # do not use Test as this file is used for precompilation
 
@@ -19,20 +20,24 @@ harmonic_eq = get_harmonic_equations(dEOM; slow_time=T, fast_time=t);
 method = HarmonicBalance.WarmUp(; seed=SEED)
 
 @testset "undriven parametron" begin
-    fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0)
-    varied = ω => range(0.9, 1.1, 20)
+    fixed = OrderedDict(
+        Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0
+    )
+    varied = OrderedDict(ω => range(0.9, 1.1, 20))
     @test substitute(
-        sum(harmonic_eq.parameters), merge(Dict(fixed), Dict(varied[1][1] => 0))
+        sum(harmonic_eq.parameters), merge(Dict(fixed), Dict(varied[ω] => 0))
     ) isa Number
 
     @testset "Problem" begin
-        prob = HarmonicBalance.Problem(harmonic_eq)
+        prob = HarmonicBalance.HomotopyContinuationProblem(
+            harmonic_eq, OrderedDict(varied), OrderedDict(fixed)
+        )
 
         @test length(harmonic_eq.equations) == 2
         @test length(prob.variables) == 2
         @test length(prob.parameters) == 9
         @test length(prob.system.parameters) == 9
-        res = get_steady_states(prob, method, varied, fixed; show_progress=false)
+        res = get_steady_states(prob, method; show_progress=false)
     end
 
     @testset "steady states" begin
@@ -54,8 +59,10 @@ method = HarmonicBalance.WarmUp(; seed=SEED)
     end
 
     @testset "implicit jacobian" begin
-        p = HarmonicBalance.Problem(harmonic_eq; Jacobian=false)
-        res = get_steady_states(p, method, varied, fixed; show_progress=false)
+        harmonic_eq = get_harmonic_equations(dEOM; jacobian=false)
+        p = HarmonicBalance.HomotopyContinuationProblem(harmonic_eq, varied, fixed)
+        @test round.(real.(p.jacobian(zeros(3)))) == [-98.0 0.0; 0.0 -102.0]
+        res = get_steady_states(p, method; show_progress=false)
     end
 
     @testset "2d sweep" begin # try to run a 2D calculation

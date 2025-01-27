@@ -1,11 +1,10 @@
-# const ParameterRange = OrderedDict;
-# const ParameterList = Union{AbstractDict,NamedTuple};
 const StateDict = OrderedDict;
 const Solutions(T) = VecOrMat{Vector{Vector{T}}};
 const SteadyState(T) = Vector{T};
-# const ParameterVector = Vector{Float64};
 
 solution_type(sol::Solutions(T)) where {T} = T
+
+const JacobianFunction(T) = FunctionWrapper{Matrix{T},Tuple{Vector{T}}}
 
 """
 

@@ -15,15 +15,31 @@ mutable struct HarmonicEquation
     parameters::Vector{Num}
     "The natural equation (before the harmonic ansatz was used)."
     natural_equation::DifferentialEquation
+    "The Jacobian of the natural equation."
+    jacobian::Matrix{Num}
 
     # use a self-referential constructor with _parameters
     function HarmonicEquation(equations, variables, nat_eq)
-        return (x = new(equations, variables, Vector{Num}([]), nat_eq);
-        x.parameters = _parameters(x);
-        x)
+        return (
+            x = new(
+                equations,
+                variables,
+                Num[],
+                nat_eq,
+                dummy_symbolic_Jacobian(length(variables)),
+            );
+            x.parameters = _parameters(x);
+            x
+        )
     end
     function HarmonicEquation(equations, variables, parameters, natural_equation)
-        return new(equations, variables, parameters, natural_equation)
+        return new(
+            equations,
+            variables,
+            parameters,
+            natural_equation,
+            dummy_symbolic_Jacobian(length(variables)),
+        )
     end
 end
 
@@ -277,7 +293,7 @@ function fourier_transform!(eom::HarmonicEquation, time::Num)
 end
 
 """
-    get_harmonic_equations(diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing)
+    $(TYPEDSIGNATURES)
 
 Apply the harmonic ansatz, followed by the slow-flow, Fourier transform and dropping
 higher-order derivatives to obtain a set of ODEs (the harmonic equations) governing the
@@ -319,7 +335,11 @@ Harmonic equations:
 
 """
 function get_harmonic_equations(
-    diff_eom::DifferentialEquation; fast_time=nothing, slow_time=nothing, degree=2
+    diff_eom::DifferentialEquation;
+    fast_time=nothing,
+    slow_time=nothing,
+    degree=2,
+    jacobian=true,
 )
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
@@ -334,8 +354,10 @@ function get_harmonic_equations(
     # perform averaging over the frequencies originally specified in dEOM
     fourier_transform!(eom, fast_time)
     # drop higher powers of the first-order derivatives
-    ft_eom_simplified = drop_powers(eom, d(get_variables(eom), slow_time), 2)
-    return ft_eom_simplified
+    eom = drop_powers(eom, d(get_variables(eom), slow_time), 2)
+
+    jacobian == true ? add_jacobian!(eom) : nothing
+    return eom
 end
 
 "Rearrange `eq` to have zero on the right-hand-side."
@@ -351,4 +373,13 @@ function _remove_brackets(eom::HarmonicEquation)
     variable_rules = [var => _remove_brackets(var) for var in get_variables(eom)]
     equations_lhs = Num.(getfield.(eom.equations, :lhs) - getfield.(eom.equations, :rhs))
     return substitute_all(equations_lhs, variable_rules)
+end
+
+function _free_symbols(eom::HarmonicEquation, swept::OrderedDict)::Vector{Num}
+    return cat(declare_variables(eom), collect(keys(swept)); dims=1)
+end
+
+function declare_variables(eom::HarmonicEquation)
+    vars_orig = get_variables(eom)
+    return declare_variable.(var_name.(vars_orig))
 end

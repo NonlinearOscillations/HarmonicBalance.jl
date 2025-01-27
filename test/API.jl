@@ -1,4 +1,5 @@
 using HarmonicBalance
+using HarmonicBalance: OrderedDict
 using Test
 
 @testset "Equation{Vector}" begin
@@ -24,16 +25,18 @@ end
     add_harmonic!(diff_eq, x, ω) # drive frequency, close to ω1
 
     harmonic_eq = get_harmonic_equations(diff_eq)
-    prob = HarmonicBalance.Problem(harmonic_eq)
 
     varied = ω => range(0.7, 1.3, 100)
     @test_throws MethodError get_steady_states(harmonic_eq, varied)
     @test_throws ArgumentError get_steady_states(harmonic_eq, Dict(varied))
 
     fixed = Dict(ω1 => 1.0, γ => 0.005, λ => 0.1)
+    prob = HarmonicBalance.HomotopyContinuationProblem(
+        harmonic_eq, OrderedDict(varied), OrderedDict(fixed)
+    )
     @test_throws MethodError get_steady_states(prob, Dict())
     @test_throws MethodError get_steady_states(prob, varied, fixed)
-    r = get_steady_states(prob, HarmonicBalance.WarmUp(), varied, fixed)
+    r = get_steady_states(prob, HarmonicBalance.WarmUp())
     # ^ throws a warning that no solutions found
 end
 
@@ -52,4 +55,14 @@ end
     add_harmonic!(dEOM, x, ω)
     # add_harmonic!(dEOM, y, ω)
     @test_throws ErrorException get_harmonic_equations(dEOM)
+end
+
+@testset "harmonic equation jacobian NaN" begin
+    @variables ω1, t, ω, F, γ, λ, x(t), y(t)
+    eqs = [d(x, t, 2) + (ω1^2 - λ * cos(2 * ω * t)) * x + γ * d(x, t)]
+    diff_eq = DifferentialEquation(eqs, [x])
+
+    add_harmonic!(diff_eq, x, ω)
+    harmonic_eq = get_harmonic_equations(diff_eq; jacobian=false)
+    @test HarmonicBalance.hasnan(harmonic_eq.jacobian)
 end

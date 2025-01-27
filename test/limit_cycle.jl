@@ -1,5 +1,6 @@
 using HarmonicBalance
 import HarmonicBalance.LinearResponse.plot_linear_response
+using HarmonicBalance: OrderedDict
 using Test
 
 @testset "van der Pol oscillator " begin
@@ -14,9 +15,10 @@ using Test
     harmonic_eq = get_harmonic_equations(dEOM)
     HarmonicBalance.LimitCycles._choose_fixed(harmonic_eq, ω_lc)
 
-    fixed = ()
-    varied = μ => range(2, 3, 2)
+    fixed = OrderedDict{HarmonicBalance.Num,Float64}()
+    varied = OrderedDict(μ => range(2, 3, 2))
     # method = HarmonicBalance.WarmUp(; seed=SEED)
+    prob = HarmonicBalance.LimitCycles.limit_cycle_problem(harmonic_eq, varied, fixed, ω_lc)
     result = get_limit_cycles(
         harmonic_eq, WarmUp(), varied, fixed, ω_lc; show_progress=false
     )

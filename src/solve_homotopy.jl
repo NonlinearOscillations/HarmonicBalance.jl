@@ -59,7 +59,7 @@ A steady state result for 1000 parameter points
 
 """
 function get_steady_states(
-    prob::HomotopyContinuationProblem,
+    prob::Problem,
     method::HarmonicBalanceMethod;
     show_progress=true,
     sorting="nearest",
@@ -100,7 +100,7 @@ function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
     return get_steady_states(
-        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)),
         method;
         kwargs...,
     )
@@ -122,7 +122,7 @@ function get_steady_states(
 end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
     return get_steady_states(
-        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)),
         WarmUp();
         kwargs...,
     )

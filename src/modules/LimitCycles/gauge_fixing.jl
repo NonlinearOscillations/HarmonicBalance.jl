@@ -68,7 +68,7 @@ function _cycle_Problem(eom::HarmonicEquation, swept, fixed, ω_lc::Num)
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = HomotopyContinuationProblem(eom, swept, fixed; compile_jacobian=false)
+    p = Problem(eom, swept, fixed; compile_jacobian=false)
     return eom, p
 end
 
@@ -89,7 +89,7 @@ function limit_cycle_problem(
         sym_order=_free_symbols(prob),
         rules=fixed,
     )
-    return HomotopyContinuationProblem(
+    return Problem(
         prob.variables,
         prob.parameters,
         prob.swept_parameters,
@@ -134,7 +134,7 @@ function get_limit_cycles(
     return get_limit_cycles(eom, method, swept, fixed, ω_lc; kwargs...)
 end
 function get_limit_cycles(
-    prob::HomotopyContinuationProblem,
+    prob::Problem,
     method::HarmonicBalanceMethod,
     swept,
     fixed,

@@ -37,7 +37,7 @@ end
     @test_throws ArgumentError get_steady_states(harmonic_eq, Dict(varied), fixed_extra)
 
     fixed = Dict(ω1 => 1.0, γ => 0.005, λ => 0.1)
-    prob = HarmonicBalance.HomotopyContinuationProblem(
+    prob = HarmonicBalance.Problem(
         harmonic_eq, OrderedDict(varied), OrderedDict(fixed)
     )
     @test_throws MethodError get_steady_states(prob, Dict())

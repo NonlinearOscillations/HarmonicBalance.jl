@@ -157,7 +157,9 @@ to sweep and kwargs
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
-    unique_fixed, permutation = check_fixed_and_sweep(prob, sweeps, fixed_parameters)
+    unique_fixed, permutation = unique_fixed_and_permutations(
+        prob, sweeps, fixed_parameters
+    )
 
     input_array = type_stable_parameters(sweeps, fixed_parameters)
     # order each parameter vector to match the order in prob

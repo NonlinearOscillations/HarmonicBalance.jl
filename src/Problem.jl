@@ -72,7 +72,8 @@ function HarmonicBalance.HomotopyContinuationProblem(
     vars_new = declare_variables(eom)
 
     swept, fixed = promote_types(swept, fixed)
-    # check_fixed_and_sweep(eom, swept, fixed)
+    check_fixed_and_sweep(eom, swept, fixed)
+
     if compile_jacobian
         jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)
         # ^ HC.jl only supports Float64 (https://github.com/JuliaHomotopyContinuation/HomotopyContinuation.jl/issues/604)
@@ -105,30 +106,58 @@ end
 function check_fixed_and_sweep(
     eom::Union{HomotopyContinuationProblem,HarmonicEquation}, sweeps, fixed_parameters
 )
+    # Check if any of the variables are being fixed/swept
     variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
-    if any([var_name(var) ∈ variable_names for var in get_variables(eom)])
-        error("Cannot fix one of the variables!")
+    for var in get_variables(eom)
+        if var_name(var) ∈ variable_names
+            e = ArgumentError(
+                "Parameter '$(var)' is a variable of the system and as such cannot be fixed
+                nor swept. Please only provide system parameters."
+            )
+            throw(e)
+        end
     end
-    # sweeping takes precedence over fixed_parameters
-    unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
 
-    # fixed order of parameters
     all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)); dims=1)
-    # the order of parameters we have now does not correspond to that in prob!
-    # get the order from prob and construct a permutation to rearrange our parameters
-    error = ArgumentError("Some input parameters are missing or appear more than once!")
-    permutation = try
-        # find the matching position of each parameter
-        p = [findall(x -> isequal(x, par), all_keys) for par in eom.parameters]
-        all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!
-        p = getindex.(p, 1) # all exist once -> flatten
-        # ∨ parameters sorted wrong!
-        isequal(all_keys[getindex.(p, 1)], eom.parameters) || throw(error)
-        # ∨ extra parameters present!
-        #isempty(setdiff(all_keys, prob.parameters)) || throw(error)
-        p
-    catch
-        throw(error)
+    param_counts = Dict(
+        par => count(x -> isequal(x, par), all_keys) for par in eom.parameters
+    )
+
+    # Error if any parameter is missing
+    missing_params = filter(p -> param_counts[p] == 0, eom.parameters)
+    if !isempty(missing_params)
+        e = ArgumentError("Missing parameters: $(join(missing_params, ", "))")
+        throw(e)
     end
+
+    # Error if any parameter appears multiple times
+    duplicate_params = filter(p -> param_counts[p] > 1, eom.parameters)
+    if !isempty(duplicate_params)
+        e = ArgumentError(
+            "Parameters appear multiple times: $(join(duplicate_params, ", "))"
+        )
+        throw(e)
+    end
+
+    # Error if there are extra parameters not in eom
+    extra_params = setdiff(all_keys, eom.parameters)
+    if !isempty(extra_params)
+        e = ArgumentError("Unknown parameters provided: $(join(extra_params, ", "))")
+        throw(e)
+    end
+
+    return nothing
+end
+
+function unique_fixed_and_permutations(
+    eom::Union{HomotopyContinuationProblem,HarmonicEquation}, sweeps, fixed_parameters
+)
+    check_fixed_and_sweep(eom, sweeps, fixed_parameters)
+
+    # Create permutation for parameter ordering
+    unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
+    all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)); dims=1)
+    permutation = [findfirst(x -> isequal(x, par), all_keys) for par in eom.parameters]
+
     return unique_fixed, permutation
 end

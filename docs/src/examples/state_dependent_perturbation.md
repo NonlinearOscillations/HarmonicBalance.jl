@@ -228,7 +228,7 @@ harmonic_tmp.equations = HB.Symbolics.substitute(
     HB.rearrange_standard(harmonic_normal).equations[1:2], Dict(u2 => ua, v2 => va)
 )
 harmonic_tmp.parameters = push!(harmonic_tmp.parameters, ua, va)
-prob = HarmonicBalance.HomotopyContinuationProblem(harmonic_tmp)
+prob = HarmonicBalance.Problem(harmonic_tmp)
 ````
 
 We will sweep over the $\omega-\lambda$ plane and substitute the non-zero amplitude solution of the antisymmetric mode into the coupled equations of thesymmetric mode.

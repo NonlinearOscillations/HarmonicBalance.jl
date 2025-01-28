@@ -8,7 +8,7 @@ using HarmonicBalance
 using HarmonicBalance:
     HarmonicBalanceMethod,
     WarmUp,
-    HomotopyContinuationProblem,
+    Problem,
     Result,
     get_steady_states,
     order_branches!,

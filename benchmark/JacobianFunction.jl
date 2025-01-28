@@ -14,7 +14,7 @@ harmonic_eq = get_harmonic_equations(diff_eq)
 
 fixed = OrderedDict(α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-6)
 varied = OrderedDict(ω => range(0.9, 1.1, 10))
-prob = HomotopyContinuationProblem(harmonic_eq)
+prob = Problem(harmonic_eq)
 
 J = substitute_all.(prob.jacobian, Ref(fixed))
 jacfunc = build_function(J, _free_symbols(prob); expression=Val(false))[1]
@@ -57,7 +57,7 @@ add_harmonic!(diff_eq, y, ω)
 add_harmonic!(diff_eq, z, ω)
 
 harmonic_eq = get_harmonic_equations(diff_eq)
-prob = HomotopyContinuationProblem(harmonic_eq)
+prob = Problem(harmonic_eq)
 
 fixed = OrderedDict(α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-6, J1 => 1e-2)
 J = substitute_all.(prob.jacobian, Ref(fixed))

@@ -59,7 +59,7 @@ A steady state result for 1000 parameter points
 
 """
 function get_steady_states(
-    prob::HomotopyContinuationProblem,
+    prob::Problem,
     method::HarmonicBalanceMethod;
     show_progress=true,
     sorting="nearest",
@@ -100,9 +100,7 @@ function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
     return get_steady_states(
-        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
-        method;
-        kwargs...,
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), method; kwargs...
     )
 end
 function get_steady_states(eom::HarmonicEquation, pairs::Union{Dict,OrderedDict}; kwargs...)
@@ -122,9 +120,7 @@ function get_steady_states(
 end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
     return get_steady_states(
-        HomotopyContinuationProblem(eom, OrderedDict(swept), OrderedDict(fixed)),
-        WarmUp();
-        kwargs...,
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), WarmUp(); kwargs...
     )
 end
 
@@ -157,7 +153,9 @@ to sweep and kwargs
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
-    unique_fixed, permutation = check_fixed_and_sweep(prob, sweeps, fixed_parameters)
+    unique_fixed, permutation = unique_fixed_and_permutations(
+        prob, sweeps, fixed_parameters
+    )
 
     input_array = type_stable_parameters(sweeps, fixed_parameters)
     # order each parameter vector to match the order in prob

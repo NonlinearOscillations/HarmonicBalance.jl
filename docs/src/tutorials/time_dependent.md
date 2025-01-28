@@ -21,7 +21,7 @@ Here we primarily demonstrate on the parametrically driven oscillator.
 
 We start by defining our system.
 ```@example time_dependent
-using HarmonicBalance
+using HarmonicBalance, Plots
 @variables ω0 γ λ F θ η α ω t x(t)
 
 eq =  d(d(x,t),t) + γ*d(x,t) + ω0^2*(1 - λ*cos(2*ω*t))*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t + θ)

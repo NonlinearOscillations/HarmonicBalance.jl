@@ -6,7 +6,7 @@ In contrast to the previous tutorials, limit cycle problems feature harmonic(s) 
 
 Here we solve the equation of motion of the [van der Pol oscillator](https://en.wikipedia.org/wiki/Van_der_Pol_oscillator). This is a single-variable second-order ODE with continuous time-translation symmetry (i.e., no 'clock' imposing a frequency and/or phase), which displays periodic solutions known as _relaxation oscillations_. For more detail, refer also to [arXiv:2308.06092](https://arxiv.org/abs/2308.06092).
 ```@example lc
-using HarmonicBalance
+using HarmonicBalance, Plots
 @variables ω_lc, t, ω0, x(t), μ
 diff_eq = DifferentialEquation(d(d(x,t),t) - μ*(1-x^2) * d(x,t) + x, x)
 ```

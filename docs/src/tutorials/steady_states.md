@@ -14,7 +14,7 @@ which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quad
 
 First we need to declare the symbolic variables (the excellent [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) is used here).
 ```@example steady_state
-using HarmonicBalance
+using HarmonicBalance, Plots
 @variables α ω ω0 F γ t x(t) # declare constant variables and a function x(t)
 ```
 Next, we have to input the equations of motion. This will be stored as a `DifferentialEquation`. The input needs to specify that only `x` is a mathematical variable, the other symbols are parameters:

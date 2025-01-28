@@ -29,9 +29,7 @@ method = HarmonicBalance.WarmUp(; seed=SEED)
     ) isa Number
 
     @testset "Problem" begin
-        prob = HarmonicBalance.Problem(
-            harmonic_eq, OrderedDict(varied), OrderedDict(fixed)
-        )
+        prob = HarmonicBalance.Problem(harmonic_eq, OrderedDict(varied), OrderedDict(fixed))
 
         @test length(harmonic_eq.equations) == 2
         @test length(prob.variables) == 2

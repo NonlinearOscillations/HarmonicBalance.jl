@@ -100,9 +100,7 @@ function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
     return get_steady_states(
-        Problem(eom, OrderedDict(swept), OrderedDict(fixed)),
-        method;
-        kwargs...,
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), method; kwargs...
     )
 end
 function get_steady_states(eom::HarmonicEquation, pairs::Union{Dict,OrderedDict}; kwargs...)
@@ -122,9 +120,7 @@ function get_steady_states(
 end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
     return get_steady_states(
-        Problem(eom, OrderedDict(swept), OrderedDict(fixed)),
-        WarmUp();
-        kwargs...,
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), WarmUp(); kwargs...
     )
 end
 

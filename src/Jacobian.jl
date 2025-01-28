@@ -20,23 +20,23 @@ function _compile_Jacobian(
     return JacobianFunction(soltype)(compiled_J)
 end
 
-function _compile_Jacobian(
-    prob::Problem,
-    soltype::DataType,
-    swept_parameters::OrderedDict,
-    fixed_parameters::OrderedDict,
-)::JacobianFunction(soltype)
-    if "Hopf" ∈ getfield.(prob.eom.variables, :type)
-        compiled_J = prob.jacobian
-    elseif !hasnan(prob.jacobian)
-        compiled_J = compile_matrix(
-            prob.jacobian, _free_symbols(prob); rules=prob.fixed_parameters
-        )
-    else
-        compiled_J = get_implicit_Jacobian(prob)
-    end
-    return JacobianFunction(soltype)(compiled_J)
-end
+# function _compile_Jacobian(
+#     prob::Problem,
+#     soltype::DataType,
+#     swept_parameters::OrderedDict,
+#     fixed_parameters::OrderedDict,
+# )::JacobianFunction(soltype)
+#     if "Hopf" ∈ getfield.(prob.eom.variables, :type)
+#         compiled_J = prob.jacobian
+#     elseif !hasnan(prob.jacobian)
+#         compiled_J = compile_matrix(
+#             prob.jacobian, _free_symbols(prob); rules=prob.fixed_parameters
+#         )
+#     else
+#         compiled_J = get_implicit_Jacobian(prob)
+#     end
+#     return JacobianFunction(soltype)(compiled_J)
+# end
 
 """
 Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.

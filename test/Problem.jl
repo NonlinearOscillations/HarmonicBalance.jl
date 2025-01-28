@@ -8,7 +8,7 @@ using Test
     F = System([Expression("x^2")])
 
     @variables x y
-    prob = HarmonicBalance.HomotopyContinuationProblem(
+    prob = HarmonicBalance.Problem(
         [x, y],
         Num[],
         OrderedDict{Num,Vector{Float64}}(),
@@ -18,7 +18,7 @@ using Test
     )
     @test_throws UndefRefError prob.eom
 
-    prob = HarmonicBalance.HomotopyContinuationProblem(
+    prob = HarmonicBalance.Problem(
         [x, y], Num[], OrderedDict{Num,Vector{Float64}}(), OrderedDict{Num,Float64}(), F
     )
     @test_throws UndefRefError prob.jacobian

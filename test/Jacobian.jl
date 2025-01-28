@@ -1,7 +1,7 @@
 using HarmonicBalance, OrderedCollections
 using Test, TestExtras
 
-using HarmonicBalance: HomotopyContinuationProblem
+using HarmonicBalance: Problem
 
 @variables α, ω, ω0, F, γ, t, x(t);
 diff_eq = DifferentialEquation(
@@ -12,7 +12,7 @@ eom = get_harmonic_equations(diff_eq)
 
 fixed = OrderedDict(α => 1, ω0 => 1.0, γ => 1e-2, F => 1e-6)
 varied = OrderedDict(ω => range(0.9, 1.1, 10))
-prob = HomotopyContinuationProblem(eom, varied, fixed)
+prob = Problem(eom, varied, fixed)
 
 @testset "Jacobian FunctionWrapper" begin
     using FunctionWrappers: FunctionWrapper

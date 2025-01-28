@@ -23,7 +23,7 @@ add_harmonic!(dEOM, x, ω)
 fixed = (Ω => 1.0, γ => 1e-2, λ => 5e-2, F => 0, α => 1.0, η => 0.3, θ => 0, ψ => 0)
 varied = ω => range(0.9, 1.1, 100)
 
-prob = HarmonicBalance.HomotopyContinuationProblem(harmonic_eq)
+prob = HarmonicBalance.Problem(harmonic_eq)
 @btime res = get_steady_states(prob, WarmUp(), varied, fixed; show_progress=false) # 380.126 ms (925069 allocations: 50.84 MiB)
 @btime res = get_steady_states(
     prob, WarmUp(; compile=true), varied, fixed; show_progress=false

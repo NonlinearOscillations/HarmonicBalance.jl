@@ -72,7 +72,7 @@ function HarmonicBalance.HomotopyContinuationProblem(
     vars_new = declare_variables(eom)
 
     swept, fixed = promote_types(swept, fixed)
-    check_fixed_and_sweep(eom, swept, fixed)
+    # check_fixed_and_sweep(eom, swept, fixed) # check later in `solve_homotopy`
 
     if compile_jacobian
         jac = _compile_Jacobian(eom, ComplexF64, swept, fixed)

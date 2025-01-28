@@ -2,24 +2,13 @@ name: Documentation
 
 on:
   push:
+    tags:
+      - '*'
     branches:
       - 'master'
-    tags: 
-      - '*'
   pull_request:
     branches:
       - 'master'
-    paths:
-      - '.github/workflows/documentation.yml'
-      - 'src/**'
-      - 'ext/**'
-      - 'docs/**'
-      - 'Project.toml'
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -31,14 +20,13 @@ permissions:
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2

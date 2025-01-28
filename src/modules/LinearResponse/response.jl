@@ -1,5 +1,5 @@
 """
-    get_response_matrix(diff_eq::DifferentialEquation, freq::Num; order=2)
+$(TYPEDSIGNATURES)
 
 Obtain the symbolic linear response matrix of a `diff_eq` corresponding to a perturbation frequency `freq`.
 This routine cannot accept a `HarmonicEquation` since there, some time-derivatives are already dropped.

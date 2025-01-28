@@ -1,3 +1,19 @@
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the Jacobian response spectrum for a given system. Computes the magnitude of the Jacobian response for stable solutions across specified frequency ranges.
+
+# Arguments
+- `res::Result{S,P}`: Result object containing the system's solutions
+- `nat_var::Num`: Natural variable to evaluate in the response
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int` or `followed_branches::Vector{Int}`: Branch number(s) to analyze
+- `show_progress=true`: Whether to show a progress bar
+- `force=false`: Force recalculation of spectrum even if already exists
+
+# Returns
+- Array{P,2}: Complex response matrix where rows correspond to frequencies and columns to solutions
+"""
 function get_jacobian_response(
     res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
 ) where {S,P}
@@ -52,6 +68,23 @@ function get_jacobian_response(
     return C
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the linear response of the system for a given branch. Evaluates the linear response by solving the linear response ODE for each stable solution
+and input frequency in the given range.
+
+# Arguments
+- `res::Result{S,P}`: Result object containing the system's solutions
+- `nat_var::Num`: Natural variable to evaluate in the response
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int`: Branch number to analyze
+- `order`: Order of the response to calculate
+- `show_progress=true`: Whether to show a progress bar
+
+# Returns
+- Array{P,2}: Response matrix where rows correspond to frequencies and columns to stable solutions
+"""
 function get_linear_response(
     res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
 ) where {S,P}
@@ -82,6 +115,23 @@ function get_linear_response(
     return C
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the rotating frame Jacobian response for a given branch. Computes the rotating frame Jacobian response by evaluating eigenvalues of the numerical
+Jacobian and calculating the response magnitude for each frequency in the range.
+
+# Arguments
+- `res::Result{S,P}`: Result object containing the system's solutions
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int`: Branch number to analyze
+- `show_progress=true`: Whether to show a progress bar
+- `damping_mod`: Damping modification parameter
+
+# Returns
+- Array{P,2}: Response matrix in the rotating frame
+
+"""
 function get_rotframe_jacobian_response(
     res::Result{S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
 ) where {S,P}

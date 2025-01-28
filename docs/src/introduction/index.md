@@ -26,7 +26,7 @@ Let us find the steady states of an external driven Duffing oscillator with nonl
 ```
 
 ```@example getting_started
-using HarmonicBalance
+using HarmonicBalance, Plots
 @variables α ω ω0 F t η x(t) # declare constant variables and a function x(t)
 eom = d(x,t,2) + ω0^2*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t)
 diff_eq = DifferentialEquation(eom, x)

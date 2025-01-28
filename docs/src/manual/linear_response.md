@@ -14,11 +14,7 @@ HarmonicBalance.get_Jacobian
 
 ## Linear response
 
-The response to white noise can be shown with `plot_linear_response`. Depending on the `order` argument, different methods are used. 
-
-```@docs; canonical=false
-HarmonicBalance.LinearResponse.plot_linear_response
-```
+The response to white noise can be shown with `plot_linear_response`. Depending on the `order` argument, different methods are used.
 
 ### First order
 
@@ -29,6 +25,8 @@ The advantage of this method is that for a given parameter set, only one matrix 
 Behind the scenes, the spectra are stored using the dedicated structs `Lorentzian` and `JacobianSpectrum`.
 
 ```@docs; canonical=false
+HarmonicBalance.LinearResponse.get_jacobian_response
+HarmonicBalance.LinearResponse.get_rotframe_jacobian_response
 HarmonicBalance.LinearResponse.JacobianSpectrum
 HarmonicBalance.LinearResponse.Lorentzian
 ```
@@ -38,6 +36,7 @@ HarmonicBalance.LinearResponse.Lorentzian
 Setting `order > 1` increases the accuracy of the response spectra. However, unlike for the Jacobian, here we must perform a matrix inversion for each response frequency.  
 
 ```@docs; canonical=false
+HarmonicBalance.LinearResponse.get_linear_response
 HarmonicBalance.LinearResponse.ResponseMatrix
 HarmonicBalance.LinearResponse.get_response
 HarmonicBalance.LinearResponse.get_response_matrix

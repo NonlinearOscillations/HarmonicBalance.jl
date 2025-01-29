@@ -31,7 +31,7 @@ Let's find the steady states of a driven Duffing oscillator with nonlinear dampi
 <img src="/docs/images/github_readme_eq.png" width="450">
 
 ```julia
-using HarmonicBalance
+using HarmonicBalance, Plots
 @variables α ω ω0 F η t x(t) # declare constant variables and a function x(t)
 diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + η*d(x,t)*x^2 ~ F*cos(ω*t), x)
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)

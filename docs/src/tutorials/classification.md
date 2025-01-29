@@ -3,7 +3,7 @@
 Given that you obtained some steady states for a parameter sweep of a specific model it can be useful to classify these solution. Let us consider a simple pametric oscillator 
 
 ```@example classification
-using HarmonicBalance
+using HarmonicBalance, Plots
 
 @variables ω₀ γ λ α ω t x(t)
 

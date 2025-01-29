@@ -11,7 +11,7 @@ AdiabaticSweep
 ## Plotting
 
 ```@docs; canonical=false
-HarmonicBalance.plot(::OrdinaryDiffEqTsit5.ODESolution, ::Any, ::HarmonicEquation)
+plot(::OrdinaryDiffEqTsit5.ODESolution, ::Any, ::HarmonicEquation)
 ```
 
 ## Miscellaneous

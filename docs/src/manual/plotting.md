@@ -12,11 +12,9 @@ The function `plot` is multiple-dispatched to plot 1D and 2D datasets.
 In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`. 
 
 ```@docs; canonical=false
-HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
-HarmonicBalance.plot!
+plot(::HarmonicBalance.Result, varags...)
+plot!
 ```
-
-
 
 ## Plotting phase diagrams
 

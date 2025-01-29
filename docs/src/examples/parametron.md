@@ -14,7 +14,7 @@ where for completeness we also considered an external drive term $F_\text{d}(t)=
 To implement this system in Harmonic Balance, we first import the library
 
 ````@example parametron
-using HarmonicBalance
+using HarmonicBalance, Plots
 ````
 
 Subsequently, we type define parameters in the problem and the oscillating amplitude function $x(t)$ using the `variables` macro from `Symbolics.jl`

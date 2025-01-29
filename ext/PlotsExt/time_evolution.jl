@@ -1,6 +1,3 @@
-using Plots: Plots, plot, plot!
-using Latexify: latexify
-
 """
     plot(soln::ODESolution, f::String, harm_eq::HarmonicEquation; kwargs...)
 
@@ -21,9 +18,9 @@ Parametric plot of f[1] against f[2]
 Also callable as plot!
 """
 function Plots.plot(
-    soln::OrdinaryDiffEqTsit5.ODESolution,
+    soln::SciMLBase.ODESolution,
     funcs,
-    harm_eq::HarmonicEquation;
+    harm_eq::HarmonicBalance.HarmonicEquation;
     add=false,
     kwargs...,
 )
@@ -55,7 +52,7 @@ function Plots.plot(
     end
 end
 
-function Plots.plot!(soln::OrdinaryDiffEqTsit5.ODESolution, varargs...; kwargs...)
+function Plots.plot!(soln::SciMLBase.ODESolution, varargs...; kwargs...)
     return plot(soln, varargs...; add=true, kwargs...)
 end
 
@@ -76,11 +73,13 @@ function HarmonicBalance.plot_1D_solutions_branch(
 )
     p = plot(res; x=x, y=y, class=class, not_class=not_class, kwargs...)
 
-    followed_branch, Ys = follow_branch(starting_branch, res; y=y, sweep=sweep, tf=tf, ϵ=ϵ)
+    followed_branch, Ys = HarmonicBalance.follow_branch(
+        starting_branch, res; y=y, sweep=sweep, tf=tf, ϵ=ϵ
+    )
     Y_followed = [
         Ys[param_idx][branch] for (param_idx, branch) in enumerate(followed_branch)
     ]
-    X = real.(res.swept_parameters[_parse_expression(x)])
+    X = real.(res.swept_parameters[HarmonicBalance._parse_expression(x)])
 
     Plots.plot!(
         p,

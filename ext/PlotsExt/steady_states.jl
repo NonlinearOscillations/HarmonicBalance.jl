@@ -276,8 +276,8 @@ end
 function plot_phase_diagram_2D(
     res::Result; class="physical", not_class=[], kwargs...
 )::Plots.Plot
-    X, Y = values(res.swept_parameters)
-    Z = sum.(_get_mask(res, class, not_class))
+    X, Y = swept_parameters(res)
+    Z = phase_diagram(res; class, not_class)
 
     xlab, ylab = latexify.(string.(keys(res.swept_parameters)))
 
@@ -296,10 +296,10 @@ end
 function plot_phase_diagram_1D(
     res::Result; class="physical", not_class=[], kwargs...
 )::Plots.Plot
-    X = first(values(res.swept_parameters))
-    Y = sum.(_get_mask(res, class, not_class))
+    X = swept_parameters(res)
+    Y = phase_diagram(res; class, not_class)
     return plot(
-        real.(X),
+        X,
         Y;
         xlabel=latexify(string(keys(res.swept_parameters)...)),
         ylabel="#",

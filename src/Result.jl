@@ -88,3 +88,20 @@ branch_count(r::Result) = length(r.solutions[1])
 get_branch(r::Result, idx) = getindex.(r.solutions, idx)
 
 dimension(res::Result) = length(size(res.solutions)) # give solution dimensionality
+
+function phase_diagram(res::Result; class="physical", not_class=[])
+    return Z = sum.(_get_mask(res, class, not_class))
+end
+
+function swept_parameters(res::Result)
+    return X = collect(values(res.swept_parameters))
+end
+
+function attractors(res::Result{D}; class="stable", not_class=[]) where {D}
+    branches = 1:branch_count(res)
+    Y = _get_mask(res, class, not_class)
+
+    return map(enumerate(Y)) do (idx, bools)
+        Dict(i => get_branch(res, i)[idx] for (i, bool) in pairs(bools) if bool)
+    end #map
+end

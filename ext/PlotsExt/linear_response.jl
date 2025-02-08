@@ -105,14 +105,14 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function HarmonicBalance.plot_rotframe_jacobian_response(
-    res::Result{S,P};
+    res::Result{D,S,P};
     Ω_range,
     branch::Int,
     logscale=true,
     damping_mod=one(P),
     show_progress=true,
     kwargs...,
-) where {S,P}
+) where {D,S,P}
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = get_class(res, branch, "stable") # boolean array
@@ -150,19 +150,18 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function HarmonicBalance.plot_eigenvalues(
-    res::Result{S,P};
+    res::Result{D,S,P};
     branch,
     class=["physical"],
     type=:imag,
     projection=v -> 1,
     cscheme=:default,
     kwargs...,
-) where {S,P}
+) where {D,S,P}
     filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
-    dim(res) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
+    D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     x = string(first(keys(res.swept_parameters)))
     varied = Vector{P}(collect(first(values(res.swept_parameters))))
 

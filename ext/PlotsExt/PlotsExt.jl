@@ -10,7 +10,6 @@ using HarmonicBalance:
     _apply_mask,
     _get_mask,
     _realify,
-    dim,
     get_class,
     get_variable_solutions
 using Symbolics: Num

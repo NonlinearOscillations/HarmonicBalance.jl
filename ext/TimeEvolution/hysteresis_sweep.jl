@@ -2,8 +2,8 @@
 Calculate distance between a given state and a stable branch
 """
 function _closest_branch_index(
-    res::Result{S}, state::SteadyState(P), index::Int64
-) where {S,P}
+    res::Result{D,S}, state::SteadyState(P), index::Int64
+) where {D,S,P}
     #search only among stable solutions
     stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
 

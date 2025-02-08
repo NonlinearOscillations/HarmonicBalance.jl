@@ -77,7 +77,7 @@ function plot1D(
     if class == "default"
         args = [:x => x, :y => y, :branches => branches]
         if not_class == [] # plot stable full, unstable dashed
-            p = plot1D(res; args..., class=["physical", "stable"], add=add, kwargs...)
+            p = plot1D(res; args..., class=["physical", "stable"], add, kwargs...)
             plot1D(
                 res;
                 args...,
@@ -89,9 +89,7 @@ function plot1D(
             )
             return p
         else
-            p = plot1D(
-                res; args..., not_class=not_class, class="physical", add=add, kwargs...
-            )
+            p = plot1D(res; args..., not_class, class="physical", add, kwargs...)
             return p
         end
     end
@@ -170,9 +168,7 @@ function plot2D_cut(
 )
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot2D_cut(
-                res; y=y, cut=cut, class=["physical", "stable"], add=add, kwargs...
-            )
+            p = plot2D_cut(res; y=y, cut=cut, class=["physical", "stable"], add, kwargs...)
             plot2D_cut(
                 res;
                 y=y,
@@ -185,9 +181,7 @@ function plot2D_cut(
             )
             return p
         else
-            p = plot2D_cut(
-                res; y=y, cut=cut, not_class=not_class, class="physical", add=add, kwargs...
-            )
+            p = plot2D_cut(res; y=y, cut=cut, not_class, class="physical", add, kwargs...)
             return p
         end
     end
@@ -270,7 +264,7 @@ function HarmonicBalance.plot_phase_diagram(res::Result{D}; kwargs...)::Plots.Pl
 end
 
 function HarmonicBalance.plot_phase_diagram(res::Result, class::String; kwargs...)
-    return plot_phase_diagram(res; class=class, kwargs...)
+    return plot_phase_diagram(res; class, kwargs...)
 end
 
 function plot_phase_diagram_2D(
@@ -343,7 +337,7 @@ function HarmonicBalance.plot_spaghetti(
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
             p = HarmonicBalance.plot_spaghetti(
-                res; x=x, y=y, z=z, class=["physical", "stable"], add=add, kwargs...
+                res; x=x, y=y, z=z, class=["physical", "stable"], add, kwargs...
             )
             HarmonicBalance.plot_spaghetti(
                 res;
@@ -359,14 +353,7 @@ function HarmonicBalance.plot_spaghetti(
             return p
         else
             p = HarmonicBalance.plot_spaghetti(
-                res;
-                x=x,
-                y=y,
-                z=z,
-                class="physical",
-                not_class=not_class,
-                add=add,
-                kwargs...,
+                res; x=x, y=y, z=z, class="physical", not_class, add, kwargs...
             )
             return p
         end

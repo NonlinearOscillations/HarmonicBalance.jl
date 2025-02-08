@@ -28,11 +28,9 @@ function HarmonicBalance.plot_linear_response(
     X = collect(values(res.swept_parameters))[1][stable]
 
     C = if order == 1
-        get_jacobian_response(res, nat_var, Ω_range, branch; show_progress=show_progress)
+        get_jacobian_response(res, nat_var, Ω_range, branch; show_progress)
     else
-        get_linear_response(
-            res, nat_var, Ω_range, branch; order=order, show_progress=show_progress
-        )
+        get_linear_response(res, nat_var, Ω_range, branch; order=order, show_progress)
     end
     C = logscale ? log.(C) : C
 
@@ -124,7 +122,7 @@ function HarmonicBalance.plot_rotframe_jacobian_response(
     X = Vector{P}(collect(values(res.swept_parameters))[1][stable])
 
     C = get_rotframe_jacobian_response(
-        res, Ω_range, branch; show_progress=show_progress, damping_mod=damping_mod
+        res, Ω_range, branch; show_progress, damping_mod=damping_mod
     )
     C = logscale ? log.(C) : C
 

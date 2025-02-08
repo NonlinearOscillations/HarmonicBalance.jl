@@ -107,7 +107,7 @@ end
 function transform_solutions(res::Result, f::String; rules=Dict(), kwargs...)
     # a string is used as input
     # a macro would not "see" the user's namespace while the user's namespace does not "see" the variables
-    func = _build_substituted(f, res; rules=rules)
+    func = _build_substituted(f, res; rules)
     return transform_solutions(res, func; kwargs...)
 end
 

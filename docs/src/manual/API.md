@@ -1,6 +1,6 @@
 # [API](@id doc-API)
 
-**Table of contents**
+## Table of contents
 
 [[toc]] <!-- the level setting is in ".vitepress/config.mts" -->
 
@@ -49,6 +49,9 @@ Polyhedral
 ### Access solutions
 
 ```@docs
+get_solutions
+attractors
+phase_diagram
 get_single_solution
 transform_solutions
 ```

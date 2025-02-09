@@ -70,14 +70,18 @@ export WarmUp
 export TotalDegree
 export Polyhedral
 
-# output
+# Result
+export swept_parameter, swept_parameters
+export get_solutions
 export attractors
+export phase_diagram
 
 # Limit cycles
 export get_cycle_variables, get_limit_cycles, add_pairs!
 
 # LinearResponse
 export get_Jacobian
+export eigenvalues, eigenvectors
 
 # plotting
 export plot_linear_response

@@ -5,7 +5,7 @@ using DocStringExtensions
 using ProgressMeter: ProgressMeter, Progress, next!
 
 using Symbolics: Symbolics, Num, unwrap
-using LinearAlgebra: norm, eigen
+using LinearAlgebra: norm, eigen, eigvals, eigvecs
 
 using HarmonicBalance
 using HarmonicBalance:
@@ -15,7 +15,8 @@ using HarmonicBalance:
     StateDict,
     get_variables,
     get_independent_variables,
-    get_variable_solutions
+    get_variable_solutions,
+    _get_mask
 
 using HarmonicBalance:
     var_name,
@@ -36,6 +37,6 @@ include("response.jl")
 include("plotting.jl")
 
 export get_Jacobian,
-    show, get_jacobian_response, get_linear_response, get_rotframe_jacobian_response
+    show, get_jacobian_response, get_linear_response, get_rotframe_jacobian_response, eigenvalues, eigenvectors
 
 end

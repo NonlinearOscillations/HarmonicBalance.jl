@@ -5,42 +5,57 @@ In contrast to the previous tutorials, limit cycle problems feature harmonic(s) 
 ## Non-driven system - the van der Pol oscillator
 
 Here we solve the equation of motion of the [van der Pol oscillator](https://en.wikipedia.org/wiki/Van_der_Pol_oscillator). This is a single-variable second-order ODE with continuous time-translation symmetry (i.e., no 'clock' imposing a frequency and/or phase), which displays periodic solutions known as _relaxation oscillations_. For more detail, refer also to [arXiv:2308.06092](https://arxiv.org/abs/2308.06092).
+
 ```@example lc
 using HarmonicBalance, Plots
 @variables ω_lc, t, ω0, x(t), μ
 diff_eq = DifferentialEquation(d(d(x,t),t) - μ*(1-x^2) * d(x,t) + x, x)
 ```
+
 Choosing to expand the motion of ``x(t)`` using ``ω_{lc}``, ``3ω_{lc}`` and ``5ω_{lc}``, we define
+
 ```@example lc
 foreach(1:2:5) do i
   add_harmonic!(diff_eq, x, i*ω_lc)
 end;
 ```
+
 and obtain 6 harmonic equations,
+
 ```@example lc
 harmonic_eq = get_harmonic_equations(diff_eq)
 ```
+
 So far, ``ω_{lc}`` appears as any other harmonic. However, it is not fixed by any external drive or 'clock', instead, it emerges out of a Hopf instability in the system. We can verify that fixing `ω_lc` and calling `get_steady_states`.
+
 ```julia
 get_steady_states(harmonic_eq, μ => 1:0.1:5, ω_lc => 1.2)
 ```
+
 gives a single solution with zero amplitude.
 
 Taking instead ``ω_{lc}`` as a variable to be solved for [results in a phase freedom](@ref limit_cycles_bg), implying an infinite number of solutions. To perform the [gauge-fixing procedure](@ref gauge_fixing), we call `get_limit_cycles`, marking the limit cycle harmonic as a keyword argument,
+
 ```@example lc
 result = get_limit_cycles(harmonic_eq, μ => 1:0.1:5, (), ω_lc)
 ```
+
 The results show a fourfold [degeneracy of solutions](@ref limit_cycles_bg):
+
 ```@example lc
 plot(result, y="ω_lc")
 ```
+
  The automatically created solution class `unique_cycle` filters the degeneracy out:
+
 ```@example lc
 plot(result, y="ω_lc", class="unique_cycle")
 ```
 
 ## Driven system - coupled Duffings
+
 So far, we have largely focused on finding and analysing steady states, i.e., fixed points of the harmonic equations, which satisfy
+
 ```math
 \begin{equation}
 \frac{d\mathbf{u}(T)}{dT}  = \bar{\mathbf{F}} (\mathbf{u}) = 0\,.
@@ -59,6 +74,7 @@ Here we reconstruct the results of [Zambon et al., Phys Rev. A 102, 023526 (2020
 \ddot{x}_2+ \gamma \dot{x}_2 + \omega_0^2 x_2 + \alpha x_2^3 + 2J(x_2-x_1) &= \eta F_0 \cos(\omega t)
 \end{align}
 ```
+
 ```@example lc
 using HarmonicBalance
 @variables γ F α ω0 F0 η ω J t x(t) y(t);
@@ -68,13 +84,16 @@ diff_eq = DifferentialEquation(eqs, [x,y])
 ```
 
 The analysis of Zambon et al. uses a frame rotating at the pump frequency $\omega$ to describe both oscillators. For us, this means we expand both modes using $\omega$ to obtain the harmonic equations.
+
 ```@example lc
 add_harmonic!(diff_eq, x, ω)
 add_harmonic!(diff_eq, y, ω)
 
 harmonic_eq = get_harmonic_equations(diff_eq)
 ```
+
 Solving for a range of drive amplitudes $F_0$,
+
 ```@example lc
 fixed = (
     ω0 => 1.4504859, # natural frequency of separate modes (in paper's notation, ħω0 - J)
@@ -90,6 +109,7 @@ result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 
 Let us first see the steady states.
+
 ```@example lc
 p1 = plot(result, "u1^2 + v1^2", legend=false)
 p2 = plot(result, "u2^2 + v2^2")
@@ -99,6 +119,7 @@ plot(p1, p2)
 According to Zambon et al., a limit cycle solution exists around $F_0 \cong 0.011$, which can be accessed by a jump from branch 1 in an upwards sweep of $F_0$. Since a limit cycle is not a steady state of our harmonic equations, it does not appear in the diagram. We do however see that branch 1 ceases to be stable around $F_0 \cong 0.010$, meaning a jump should occur.
 
 Let us try and simulate the limit cycle. We could in principle run a time-dependent simulation with a fixed value of $F_0$, but this would require a suitable initial condition. Instead, we will sweep $F_0$ upwards from a low starting value. To observe the dynamics just after the jump has occurred, we follow the sweep by a time interval where the system evolves under fixed parameters.
+
 ```@example lc
 using OrdinaryDiffEqTsit5
 initial_state = result[1][1]
@@ -111,7 +132,9 @@ time_problem = ODEProblem(harmonic_eq, initial_state, sweep=sweep, timespan=(0,2
 time_evo = solve(time_problem, Tsit5(), saveat=100);
 nothing # hide
 ```
+
 Inspecting the amplitude as a function of time,
+
 ```@example lc
 plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 ```
@@ -119,9 +142,9 @@ plot(time_evo, "sqrt(u1^2 + v1^2)", harmonic_eq)
 we see that initially the sweep is adiabatic as it proceeds along the steady-state branch 1. At around $T = 2e6$, an instability occurs and $u_1(T)$ starts to rapidly oscillate. At that point, the sweep is stopped. Under free time evolution, the system then settles into a limit-cycle solution where the coordinates move along closed trajectories.
 
 By plotting the $u$ and $v$ variables against each other, we observe the limit cycle shapes in phase space,
+
 ```@example lc
 p1 = plot(time_evo, ["u1", "v1"], harmonic_eq)
 p2 = plot(time_evo, ["u2", "v2"], harmonic_eq)
 plot(p1, p2)
 ```
-

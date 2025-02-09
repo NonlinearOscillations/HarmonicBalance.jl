@@ -42,10 +42,10 @@ result = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
 
 @testset "first order" begin
     plot_linear_response(
-        result, x; branch=1, Ω_range=range(0.9, 1.1, 10), order=1, logscale=true
+        result, x, 1; Ω_range=range(0.9, 1.1, 10), order=1, logscale=true
     )
     plot_rotframe_jacobian_response(
-        result; Ω_range=range(0.01, 1.1, 10), branch=1, logscale=true
+        result, 1; Ω_range=range(0.01, 1.1, 10), logscale=true
     )
 end
 
@@ -55,13 +55,13 @@ end
     @test M[1](ones(4)) isa ComplexF64
 
     plot_linear_response(
-        result, x; branch=1, Ω_range=range(0.9, 1.1, 10), order=2, logscale=true
+        result, x, 1; Ω_range=range(0.9, 1.1, 10), order=2, logscale=true
     )
 end
 
 @testset "eigenvalues" begin
-    plot_eigenvalues(result; branch=1)
-    plot_eigenvalues(result; branch=1, type=:re, class="all")
+    plot_eigenvalues(result, 1)
+    plot_eigenvalues(result, 1; type=:re, class="all")
 
     @testset "NaN Exception Error" begin
         @variables α λ ω0 ω ωₚ γ F t x(t)

@@ -41,12 +41,8 @@ varied = ω => range(0.9, 1.1, 10)
 result = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
 
 @testset "first order" begin
-    plot_linear_response(
-        result, x, 1; Ω_range=range(0.9, 1.1, 10), order=1, logscale=true
-    )
-    plot_rotframe_jacobian_response(
-        result, 1; Ω_range=range(0.01, 1.1, 10), logscale=true
-    )
+    plot_linear_response(result, x, 1; Ω_range=range(0.9, 1.1, 10), order=1, logscale=true)
+    plot_rotframe_jacobian_response(result, 1; Ω_range=range(0.01, 1.1, 10), logscale=true)
 end
 
 @testset "second order" begin
@@ -54,9 +50,7 @@ end
     M = response_matrix.matrix
     @test M[1](ones(4)) isa ComplexF64
 
-    plot_linear_response(
-        result, x, 1; Ω_range=range(0.9, 1.1, 10), order=2, logscale=true
-    )
+    plot_linear_response(result, x, 1; Ω_range=range(0.9, 1.1, 10), order=2, logscale=true)
 end
 
 @testset "eigenvalues" begin

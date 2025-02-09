@@ -90,7 +90,7 @@ function HarmonicBalance.plot_1D_solutions_branch(
     y::String,
     sweep="right",
     tf=10000,
-     ϵ=1e-4,
+    ϵ=1e-4,
     class="default",
     not_class=[],
     kwargs...,

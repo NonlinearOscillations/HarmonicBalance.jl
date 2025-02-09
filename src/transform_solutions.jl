@@ -225,10 +225,7 @@ function get_solutions(
 end
 
 function get_solutions(
-    res::Result;
-    branches=1:branch_count(res),
-    class=["physical", "stable"],
-    not_class=[],
+    res::Result; branches=1:branch_count(res), class=["physical", "stable"], not_class=[]
 )
     Y = _apply_mask(res.solutions, _get_mask(res, class, not_class; branches))
     return Y

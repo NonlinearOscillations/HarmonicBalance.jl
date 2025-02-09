@@ -35,10 +35,10 @@ const _set_Plots_default = Dict{Symbol,Any}([
     :legend_position => :outerright,
 ])
 
-function get_labels(res::Result{D}) where D
+function get_labels(res::Result{D}) where {D}
     if D == 1
         return latexify(string(first(keys(res.swept_parameters))))
-    elseif D ==2
+    elseif D == 2
         return latexify.(string.(keys(res.swept_parameters)))
     else
         error("Getting the labels is only supported for 1D and 2D results.")

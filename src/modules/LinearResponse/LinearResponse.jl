@@ -37,6 +37,11 @@ include("response.jl")
 include("plotting.jl")
 
 export get_Jacobian,
-    show, get_jacobian_response, get_linear_response, get_rotframe_jacobian_response, eigenvalues, eigenvectors
+    show,
+    get_jacobian_response,
+    get_linear_response,
+    get_rotframe_jacobian_response,
+    eigenvalues,
+    eigenvectors
 
 end

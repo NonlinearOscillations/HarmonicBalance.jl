@@ -41,7 +41,7 @@ The compute the eigenvalues of a specific branch, we can use the corresponding f
 eigvalues= eigenvalues(result, 1)
 ```
 
-Using the [PlotsExt.jl](@ref plotting) extention, one can quicly compute and plot the eigenvalues as follows
+Using the [PlotsExt.jl](@ref plotting) extention, one can quickly compute and plot the eigenvalues as follows
 
 ```@example linresp
 plot(

@@ -194,7 +194,7 @@ function plot2D_cut(
     X = swept_parameter(res, cut_par)
     Y = get_solutions(res, y; realify=true, class, not_class) # first transform, then filter
 
-    x_index = findfirst(sym -> string(sym) == string(cut_par),  res.swept_parameters.keys)
+    x_index = findfirst(sym -> string(sym) == string(cut_par), res.swept_parameters.keys)
     branches = x_index == 1 ? Y[:, cut_par_index] : Y[cut_par_index, :]
 
     branch_data = [

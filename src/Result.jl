@@ -123,7 +123,7 @@ end
     attractors(res::Result{D}; class="stable", not_class=[]) where D
 
 Extract attractors from a [`Result`](@ref) object. Returns an array of dictionaries, where
-each dictionary maps branch identifer to the attractor. The attractors are filtered by their
+each dictionary maps branch identifier to the attractor. The attractors are filtered by their
 corresponding class.
 
 # Keyword arguments
@@ -149,7 +149,7 @@ end
 function is_variable(res::Result, x::String)
     vars = res.problem.variables
     x_index = findfirst(sym -> string(sym) == x, vars)
-    isnothing(x_index) && error("The variable $x is not a defined variable.")
+    return isnothing(x_index) && error("The variable $x is not a defined variable.")
 end
 
 function is_swept_parameter(res::Result, z::String)

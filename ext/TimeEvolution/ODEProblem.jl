@@ -68,9 +68,13 @@ Return `true` the solution evolves within `tol` of the initial value (interprete
 
 """
 function HarmonicBalance.is_stable(
-    soln::StateDict, eom::HarmonicEquation; timespan, tol=1e-1, perturb_initial=1e-3
+    steady_solution::StateDict,
+    eom::HarmonicEquation;
+    timespan,
+    tol=1e-1,
+    perturb_initial=1e-3,
 )
-    problem = ODEProblem(eom; steady_solution=soln, timespan=timespan)
+    problem = ODEProblem(eom; steady_solution, timespan)
     solution = solve(problem)
     dist = norm(solution[end] - solution[1]) / (norm(solution[end]) + norm(solution[1]))
     return if !is_real(solution[end]) || !is_real(solution[1])

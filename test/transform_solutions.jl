@@ -29,3 +29,5 @@ transform_solutions(res, "√(u1^2+v1^2)"; realify=true)
     @test all(to_lab_frame(res, z, times; index=1, branch=1) .≈ zeros(length(times)))
     @test to_lab_frame(res, d(x, t), times; index=1, branch=1) != zeros(length(times))
 end
+
+using HarmonicBalance

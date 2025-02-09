@@ -41,7 +41,7 @@ function _gaugefixed_Jacobian(
 )
     rules = Dict(rules)
     setindex!(rules, 0, _remove_brackets(fixed_var))
-    jac = get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
+    jac = get_implicit_Jacobian(eom; rules, sym_order=sym_order)
     return JacobianFunction(soltype)(jac)
 end
 

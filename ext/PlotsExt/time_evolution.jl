@@ -71,7 +71,7 @@ function HarmonicBalance.plot_1D_solutions_branch(
     not_class=[],
     kwargs...,
 )
-    p = plot(res; x=x, y=y, class=class, not_class=not_class, kwargs...)
+    p = plot(res; x=x, y=y, class, not_class, kwargs...)
 
     followed_branch, Ys = HarmonicBalance.follow_branch(
         starting_branch, res; y=y, sweep=sweep, tf=tf, ϵ=ϵ

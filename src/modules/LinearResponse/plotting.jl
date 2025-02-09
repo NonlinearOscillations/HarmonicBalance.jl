@@ -4,7 +4,7 @@ $(TYPEDSIGNATURES)
 Calculate the Jacobian response spectrum for a given system. Computes the magnitude of the Jacobian response for stable solutions across specified frequency ranges.
 
 # Arguments
-- `res::Result{S,P}`: Result object containing the system's solutions
+- `res::Result`: Result object containing the system's solutions
 - `nat_var::Num`: Natural variable to evaluate in the response
 - `Ω_range`: Range of frequencies to evaluate
 - `branch::Int` or `followed_branches::Vector{Int}`: Branch number(s) to analyze
@@ -15,8 +15,8 @@ Calculate the Jacobian response spectrum for a given system. Computes the magnit
 - Array{P,2}: Complex response matrix where rows correspond to frequencies and columns to solutions
 """
 function get_jacobian_response(
-    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
-) where {S,P}
+    res::Result{D,S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
+) where {D,S,P}
     stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
@@ -39,13 +39,13 @@ function get_jacobian_response(
     return C
 end
 function get_jacobian_response(
-    res::Result{S,P},
+    res::Result{D,S,P},
     nat_var::Num,
     Ω_range,
     followed_branches::Vector{Int};
     show_progress=true,
     force=false,
-) where {S,P}
+) where {D,S,P}
     spectra = [
         JacobianSpectrum(res; branch=branch, index=i, force=force) for
         (i, branch) in pairs(followed_branches)
@@ -75,7 +75,7 @@ Calculate the linear response of the system for a given branch. Evaluates the li
 and input frequency in the given range.
 
 # Arguments
-- `res::Result{S,P}`: Result object containing the system's solutions
+- `res`: Result object containing the system's solutions
 - `nat_var::Num`: Natural variable to evaluate in the response
 - `Ω_range`: Range of frequencies to evaluate
 - `branch::Int`: Branch number to analyze
@@ -86,8 +86,8 @@ and input frequency in the given range.
 - Array{P,2}: Response matrix where rows correspond to frequencies and columns to stable solutions
 """
 function get_linear_response(
-    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
-) where {S,P}
+    res::Result{D,S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
+) where {D,S,P}
     stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
@@ -122,7 +122,7 @@ Calculate the rotating frame Jacobian response for a given branch. Computes the 
 Jacobian and calculating the response magnitude for each frequency in the range.
 
 # Arguments
-- `res::Result{S,P}`: Result object containing the system's solutions
+- `res::Result`: Result object containing the system's solutions
 - `Ω_range`: Range of frequencies to evaluate
 - `branch::Int`: Branch number to analyze
 - `show_progress=true`: Whether to show a progress bar
@@ -133,8 +133,8 @@ Jacobian and calculating the response magnitude for each frequency in the range.
 
 """
 function get_rotframe_jacobian_response(
-    res::Result{S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
-) where {S,P}
+    res::Result{D,S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
+) where {D,S,P}
     stable = get_class(res, branch, "stable")
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
     stableidx = findall(stable)

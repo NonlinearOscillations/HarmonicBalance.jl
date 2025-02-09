@@ -128,7 +128,7 @@ Creates and ModelingToolkit.NonlinearProblem from a DifferentialEquation.
 function ModelingToolkit.NonlinearProblem(
     eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
 )
-    ss_prob = SteadyStateProblem(eom, u0, p::AbstractDict; in_place=in_place, kwargs...)
+    ss_prob = SteadyStateProblem(eom, u0, p::AbstractDict; in_place, kwargs...)
     return NonlinearProblem(ss_prob)
 end
 

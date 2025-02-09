@@ -22,7 +22,7 @@ the amplitude of the first quadratures multiplied by 2.
 
 Default behaviour is to plot stable solutions as full lines, unstable as dashed.
 
-If a sweep in two parameters were done, i.e., `dim(res)==2`, a one dimensional cut can be
+If a sweep in two parameters were done, i.e., `dimension(res)==2`, a one dimensional cut can be
 plotted by using the keyword `cut` were it takes a `Pair{Num, Float}` type entry. For example,
 `plot(res, y="sqrt(u1^2+v1^2), cut=(λ => 0.2))` plots a cut at `λ = 0.2`.
 ###
@@ -35,8 +35,8 @@ To make the 2d plot less chaotic it is required to specify the specific `branch`
 The x and y axes are taken automatically from `res`
 """
 function Plots.plot(
-    res::Result{S,P,D}, varargs...; cut=Pair(missing, missing), kwargs...
-)::Plots.Plot where {S,P,D}
+    res::Result{D,S,P}, varargs...; cut=Pair(missing, missing), kwargs...
+)::Plots.Plot where {D,S,P}
     if D == 1
         plot1D(res, varargs...; _set_Plots_default..., kwargs...)
     elseif D == 2
@@ -65,7 +65,7 @@ function _is_labeled(p::Plots.Plot, idx::Int64)
 end
 
 function plot1D(
-    res::Result;
+    res::Result{D};
     x::String="default",
     y::String,
     class="default",
@@ -73,11 +73,11 @@ function plot1D(
     branches=1:branch_count(res),
     add=false,
     kwargs...,
-)::Plots.Plot
+)::Plots.Plot where {D}
     if class == "default"
         args = [:x => x, :y => y, :branches => branches]
         if not_class == [] # plot stable full, unstable dashed
-            p = plot1D(res; args..., class=["physical", "stable"], add=add, kwargs...)
+            p = plot1D(res; args..., class=["physical", "stable"], add, kwargs...)
             plot1D(
                 res;
                 args...,
@@ -89,15 +89,12 @@ function plot1D(
             )
             return p
         else
-            p = plot1D(
-                res; args..., not_class=not_class, class="physical", add=add, kwargs...
-            )
+            p = plot1D(res; args..., not_class, class="physical", add, kwargs...)
             return p
         end
     end
 
-    dim(res) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
+    D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     x = x == "default" ? string(first(keys(res.swept_parameters))) : x
     X = transform_solutions(res, x; branches=branches)
     Y = transform_solutions(res, y; branches=branches, realify=true)
@@ -171,9 +168,7 @@ function plot2D_cut(
 )
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot2D_cut(
-                res; y=y, cut=cut, class=["physical", "stable"], add=add, kwargs...
-            )
+            p = plot2D_cut(res; y=y, cut=cut, class=["physical", "stable"], add, kwargs...)
             plot2D_cut(
                 res;
                 y=y,
@@ -186,9 +181,7 @@ function plot2D_cut(
             )
             return p
         else
-            p = plot2D_cut(
-                res; y=y, cut=cut, not_class=not_class, class="physical", add=add, kwargs...
-            )
+            p = plot2D_cut(res; y=y, cut=cut, not_class, class="physical", add, kwargs...)
             return p
         end
     end
@@ -260,25 +253,25 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 
 Other kwargs are passed onto Plots.gr()
 """
-function HarmonicBalance.plot_phase_diagram(res::Result; kwargs...)::Plots.Plot
-    if dim(res) == 1
+function HarmonicBalance.plot_phase_diagram(res::Result{D}; kwargs...)::Plots.Plot where {D}
+    if D == 1
         plot_phase_diagram_1D(res; _set_Plots_default..., kwargs...)
-    elseif dim(res) == 2
+    elseif D == 2
         plot_phase_diagram_2D(res; _set_Plots_default..., kwargs...)
     else
-        error("Data dimension ", dim(res), " not supported")
+        error("Data dimension ", D, " not supported")
     end
 end
 
 function HarmonicBalance.plot_phase_diagram(res::Result, class::String; kwargs...)
-    return plot_phase_diagram(res; class=class, kwargs...)
+    return plot_phase_diagram(res; class, kwargs...)
 end
 
 function plot_phase_diagram_2D(
     res::Result; class="physical", not_class=[], kwargs...
 )::Plots.Plot
-    X, Y = values(res.swept_parameters)
-    Z = sum.(_get_mask(res, class, not_class))
+    X, Y = swept_parameters(res)
+    Z = phase_diagram(res; class, not_class)
 
     xlab, ylab = latexify.(string.(keys(res.swept_parameters)))
 
@@ -297,10 +290,10 @@ end
 function plot_phase_diagram_1D(
     res::Result; class="physical", not_class=[], kwargs...
 )::Plots.Plot
-    X = first(values(res.swept_parameters))
-    Y = sum.(_get_mask(res, class, not_class))
+    X = swept_parameters(res)
+    Y = phase_diagram(res; class, not_class)
     return plot(
-        real.(X),
+        X,
         Y;
         xlabel=latexify(string(keys(res.swept_parameters)...)),
         ylabel="#",
@@ -328,7 +321,7 @@ Class selection done by passing `String` or `Vector{String}` as kwarg:
 Other kwargs are passed onto Plots.gr()
 """
 function HarmonicBalance.plot_spaghetti(
-    res::Result;
+    res::Result{D};
     x::String,
     y::String,
     z::String,
@@ -336,15 +329,15 @@ function HarmonicBalance.plot_spaghetti(
     not_class=[],
     add=false,
     kwargs...,
-)::Plots.Plot
-    if dim(res) == 2
-        error("Data dimension ", dim(res), " not supported")
+)::Plots.Plot where {D}
+    if D == 2
+        error("Data dimension ", D, " not supported")
     end
 
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
             p = HarmonicBalance.plot_spaghetti(
-                res; x=x, y=y, z=z, class=["physical", "stable"], add=add, kwargs...
+                res; x=x, y=y, z=z, class=["physical", "stable"], add, kwargs...
             )
             HarmonicBalance.plot_spaghetti(
                 res;
@@ -360,14 +353,7 @@ function HarmonicBalance.plot_spaghetti(
             return p
         else
             p = HarmonicBalance.plot_spaghetti(
-                res;
-                x=x,
-                y=y,
-                z=z,
-                class="physical",
-                not_class=not_class,
-                add=add,
-                kwargs...,
+                res; x=x, y=y, z=z, class="physical", not_class, add, kwargs...
             )
             return p
         end

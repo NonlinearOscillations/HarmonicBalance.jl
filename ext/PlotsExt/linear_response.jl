@@ -28,11 +28,9 @@ function HarmonicBalance.plot_linear_response(
     X = collect(values(res.swept_parameters))[1][stable]
 
     C = if order == 1
-        get_jacobian_response(res, nat_var, Ω_range, branch; show_progress=show_progress)
+        get_jacobian_response(res, nat_var, Ω_range, branch; show_progress)
     else
-        get_linear_response(
-            res, nat_var, Ω_range, branch; order=order, show_progress=show_progress
-        )
+        get_linear_response(res, nat_var, Ω_range, branch; order=order, show_progress)
     end
     C = logscale ? log.(C) : C
 
@@ -105,14 +103,14 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function HarmonicBalance.plot_rotframe_jacobian_response(
-    res::Result{S,P};
+    res::Result{D,S,P};
     Ω_range,
     branch::Int,
     logscale=true,
     damping_mod=one(P),
     show_progress=true,
     kwargs...,
-) where {S,P}
+) where {D,S,P}
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = get_class(res, branch, "stable") # boolean array
@@ -124,7 +122,7 @@ function HarmonicBalance.plot_rotframe_jacobian_response(
     X = Vector{P}(collect(values(res.swept_parameters))[1][stable])
 
     C = get_rotframe_jacobian_response(
-        res, Ω_range, branch; show_progress=show_progress, damping_mod=damping_mod
+        res, Ω_range, branch; show_progress, damping_mod=damping_mod
     )
     C = logscale ? log.(C) : C
 
@@ -150,19 +148,18 @@ Any kwargs are fed to Plots' gr().
 Solutions not belonging to the `physical` class are ignored.
 """
 function HarmonicBalance.plot_eigenvalues(
-    res::Result{S,P};
+    res::Result{D,S,P};
     branch,
     class=["physical"],
     type=:imag,
     projection=v -> 1,
     cscheme=:default,
     kwargs...,
-) where {S,P}
+) where {D,S,P}
     filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
-    dim(res) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
+    D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     x = string(first(keys(res.swept_parameters)))
     varied = Vector{P}(collect(first(values(res.swept_parameters))))
 

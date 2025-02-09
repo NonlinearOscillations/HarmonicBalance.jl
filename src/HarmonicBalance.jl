@@ -70,6 +70,9 @@ export WarmUp
 export TotalDegree
 export Polyhedral
 
+# output
+export attractors
+
 # Limit cycles
 export get_cycle_variables, get_limit_cycles, add_pairs!
 
@@ -108,7 +111,6 @@ include("classification.jl")
 
 include("saving.jl")
 include("transform_solutions.jl")
-include("plotting_Plots.jl")
 
 include("modules/HC_wrapper.jl")
 using .HC_wrapper

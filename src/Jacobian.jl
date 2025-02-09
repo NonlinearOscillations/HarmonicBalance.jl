@@ -20,24 +20,6 @@ function _compile_Jacobian(
     return JacobianFunction(soltype)(compiled_J)
 end
 
-# function _compile_Jacobian(
-#     prob::Problem,
-#     soltype::DataType,
-#     swept_parameters::OrderedDict,
-#     fixed_parameters::OrderedDict,
-# )::JacobianFunction(soltype)
-#     if "Hopf" ∈ getfield.(prob.eom.variables, :type)
-#         compiled_J = prob.jacobian
-#     elseif !hasnan(prob.jacobian)
-#         compiled_J = compile_matrix(
-#             prob.jacobian, _free_symbols(prob); rules=prob.fixed_parameters
-#         )
-#     else
-#         compiled_J = get_implicit_Jacobian(prob)
-#     end
-#     return JacobianFunction(soltype)(compiled_J)
-# end
-
 """
 Take a matrix containing symbolic variables `variables` and keys of `fixed_parameters`.
 Substitute the values according to `fixed_parameters` and compile into a function that takes
@@ -132,8 +114,8 @@ avoiding huge symbolic operations.
 Returns a function `f(soln::OrderedDict{Num,T})::Matrix{T}`.
 """
 function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
-    J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules=rules)
-    J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules=rules)
+    J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules)
+    J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules)
     jacfunc(vals::Vector) = -inv(real.(J1c(vals))) * J0c(vals)
     return jacfunc
 end

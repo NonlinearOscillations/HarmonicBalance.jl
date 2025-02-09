@@ -10,9 +10,10 @@ using HarmonicBalance:
     _apply_mask,
     _get_mask,
     _realify,
-    dim,
     get_class,
-    get_variable_solutions
+    get_variable_solutions,
+    phase_diagram,
+    swept_parameters
 using Symbolics: Num
 using LinearAlgebra: LinearAlgebra, eigvals, eigvecs
 

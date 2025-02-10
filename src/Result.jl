@@ -89,19 +89,74 @@ get_branch(r::Result, idx) = getindex.(r.solutions, idx)
 
 dimension(res::Result) = length(size(res.solutions)) # give solution dimensionality
 
+"""
+    phase_diagram(res::Result{D}; class="physical", not_class=[]) where {D}
+
+Calculate the phase diagram from a `Result` object by summing over the number of
+states at each swept parameters.
+
+# Keyword arguments
+Class selection done by passing `String` or `Vector{String}` as kwarg:
+
+    class::String       :   only count solutions in this class ("all" --> plot everything)
+    not_class::String   :   do not count solutions in this class
+
+# Returns
+- Array{Int64,D}: Sum of states after applying the specified class masks
+"""
 function phase_diagram(res::Result; class="physical", not_class=[])
     return Z = sum.(_get_mask(res, class, not_class))
 end
 
-function swept_parameters(res::Result)
-    return X = collect(values(res.swept_parameters))
+function swept_parameters(res::Result{D}) where {D}
+    X = collect(values(res.swept_parameters))
+    return D == 1 ? X[1] : X
 end
 
+swept_parameter(res::Result, x::Num) = res.swept_parameters[x]
+function swept_parameter(res::Result, x::String)
+    is_swept_parameter(res, x)
+    return res.swept_parameters[HarmonicBalance._parse_expression(x)]
+end
+
+"""
+    attractors(res::Result{D}; class="stable", not_class=[]) where D
+
+Extract attractors from a [`Result`](@ref) object. Returns an array of dictionaries, where
+each dictionary maps branch identifier to the attractor. The attractors are filtered by their
+corresponding class.
+
+# Keyword arguments
+Class selection done by passing `String` or `Vector{String}` as kwarg:
+
+    class::String       :   only count solutions in this class ("all" --> plot everything)
+    not_class::String   :   do not count solutions in this class
+
+
+# Returns
+`Array{Dict,D}`: Vector of dictionaries mapping branch indices to points satisfying
+  the stability criteria at each parameter value
+"""
 function attractors(res::Result{D}; class="stable", not_class=[]) where {D}
     branches = 1:branch_count(res)
     Y = _get_mask(res, class, not_class)
 
     return map(enumerate(Y)) do (idx, bools)
         Dict(i => get_branch(res, i)[idx] for (i, bool) in pairs(bools) if bool)
-    end #map
+    end # map
 end
+
+function is_variable(res::Result, x::String)
+    vars = res.problem.variables
+    x_index = findfirst(sym -> string(sym) == x, vars)
+    return isnothing(x_index) && error("The variable $x is not a defined variable.")
+end
+
+function is_swept_parameter(res::Result, z::String)
+    # compare strings because type Num cannot be compared
+    swept_pars = res.swept_parameters.keys
+    z_index = findfirst(sym -> string(sym) == z, swept_pars)
+    isnothing(z_index) && error("The variable $z was not swept over.")
+    return true
+end
+is_swept_parameter(res::Result, z::Num) = is_swept_parameter(res::Result, string(z))

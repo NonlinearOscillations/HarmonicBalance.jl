@@ -1,87 +1,128 @@
 # [Finding the staedy states of a Duffing oscillator](@id Duffing)
 
 Here we show the workflow of HarmonicBalance.jl on a simple example - the driven Duffing oscillator. The equation of motion for the displacement $x(t)$ reads
+
 ```math
 \begin{equation}
 \underbrace{\ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t)}_{\text{damped harmonic oscillator}} + \underbrace{\alpha x(t)^3}_{\text{Duffing coefficient}} = \underbrace{F \cos(\omega t)}_{\text{periodic drive}}
 \end{equation}
 ```
+
 In general, there is no analytical solution to the differential equation. Fortunately, some harmonics are more important than others. By truncating the infinite-dimensional Fourier space to a set of judiciously chosen harmonics, we may obtain a soluble system. For the Duffing resonator, we can well try to only consider the drive frequency ``\omega``. To implement this, we use the *harmonic ansatz*
+
 ```math
 x(t) = U \cos(\omega t) + V \sin(\omega t) \,,
 ```
+
 which constraints the spectrum of ``x(t)`` to a single harmonic. Fixing the quadratures ``U`` and ``V`` to be constant then reduces the differential equation to two coupled cubic polynomial equations (for more details on this step, see the appendices in the [white paper](https://scipost.org/SciPostPhysCodeb.6)). Finding the roots of coupled polynomials is in general very hard. We here apply the method of homotopy continuation, as implemented in [HomotopyContinuation.jl](https://www.juliahomotopycontinuation.org/) which is guaranteed to find the complete set of roots.
 
 First we need to declare the symbolic variables (the excellent [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) is used here).
+
 ```@example steady_state
-using HarmonicBalance, Plots
+using HarmonicBalance
 @variables α ω ω0 F γ t x(t) # declare constant variables and a function x(t)
 ```
+
 Next, we have to input the equations of motion. This will be stored as a `DifferentialEquation`. The input needs to specify that only `x` is a mathematical variable, the other symbols are parameters:
+
 ```@example steady_state
 diff_eq = DifferentialEquation(d(x,t,2) + ω0^2*x + α*x^3 + γ*d(x,t) ~ F*cos(ω*t), x)
 ```
 
 ## One harmonic
+
 The harmonic ansatz needs to be specified now -- we expand `x` in a single frequency ``\omega``.
+
 ```@example steady_state
 add_harmonic!(diff_eq, x, ω) # specify the ansatz x = u(T) cos(ωt) + v(T) sin(ωt)
 ```
-The object `diff_eq` now contains all the necessary information to convert the differential equation to the algebraic *harmonic equations* (coupled polynomials in ``U`` and ``V``). 
+
+The object `diff_eq` now contains all the necessary information to convert the differential equation to the algebraic *harmonic equations* (coupled polynomials in ``U`` and ``V``).
+
 ```@example steady_state
 harmonic_eq = get_harmonic_equations(diff_eq)
 ```
-The variables `u1` and `v1` were declared automatically to construct the harmonic ansatz. The *slow time* variable `T` describes variation of the quadratures on timescales much slower than `ω`. For a steady state, all derivatives w.r.t `T` vanish, leaving only algebraic equations to be solved. 
+
+The variables `u1` and `v1` were declared automatically to construct the harmonic ansatz. The *slow time* variable `T` describes variation of the quadratures on timescales much slower than `ω`. For a steady state, all derivatives w.r.t `T` vanish, leaving only algebraic equations to be solved.
 
 We are ready to start plugging in numbers! Let us find steady states by solving `harmonic_eq` for numerical parameters. Homotopy continuation is especially suited to [solving over a range of parameter values](https://www.juliahomotopycontinuation.org/guides/parameter-homotopies/). Here we will solve over a range of driving frequencies `ω` -- these are stored as `Pairs{Sym, Vector{Float}}`:
+
 ```@example steady_state
 varied = ω => range(0.9, 1.2, 100); # range of parameter values
 ```
+
 The other parameters we be fixed -- these are declared as `Pairs{Sym, Float}` pairs:
+
 ```@example steady_state
 fixed = (α => 1., ω0 => 1.0, F => 0.01, γ => 0.01); # fixed parameters
 ```
+
 Now everything is ready to crank the handle. `get_steady_states` solves our `harmonic_eq` using the varied and fixed parameters:
+
 ```@example steady_state
 result = get_steady_states(harmonic_eq, varied, fixed)
 ```
+
 The algorithm has found 3 solution branches in total (out of the [hypothetically admissible](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem) ``3^{2} = 9``). All of these are real -- and therefore physically observable -- for at least some values of ``\omega``. Only 2 branches are stable under infinitesimal perturbations. The "Classes" are boolean labels classifying each solution point, which may be used to select results for plotting.
 
-We now want to visualize the results. Here we plot the solution amplitude, ``\sqrt{U^2 + V^2}`` against the drive frequency ``\omega``: 
+To visualize the results, we can use the `Plots.jl` extension of HarmonicBalance. In short, the [PlotsExt.jl](@ref plotting) code module gets loaded up conditions that Plots.jl is loaded. To know more about package extensions, you can visit the [julia documentation](https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions)).
+
+Here we plot the solution amplitude, ``\sqrt{U^2 + V^2}`` against the drive frequency ``\omega``:
+
 ```@example steady_state
+using Plots
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
+
 This is the expected [response curve](https://en.wikipedia.org/wiki/Duffing_equation#Frequency_response) for the Duffing equation.
 
+If you want to use another plotting package then `Plots.jl`, you can extract the desired the data from the `result` object and use it in your preferred plotting package.
+
+```@example steady_state
+Y = get_solutions(result, "sqrt(u1^2 + v1^2)")
+```
+
 ## Using multiple harmonics
+
 In the above section, we truncated the Fourier space to a single harmonic ``\omega`` -- the oscillator was assumed to only oscillate at the drive frequency. However, the Duffing oscillator can exhibit a rich spectrum of harmonics.
 We can obtain some intuition by treating ``\alpha`` perturbatively in the equation of motion, i.e., by solving
+
 ```math
 \ddot{x}(t) + \gamma \dot{x}(t) + \omega_0^2 x(t) + \epsilon \alpha x(t)^3 = F \cos(\omega t)
 ```
+
 for small ``\epsilon``. To zeroth order, the response of the system is ``x_0(t) = X_0 \cos(\omega t + \phi_0)``. Expanding ``x(t) = x_0(t) + \epsilon x_1(t)``, we find that the perturbation ``x_1(t)`` satisfies to first order
+
 ```math
 \ddot{x}_1(t) + \gamma \dot{x}_1(t) \left[ \omega_0^2 + \frac{3 \alpha X_0^2}{4} \right] x_1(t) = - \frac{\alpha X_0^3}{4} \cos(3 \omega t + 3 \phi_0) \,,
 ```
+
 which gives a response of the form ``x_1(t) = X_1 \cos(3 \omega t + \phi_1)``. Clearly, the oscillator now responds not only at frequency ``\omega``, but also at ``3 \omega``! This effect is known as [*high harmonic generation*](https://en.wikipedia.org/wiki/High_harmonic_generation) or more generally *frequency conversion*. By continuing the procedure to higher orders, we eventually obtain an infinity of harmonics present in the response. In general, there is no analytical solution to such problems.
 
 We argued that frequency conversion takes place, to first order from ``\omega`` to ``3 \omega``. We can reflect this process by using a extended harmonic ansatz:
+
 ```math
 \begin{equation}
 x(t) = U_1 \cos(\omega t) + V_1 \sin(\omega t) + U_2 \cos(3\omega t) + V_2 \sin(3\omega t) \,.
 \end{equation}
 ```
+
 Note that this is not a perturbative treatment! The harmonics ``\omega`` and ``3 \omega`` are on the same footing here. This is implemented as
+
 ```@example steady_state
 add_harmonic!(diff_eq, x, [ω, 3ω]) # specify the two-harmonics ansatz
 harmonic_eq = get_harmonic_equations(diff_eq)
 ```
+
 The variables `u1`, `v1` now encode `ω` and `u2`, `v2` encode `3ω`. We see this system is much harder to solve as we now have 4 harmonic variables, resulting in 4 coupled cubic equations. A maximum of ``3^4 = 81`` solutions [may appear](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem)!
+
 ```@example steady_state
 result = get_steady_states(harmonic_eq, varied, fixed)
 plot(result, "sqrt(u1^2 + v1^2)")
 ```
+
 For the above parameters (where a perturbative treatment would have been reasonable), the principal response at ``\omega`` looks rather similar, with a much smaller upconverted component appearing at ``3 \omega``:
+
 ```@example steady_state
 p1=plot(result, "sqrt(u1^2 + v1^2)", legend=false)
 p2=plot(result, "sqrt(u2^2 + v2^2)")
@@ -89,6 +130,7 @@ plot(p1, p2)
 ```
 
 The non-perturbative nature of the ansatz allows us to capture some behaviour which is *not* a mere extension of the usual single-harmonic Duffing response. Suppose we drive a strongly nonlinear resonator at frequency ``\omega \cong \omega_0 / 3``. Such a drive is far out of resonance, however, the upconverted harmonic ``3 \omega = \omega_0`` is not and may play an important role! Let us try this out:
+
 ```@example steady_state
 fixed = (α => 10., ω0 => 3, F => 5, γ=>0.01)   # fixed parameters
 varied = ω => range(0.9, 1.4, 100)           # range of parameter values
@@ -96,6 +138,7 @@ result = get_steady_states(harmonic_eq, varied, fixed)
 ```
 
 Although 9 branches were found in total, only 3 remain physical (real-valued). Let us visualise the amplitudes corresponding to the two harmonics, ``\sqrt{U_1^2 + V_1^2}`` and ``\sqrt{U_2^2 + V_2^2}`` :
+
 ```@example steady_state
 p1 = plot(result, "sqrt(u1^2 + v1^2)", legend=false)
 p2 = plot(result, "sqrt(u2^2 + v2^2)")

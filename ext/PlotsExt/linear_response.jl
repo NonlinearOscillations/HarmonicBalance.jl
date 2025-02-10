@@ -1,31 +1,35 @@
-using HarmonicBalance.LinearResponse:
-    get_jacobian_response, get_linear_response, get_rotframe_jacobian_response
 
 """
-    plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
+$(TYPEDSIGNATURES)
 
-Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`.
-Slow-time derivatives up to `order` are kept in the process.
+Plot the linear response to white noise of the variable `nat_var` for [Result](@ref) `res`
+on `branch` identifier.
 
-Any kwargs are fed to Plots' gr().
+# Keyword arguments
+- `Ω_range`: Range of frequency of the noise probe
+- `order`: Order of slow-time derivatives to keep (default: 1)
+- `logscale`: Whether to plot response in log scale (default: false)
+- `show_progress`: Show progress bar during computation (default: true)
+- `kwargs...`: Additional arguments passed to Plots.heatmap
 
-Solutions not belonging to the `physical` class are ignored.
+# Returns
+A Plots.jl heatmap showing the linear response magnitude across parameter and frequency space.
+
 """
 function HarmonicBalance.plot_linear_response(
-    res::Result,
-    nat_var::Num;
+    res::Result{D},
+    nat_var::Num,
+    branch::Int;
     Ω_range,
-    branch::Int,
-    order=1,
-    logscale=false,
-    show_progress=true,
+    order::Int=1,
+    logscale::Bool=false,
+    show_progress::Bool=true,
     kwargs...,
-)
-    length(size(res.solutions)) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
+) where {D}
+    D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = HarmonicBalance.get_class(res, branch, "stable") # boolean array
 
-    X = collect(values(res.swept_parameters))[1][stable]
+    X = swept_parameters(res)[stable]
 
     C = if order == 1
         get_jacobian_response(res, nat_var, Ω_range, branch; show_progress)
@@ -34,7 +38,7 @@ function HarmonicBalance.plot_linear_response(
     end
     C = logscale ? log.(C) : C
 
-    xlabel = latexify(string(first(keys(res.swept_parameters))))
+    xlabel = get_labels(res)
     ylabel = latexify("Ω")
     return heatmap(
         X,
@@ -47,83 +51,95 @@ function HarmonicBalance.plot_linear_response(
         kwargs...,
     )
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Plot the linear response to white noise of the variable `nat_var` for [Result](@ref) `res`
+on the `followed_branches` identifiers with the size of `Ω_range`.
+
+# Keyword arguments
+- `Ω_range`: Range of frequency of the noise probe
+- `order`: Order of slow-time derivatives to keep (default: 1)
+- `logscale`: Whether to plot response in log scale (default: false)
+- `show_progress`: Show progress bar during computation (default: true)
+- `kwargs...`: Additional arguments passed to Plots.heatmap
+
+# Returns
+A Plots.jl heatmap showing the linear response magnitude across parameter and frequency space.
+
+"""
 function HarmonicBalance.plot_linear_response(
     res::Result,
     nat_var::Num,
     followed_branches::Vector{Int};
     Ω_range,
-    logscale=false,
-    show_progress=true,
-    switch_axis=false,
-    force=true,
+    logscale::Bool=false,
+    show_progress::Bool=true,
+    switch_axis::Bool=false,
+    force::Bool=true,
     kwargs...,
 )
     length(size(res.solutions)) != 1 &&
         error("The results are two dimensional. Consider using the `cut` keyword.")
 
-    X = collect(first(values(res.swept_parameters)))
+    X = swept_parameters(res)
 
     C = get_jacobian_response(res, nat_var, Ω_range, followed_branches; force=force)
     C = logscale ? log.(C) : C
 
-    xlabel = latexify(string(first(keys(res.swept_parameters))))
+    xlabel = get_labels(res)
     ylabel = latexify("Ω")
     if switch_axis
         heatmap(
-            Ω_range,
-            X,
-            C';
-            color=:viridis,
-            xlabel=ylabel,
-            ylabel=xlabel,
-            _set_Plots_default...,
-            kwargs...,
+            Ω_range, X, C'; color=:viridis, ylabel, xlabel, _set_Plots_default..., kwargs...
         )
     else
         heatmap(
-            X,
-            Ω_range,
-            C;
-            color=:viridis,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            _set_Plots_default...,
-            kwargs...,
+            X, Ω_range, C; color=:viridis, xlabel, ylabel, _set_Plots_default..., kwargs...
         )
     end
 end
 
 """
-    plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod = 1.0, show_progress=true, kwargs...)
+$(TYPEDSIGNATURES)
 
-Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency separately identifiable.
+Plot the linear response to white noise in the rotating frame defined the harmonic ansatz
+for [Result](@ref) `res` on `branch` identifier.
 
-Any kwargs are fed to Plots' gr().
+# Keyword arguments
+- `Ω_range`: Range of frequencies to analyze
+- `logscale`: Whether to plot response in log scale (default: true)
+- `damping_mod`: Multiplier for the real part of Jacobian eigenvalues (default: 1.0)
+- `show_progress`: Show progress bar during computation (default: true)
+- `kwargs...`: Additional arguments passed to Plots.heatmap
 
-Solutions not belonging to the `physical` class are ignored.
+# Returns
+A Plots.jl heatmap showing the response magnitude in the rotating frame.
+
+# Notes
+- Setting `damping_mod` < 1 can help distinguish between peaks with similar frequencies
+- Solutions not belonging to the `physical` class are ignored
 """
 function HarmonicBalance.plot_rotframe_jacobian_response(
-    res::Result{D,S,P};
+    res::Result{D,S,P},
+    branch::Int;
     Ω_range,
-    branch::Int,
     logscale=true,
     damping_mod=one(P),
     show_progress=true,
     kwargs...,
 ) where {D,S,P}
-    length(size(res.solutions)) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
+    D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     stable = get_class(res, branch, "stable") # boolean array
 
     Ω_range = vcat(Ω_range)
-    !isempty(findall(x -> x == 0, Ω_range)) &&
+    !isempty(findall(x -> x ≈ 0, Ω_range)) &&
         @warn("Probing with Ω=0 may lead to unexpected results")
 
     X = Vector{P}(collect(values(res.swept_parameters))[1][stable])
 
-    C = get_rotframe_jacobian_response(
-        res, Ω_range, branch; show_progress, damping_mod=damping_mod
-    )
+    C = get_rotframe_jacobian_response(res, Ω_range, branch; show_progress, damping_mod)
     C = logscale ? log.(C) : C
 
     return heatmap(
@@ -131,7 +147,7 @@ function HarmonicBalance.plot_rotframe_jacobian_response(
         Ω_range,
         C;
         color=:viridis,
-        xlabel=latexify(string(first(keys(res.swept_parameters)))),
+        xlabel=get_labels(res),
         ylabel=latexify("Ω"),
         _set_Plots_default...,
         kwargs...,
@@ -139,20 +155,36 @@ function HarmonicBalance.plot_rotframe_jacobian_response(
 end
 
 """
-    plot_eigenvalues(res::Result; branch::Int, class=["physical"], type=:imag, projection=v -> 1, cscheme=:default, kwargs...)
+$(TYPEDSIGNATURES)
 
-Plot the eigenvalues of the jacobian in the rotating frame for Result `res` on `branch`. Either the real (`type=:real``) or imaginary part (`type=:imag``) can be plotted. The `projection` function ℜᵈ → ℜ is applied to the eigenvectors and defines the color of the eigenvalues. The color scheme can be set to a custom one or to the default one.
+Visualize the eigenvalues of the Jacobian in the rotating frame for `branch` identifier in
+the [Result](@ref) `res`.
 
-Any kwargs are fed to Plots' gr().
+# Keyword arguments
+- `class`: Array of solution classes to include (default: ["physical"])
+- `type`: Which part of eigenvalues to plot (`:real` or `:imag`, default: `:imag`)
+- `projection`: Function mapping eigenvectors to colors (default: v->1)
+- `cscheme`: Color scheme for plotting (`:default` or custom scheme)
+- `kwargs...`: Additional arguments passed to Plots.scatter
 
-Solutions not belonging to the `physical` class are ignored.
+# Returns
+A scatter plot of eigenvalues colored by the projection of their eigenvectors.
+
+# Example
+```julia
+# Plot imaginary parts of eigenvalues
+plot_eigenvalues(result, branch=1)
+
+# Plot real parts with custom coloring based on the norm of eigenvectors of the first harmonic
+plot_eigenvalues(result, branch=1, type=:real, projection=v->sqrt(v[1]^2+v[2]^2))
+```
 """
 function HarmonicBalance.plot_eigenvalues(
-    res::Result{D,S,P};
-    branch,
+    res::Result{D,S,P},
+    branch::Int;
     class=["physical"],
-    type=:imag,
-    projection=v -> 1,
+    type::Symbol=:imag,
+    projection::Function=v -> 1,
     cscheme=:default,
     kwargs...,
 ) where {D,S,P}
@@ -160,8 +192,7 @@ function HarmonicBalance.plot_eigenvalues(
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
     D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
-    x = string(first(keys(res.swept_parameters)))
-    varied = Vector{P}(collect(first(values(res.swept_parameters))))
+    varied = Vector{P}(swept_parameters(res))
 
     eigenvalues = map(eachindex(varied)) do i
         jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
@@ -193,6 +224,7 @@ function HarmonicBalance.plot_eigenvalues(
         eigval = reduce(hcat, real.(eigenvalues_filtered))'
         ylab = L"\Re\{\epsilon\}"
     end
+    xlab = get_labels(res)
 
     if cscheme == :default
         colors = theme_palette(cscheme)
@@ -207,8 +239,8 @@ function HarmonicBalance.plot_eigenvalues(
         legend=false,
         ms=2,
         markerstrokewidth=0,
-        xlab=latexify(x),
-        ylab=ylab,
+        xlab,
+        ylab,
         zcolor=norm',
         c=myscheme,
         colorbar=false,

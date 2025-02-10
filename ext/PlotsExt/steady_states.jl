@@ -13,8 +13,8 @@ Other kwargs are passed onto Plots.gr().
 
 See also `plot!`
 
-The x,y,z arguments are Strings compatible with Symbolics.jl, e.g., `y=2*sqrt(u1^2+v1^2)` plots
-the amplitude of the first quadratures multiplied by 2.
+The x,y,z arguments are Strings compatible with Symbolics.jl, e.g., `y=2*sqrt(u1^2+v1^2)`
+plots the amplitude of the first quadratures multiplied by 2.
 
 ## 1D plots
     plot(res::Result; x::String, y::String, class="default", not_class=[], kwargs...)
@@ -22,15 +22,15 @@ the amplitude of the first quadratures multiplied by 2.
 
 Default behaviour is to plot stable solutions as full lines, unstable as dashed.
 
-If a sweep in two parameters were done, i.e., `dimension(res)==2`, a one dimensional cut can be
-plotted by using the keyword `cut` were it takes a `Pair{Num, Float}` type entry. For example,
-`plot(res, y="sqrt(u1^2+v1^2), cut=(λ => 0.2))` plots a cut at `λ = 0.2`.
-###
+If a sweep in two parameters were done, i.e., `dimension(res)==2`, a one dimensional cut can
+be plotted by using the keyword `cut` were it takes a `Pair{Num, Float}` type entry.
+For example, `plot(res, y="sqrt(u1^2+v1^2), cut=(λ => 0.2))` plots a cut at `λ = 0.2`.
 
 ## 2D plots
     plot(res::Result; z::String, branch::Int64, class="physical", not_class=[], kwargs...)
 
-To make the 2d plot less chaotic it is required to specify the specific `branch` to plot, labeled by a `Int64`.
+To make the 2d plot less chaotic it is required to specify the specific `branch` to plot,
+labeled by a `Int64`.
 
 The x and y axes are taken automatically from `res`
 """
@@ -96,9 +96,8 @@ function plot1D(
 
     D != 1 && error("The results are two dimensional. Consider using the `cut` keyword.")
     x = x == "default" ? string(first(keys(res.swept_parameters))) : x
-    X = transform_solutions(res, x; branches=branches)
-    Y = transform_solutions(res, y; branches=branches, realify=true)
-    Y = _apply_mask(Y, _get_mask(res, class, not_class; branches=branches))
+    X = transform_solutions(res, x; branches)
+    Y = get_solutions(res, y; branches, realify=true, class, not_class)
 
     # reformat and project onto real, warning if needed
     branch_data = [
@@ -127,7 +126,7 @@ function plot1D(
     return p
 end
 
-plot1D(res::Result, y::String; kwargs...) = plot1D(res; y=y, kwargs...)
+plot1D(res::Result, y::String; kwargs...) = plot1D(res; y, kwargs...)
 
 function plot2D(
     res::Result;
@@ -139,17 +138,10 @@ function plot2D(
     kwargs...,
 )::Plots.Plot
     X, Y = values(res.swept_parameters)
-    Z =
-        getindex.(
-            _apply_mask(
-                transform_solutions(res, z; branches=branch, realify=true),
-                _get_mask(res, class, not_class; branches=branch),
-            ),
-            1,
-        ) # there is only one branch
+    Z = getindex.(get_solutions(res, z; branches=branch, realify=true, class, not_class), 1) # there is only one branch
     p = add ? Plots.plot!() : Plots.plot() # start a new plot if needed
 
-    ylab, xlab = latexify.(string.(keys(res.swept_parameters)))
+    ylab, xlab = get_labels(res)
     return p = plot!(
         map(_realify, [real.(Y), real.(X), Z])...;
         st=:surface,
@@ -168,10 +160,10 @@ function plot2D_cut(
 )
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
-            p = plot2D_cut(res; y=y, cut=cut, class=["physical", "stable"], add, kwargs...)
+            p = plot2D_cut(res; y, cut=cut, class=["physical", "stable"], add, kwargs...)
             plot2D_cut(
                 res;
-                y=y,
+                y,
                 cut=cut,
                 class="physical",
                 not_class="stable",
@@ -181,17 +173,13 @@ function plot2D_cut(
             )
             return p
         else
-            p = plot2D_cut(res; y=y, cut=cut, not_class, class="physical", add, kwargs...)
+            p = plot2D_cut(res; y, cut=cut, not_class, class="physical", add, kwargs...)
             return p
         end
     end
 
     cut_par, cut_value = cut
-    # compare strings because type Num cannot be compared
-    swept_pars = res.swept_parameters.keys
-    x_index = findfirst(sym -> string(sym) != string(cut_par), swept_pars)
-    isnothing(x_index) && error("The variable $cut_par was not swept over.")
-    x = swept_pars[x_index]
+    is_swept_parameter(res, cut_par)
 
     # the swept params are ranges and thus a sorted search can be performed
     cut_par_index = searchsortedfirst(res.swept_parameters[cut_par], cut_value)
@@ -203,10 +191,10 @@ function plot2D_cut(
         )
     end
 
-    X = res.swept_parameters[x]
-    Y = _apply_mask(
-        transform_solutions(res, y; realify=true), _get_mask(res, class, not_class)
-    ) # first transform, then filter
+    X = swept_parameter(res, cut_par)
+    Y = get_solutions(res, y; realify=true, class, not_class) # first transform, then filter
+
+    x_index = findfirst(sym -> string(sym) == string(cut_par), res.swept_parameters.keys)
     branches = x_index == 1 ? Y[:, cut_par_index] : Y[cut_par_index, :]
 
     branch_data = [
@@ -225,7 +213,7 @@ function plot2D_cut(
             _realify(getindex.(branches, k));
             color=k,
             label=l,
-            xlabel=latexify(string(x)),
+            xlabel=latexify(string(cut_par)),
             ylabel=latexify(y),
             kwargs...,
         )
@@ -234,7 +222,7 @@ function plot2D_cut(
     return p
 end
 
-plot2D(res::Result, z::String; kwargs...) = plot2D(res; z=z, kwargs...)
+plot2D(res::Result, z::String; kwargs...) = plot2D(res; z, kwargs...)
 
 ###
 # PHASE DIAGRAMS
@@ -273,7 +261,7 @@ function plot_phase_diagram_2D(
     X, Y = swept_parameters(res)
     Z = phase_diagram(res; class, not_class)
 
-    xlab, ylab = latexify.(string.(keys(res.swept_parameters)))
+    xlab, ylab = get_labels(res)
 
     # cannot set heatmap ticks (Plots issue #3560)
     return heatmap(
@@ -295,7 +283,7 @@ function plot_phase_diagram_1D(
     return plot(
         X,
         Y;
-        xlabel=latexify(string(keys(res.swept_parameters)...)),
+        xlabel=get_labels(res),
         ylabel="#",
         legend=false,
         yticks=1:maximum(Y),
@@ -308,7 +296,7 @@ end
 ###
 
 """
-    plot_spaghetti(res::Result; x, y, z, kwargs...)
+$(TYPEDSIGNATURES)
 
 Plot a three dimension line plot of a `Result` object as a function of the parameters.
 Works with 1D and 2D datasets.
@@ -337,13 +325,13 @@ function HarmonicBalance.plot_spaghetti(
     if class == "default"
         if not_class == [] # plot stable full, unstable dashed
             p = HarmonicBalance.plot_spaghetti(
-                res; x=x, y=y, z=z, class=["physical", "stable"], add, kwargs...
+                res; x, y, z, class=["physical", "stable"], add, kwargs...
             )
             HarmonicBalance.plot_spaghetti(
                 res;
-                x=x,
-                y=y,
-                z=z,
+                x,
+                y,
+                z,
                 class="physical",
                 not_class="stable",
                 add=true,
@@ -353,25 +341,18 @@ function HarmonicBalance.plot_spaghetti(
             return p
         else
             p = HarmonicBalance.plot_spaghetti(
-                res; x=x, y=y, z=z, class="physical", not_class, add, kwargs...
+                res; x, y, z, class="physical", not_class, add, kwargs...
             )
             return p
         end
     end
 
-    vars = res.problem.variables
-    x_index = findfirst(sym -> string(sym) == x, vars)
-    y_index = findfirst(sym -> string(sym) == y, vars)
-    isnothing(x_index) && error("The variable $x is not a defined variable.")
-    isnothing(y_index) && error("The variable $y is not a defined variable.")
+    is_variable(res, x)
+    is_variable(res, y)
 
-    swept_pars = res.swept_parameters.keys
-    z_index = findfirst(sym -> string(sym) == z, swept_pars)
-    isnothing(z_index) && error("The variable $z was not swept over.")
-
-    Z = res.swept_parameters.vals[z_index]
-    X = _apply_mask(transform_solutions(res, x), _get_mask(res, class, not_class))
-    Y = _apply_mask(transform_solutions(res, y), _get_mask(res, class, not_class))
+    Z = swept_parameter(res, z)
+    X = get_solutions(res, x; class, not_class)
+    Y = get_solutions(res, y; class, not_class)
 
     # start a new plot if needed
     p = add ? Plots.plot!() : Plots.plot()

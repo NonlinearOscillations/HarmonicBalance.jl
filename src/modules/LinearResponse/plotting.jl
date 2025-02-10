@@ -71,7 +71,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Calculate the linear response of the system for a given branch. Evaluates the linear response by solving the linear response ODE for each stable solution
+Calculate the linear response of the system for a given branch.
+Evaluates the linear response by solving the linear response ODE for each stable solution
 and input frequency in the given range.
 
 # Arguments
@@ -118,7 +119,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Calculate the rotating frame Jacobian response for a given branch. Computes the rotating frame Jacobian response by evaluating eigenvalues of the numerical
+Calculate the rotating frame Jacobian response for a given branch.
+Computes the rotating frame Jacobian response by evaluating eigenvalues of the numerical
 Jacobian and calculating the response magnitude for each frequency in the range.
 
 # Arguments
@@ -144,7 +146,7 @@ function get_rotframe_jacobian_response(
         bar = Progress(
             length(C);
             dt=1,
-            desc="Solving the linear response ODE for each solution and input frequency ... ",
+            desc="Solving the linear response ODE for each solution and input frequency ...",
             barlen=50,
         )
     end
@@ -165,4 +167,91 @@ function get_rotframe_jacobian_response(
         show_progress ? next!(bar) : nothing
     end
     return C
+end
+
+"""
+    eigenvalues(res::Result, branch; class=["physical"])
+
+Calculate the eigenvalues of the Jacobian matrix of the harmonic equations of a `branch`
+for a one dimensional sweep in the [Result](@ref) struct.
+
+# Arguments
+- `res::Result`: Result object containing solutions and jacobian information
+- `branch`: Index of the solution branch to analyze
+- `class=["physical"]`: Filter for solution classes to include, defaults to physical solutions
+
+# Returns
+- Vector of filtered eigenvalues along the solution branch
+
+# Notes
+- Currently only supports 1-dimensional parameter sweeps (D=1)
+- Will throw an error if branch contains NaN values
+- Eigenvalues are filtered based on the specified solution classes
+"""
+function eigenvalues(res::Result{D,S,P}, branch; class=["physical"]) where {D,S,P}
+    filter = _get_mask(res, class)
+    filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
+
+    D != 1 && error("For the moment only 1 dimension sweep are supported.")
+    varied = Vector{P}(swept_parameters(res))
+
+    eigenvalues = map(eachindex(varied)) do i
+        jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
+        if any(isnan, jac)
+            throw(
+                ErrorException(
+                    "The branch contains NaN values.
+                    Likely, the branch has non-physical solutions in the parameter sweep",
+                ),
+            )
+        end
+        eigvals(jac)
+    end
+    eigenvalues_filtered = map(.*, eigenvalues, filter_branch)
+
+    return eigenvalues_filtered
+end
+
+"""
+    eigenvectors(res::Result, branch; class=["physical"])
+
+Calculate the eigenvectors of the Jacobian matrix of the harmonic equations of a `branch`
+for a one dimensional sweep in the [Result](@ref) struct.
+
+
+# Arguments
+- `res::Result`: Result object containing solutions and jacobian information
+- `branch`: Index of the solution branch to analyze
+- `class=["physical"]`: Filter for solution classes to include, defaults to physical solutions
+
+# Returns
+- Vector of filtered eigenvectors along the solution branch
+
+# Notes
+- Currently only supports 1-dimensional parameter sweeps (D=1)
+- Will throw an error if branch contains NaN values
+- Eigenvectors are filtered based on the specified solution classes
+"""
+function eigenvectors(res::Result{D,S,P}, branch; class=["physical"]) where {D,S,P}
+    filter = _get_mask(res, class)
+    filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
+
+    D != 1 && error("For the moment only 1 dimension sweep are supported.")
+    varied = Vector{P}(swept_parameters(res))
+
+    eigenvectors = map(eachindex(varied)) do i
+        jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
+        if any(isnan, jac)
+            throw(
+                ErrorException(
+                    "The branch contains NaN values.
+                    Likely, the branch has non-physical solutions in the parameter sweep",
+                ),
+            )
+        end
+        eigvecs(jac)
+    end
+    eigvecs_filtered = map(.*, eigenvectors, filter_branch)
+
+    return eigvecs_filtered
 end

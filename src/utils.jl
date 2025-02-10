@@ -56,3 +56,19 @@ function show_fields(object)
         display(getfield(object, field))
     end
 end
+
+""" Project the array `a` into the real axis, warning if its contents are complex. """
+function _realify(a::Array{T}; warning="") where {T<:Number}
+    warned = false
+    a_real = similar(a, typeof(real(a[1])))
+    for i in eachindex(a)
+        if !isnan(a[i]) && !warned && !is_real(a[i])
+            @warn "Values with non-negligible complex parts have
+            been projected on the real axis! " * warning
+            warned = true
+        end
+        a_real[i] = real(a[i])
+    end
+    return a_real
+end
+_realify(a::Array{Real}; warning="") = a

@@ -1,6 +1,3 @@
-using Plots: Plots, plot, plot!
-using Latexify: latexify
-
 """
     plot(soln::ODESolution, f::String, harm_eq::HarmonicEquation; kwargs...)
 
@@ -21,9 +18,9 @@ Parametric plot of f[1] against f[2]
 Also callable as plot!
 """
 function Plots.plot(
-    soln::OrdinaryDiffEqTsit5.ODESolution,
+    soln::SciMLBase.ODESolution,
     funcs,
-    harm_eq::HarmonicEquation;
+    harm_eq::HarmonicBalance.HarmonicEquation;
     add=false,
     kwargs...,
 )
@@ -55,12 +52,36 @@ function Plots.plot(
     end
 end
 
-function Plots.plot!(soln::OrdinaryDiffEqTsit5.ODESolution, varargs...; kwargs...)
+function Plots.plot!(soln::SciMLBase.ODESolution, varargs...; kwargs...)
     return plot(soln, varargs...; add=true, kwargs...)
 end
 
 """
-1D plot with the followed branch highlighted
+$(TYPEDSIGNATURES)
+
+Plot a bifurcation diagram from a continuation sweep starting from `starting_branch` using
+the [Result](@ref) struct `res`. Time integration is used to determine what follow up branch
+in the continuation is.
+
+# Keyword arguments
+- `x::String`: Expression for the x-axis variable
+- `y::String`: Expression for the y-axis variable
+- `sweep::String="right"`: Direction to follow the branch ("right" or "left")
+- `tf::Real=10000`: Final time for time integration
+- `ϵ::Real=1e-4`: Tolerance for branch following
+- `kwargs...`: Additional plotting arguments passed to Plots.jl
+- Class selection done by passing `String` or `Vector{String}` as kwarg:
+
+    class::String       :   only count solutions in this class ("all" --> plot everything)
+    not_class::String   :   do not count solutions in this class
+
+
+# Returns
+- A Plots.jl plot object containing the bifurcation diagram with the followed branch
+
+# Description
+This function creates a bifurcation diagram using [`follow_branch`](@ref).
+The followed branch is plotted as a dashed gray line.
 """
 function HarmonicBalance.plot_1D_solutions_branch(
     starting_branch::Int64,
@@ -74,17 +95,19 @@ function HarmonicBalance.plot_1D_solutions_branch(
     not_class=[],
     kwargs...,
 )
-    p = plot(res; x=x, y=y, class=class, not_class=not_class, kwargs...)
+    p = plot(res; x, y, class, not_class, kwargs...)
 
-    followed_branch, Ys = follow_branch(starting_branch, res; y=y, sweep=sweep, tf=tf, ϵ=ϵ)
+    followed_branch, Ys = HarmonicBalance.follow_branch(
+        starting_branch, res; y, sweep=sweep, tf=tf, ϵ=ϵ
+    )
     Y_followed = [
         Ys[param_idx][branch] for (param_idx, branch) in enumerate(followed_branch)
     ]
-    X = real.(res.swept_parameters[_parse_expression(x)])
+    X = swept_parameter(res, x)
 
     Plots.plot!(
         p,
-        X,
+        real.(X),
         real.(Y_followed);
         linestyle=:dash,
         c=:gray,

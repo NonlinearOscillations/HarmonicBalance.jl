@@ -1,22 +1,14 @@
-# Analysis and plotting
+# [Plotting solutions](@id plotting)
 
-The key method for visualization is `transform_solutions`, which parses a string into a symbolic expression and evaluates it for every steady state solution. 
+HarmonicBalance.jl comes with a plotting module `PlotsExt` that allows you to visualize the steady states in the [`HarmonicBalance.Result`](@ref). The module is conditionally loaded based on the `Plots.jl` package being loaded.
 
-```@docs; canonical=false
-HarmonicBalance.transform_solutions
-```
-
-## Plotting solutions
-
-The function `plot` is multiple-dispatched to plot 1D and 2D datasets. 
-In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`. 
+The function `plot` is multiple-dispatched to plot 1D and 2D datasets.
+In 1D, the solutions are colour-coded according to the branches obtained by `sort_solutions`.
 
 ```@docs; canonical=false
-HarmonicBalance.plot(::HarmonicBalance.Result, varags...)
-HarmonicBalance.plot!
+plot(::HarmonicBalance.Result, varags...)
+plot!
 ```
-
-
 
 ## Plotting phase diagrams
 

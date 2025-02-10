@@ -2,6 +2,12 @@ function follow_branch end
 function plot_1D_solutions_branch end
 function steady_state_sweep end
 
+function plot_spaghetti end
+function plot_eigenvalues end
+function plot_rotframe_jacobian_response end
+function plot_phase_diagram end
+function plot_linear_response end
+
 # ## Method error handling
 # We also inject a method error handler, which
 # prints a suggestion if the Proj extension is not loaded.

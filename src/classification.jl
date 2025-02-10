@@ -19,7 +19,7 @@ classify_solutions!(res, "sqrt(u1^2 + v1^2) > 1.0" , "large_amplitude")
 function classify_solutions!(
     res::Result, func::Union{String,Function}, name::String; physical=true
 )
-    values = classify_solutions(res, func; physical=physical)
+    values = classify_solutions(res, func; physical)
     return res.classes[name] = values
 end
 

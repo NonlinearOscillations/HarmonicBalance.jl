@@ -1,4 +1,4 @@
-# Entering equations of motion 
+# Entering equations of motion
 
 The struct `DifferentialEquation` is the primary input method; it holds an ODE or a coupled system of ODEs composed of terms with harmonic time-dependence
 The dependent variables are specified during input, any other symbols

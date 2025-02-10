@@ -75,7 +75,7 @@ function get_steady_states(
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
-    solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
+    solutions = get_solutions(prob, method, input_array; show_progress)
 
     result = Result(
         solutions,
@@ -89,7 +89,7 @@ function get_steady_states(
     )
 
     if sorting != "no_sorting"
-        sort_solutions!(result; sorting=sorting, show_progress=show_progress)
+        sort_solutions!(result; sorting, show_progress)
     end
     classify_default ? _classify_default!(result) : nothing
 
@@ -125,7 +125,7 @@ function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
 end
 
 function get_solutions(prob, method, input_array; show_progress)
-    raw = _get_raw_solution(prob, method, input_array; show_progress=show_progress)
+    raw = _get_raw_solution(prob, method, input_array; show_progress)
 
     solutions = HC.solutions.(getindex.(raw, 1))
     if all(isempty.(solutions))
@@ -181,7 +181,7 @@ function _get_raw_solution(
         problem.system;
         start_system=method_symbol(warm_up_method),
         target_parameters=start_parameters,
-        show_progress=show_progress,
+        show_progress,
         alg_default_options(warm_up_method)...,
         alg_specific_options(warm_up_method)...,
     )
@@ -191,7 +191,7 @@ function _get_raw_solution(
         HC.solutions(warmup_solution);
         start_parameters=start_parameters,
         target_parameters=parameter_values,
-        show_progress=show_progress,
+        show_progress,
         alg_default_options(method)...,
     )
 

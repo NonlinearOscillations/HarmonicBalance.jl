@@ -1,4 +1,5 @@
 using HarmonicBalance
+using Plots
 using Test
 
 using Random

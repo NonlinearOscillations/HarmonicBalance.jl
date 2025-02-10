@@ -94,8 +94,9 @@ end
     varied = (ψ => range(0.01, 2, 100)) # range of parameter values
 
     method = TotalDegree()
-    result_asym = get_steady_states(harmonic_normal, method, varied, fixed)
-    get_steady_states(harmonic_normal, method, varied, fixed)
+    result_asym = get_steady_states(
+        harmonic_normal, method, varied, fixed; show_progress=false
+    )
 
     @testset "smaller test" begin
         using Symbolics

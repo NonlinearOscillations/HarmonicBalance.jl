@@ -27,7 +27,7 @@ using Test
     @test sum(any.(get_class(result, "unique_cycle"))) == 1
 
     plot(result; y="ω_lc")
-    plot_linear_response(result, x; branch=1, Ω_range=range(2.4, 2.6, 2), order=1)
+    plot_linear_response(result, x, 1; Ω_range=range(2.4, 2.6, 2), order=1)
 end
 # real(ComplexF64[0.0 + 0.0im 1.375193014698595 + 0.0im 0.0 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im -0.09353667681429773 + 0.0im 0.0 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im -0.10927509336716573 + 0.0im 4.158613703389808 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im -4.092544384801762 + 0.0im -0.0777982602614297 + 0.0im])
 # takes to long

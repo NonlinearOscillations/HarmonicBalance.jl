@@ -21,6 +21,7 @@ bib = CitationBibliography(
 )
 
 using Plots
+PlotsExt = Base.get_extension(HarmonicBalance, :PlotsExt)
 default(; fmt=:png)
 # Gotta set this environment variable when using the GR run-time on CI machines.
 # This happens as examples will use Plots.jl to make plots and movies.
@@ -40,6 +41,7 @@ makedocs(;
         ModelingToolkitExt,
         SteadyStateDiffEqExt,
         HarmonicBalance.LinearResponse,
+        PlotsExt,
     ],
     format=DocumenterVitepress.MarkdownVitepress(;
         repo="github.com/NonlinearOscillations/HarmonicBalance.jl",

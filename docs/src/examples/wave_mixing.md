@@ -86,3 +86,4 @@ plot(p1, p2, p3; layout=(1, 3), size=(900, 300), margin=5mm)
 ---
 
 *This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+

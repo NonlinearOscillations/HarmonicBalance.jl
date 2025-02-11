@@ -1,6 +1,6 @@
 # Extracting harmonic equations
 
-## Harmonic Balance method
+## [Harmonic Balance method](@id Harmonic_Balance)
 
 Once a `DifferentialEquation` is defined and its harmonics specified, one can extract the harmonic equations using `get_harmonic_equations`, which itself is composed of the subroutines `harmonic_ansatz`, `slow_flow`, `fourier_transform!` and `drop_powers`.
 

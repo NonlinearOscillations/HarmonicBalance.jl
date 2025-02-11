@@ -33,6 +33,7 @@ pages = [
         "Time Evolution" => "manual/time_dependent.md",
         "Linear Response" => "manual/linear_response.md",
         "Saving and Loading" => "manual/saving.md",
+        "SciML Extension" => "manual/SciMLExt.md",
         ]
     ],
 ]

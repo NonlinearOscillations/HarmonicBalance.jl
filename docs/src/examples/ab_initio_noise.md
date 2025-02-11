@@ -49,7 +49,7 @@ fixed = Dict(ω₀ => 1.0, γ => 0.005, λ => 0.02, α => 1.0)
 varied = Dict(ω => ωrange)
 result = get_steady_states(harmonic_eq, TotalDegree(), varied, fixed)
 
-plot(result, y="sqrt(u1^2 + v1^2)")
+plot(result; y="sqrt(u1^2 + v1^2)")
 ````
 
 The sidebands from for the steady states will look like
@@ -93,7 +93,9 @@ We will perform parameter sweep to generate noise spectra across the driving fre
 
 ````@example ab_initio_noise
 setter! = setp(sdesystem, ω)
-prob_func(prob, i, repeat) = (prob′ = remake(prob); setter!(prob′, ωrange[i]); prob′)
+prob_func(prob, i, repeat) = (prob′ = remake(prob);
+setter!(prob′, ωrange[i]);
+prob′)
 output_func(sol, i) = (outputpsd(sol), false)
 prob_ensemble = EnsembleProblem(sdeproblem; prob_func=prob_func, output_func=output_func)
 sol_ensemble = solve(

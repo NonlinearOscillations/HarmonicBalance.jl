@@ -1,4 +1,4 @@
-# Extention to the SciML ecosystem
+# Extension to the SciML ecosystem
 
 The [SciML ecosystem](https://sciml.ai/) provides a rich set of tools to solve (non)-linear equations, differential equations and inverse problems. We provide an interface (in the form of [Package extensions](https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions))) to export the the derived harmonic equations computed with [harmonic balance method](@ref Harmonic_Balance) or [krylov-bogoliubov method](@ref Krylov-Bogoliubov) to the SciML ecosystem.
 

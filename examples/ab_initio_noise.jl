@@ -4,6 +4,7 @@
 
 using HarmonicBalance, Plots
 using ModelingToolkit, StaticArrays, StochasticDiffEq, DSP
+using ModelingToolkit: setp
 
 # We first define a  gelper function to compute power spectral density of the simulated response
 function outputpsd(sol; fs=1.0)

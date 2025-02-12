@@ -57,7 +57,7 @@ plot!(ω_range, Y_followed_gr; c=:gray, ls=:dash)
 # ## comparison
 
 @btime result_ss = steady_state_sweep(
-    prob_ss, DynamicSS(Rodas5()); varied=sweep, abstol=1e-5, reltol=1e-5
+    prob_ss, DynamicSS(Rodas5()); varied, abstol=1e-5, reltol=1e-5
 )
 
 @btime time_soln = solve(ode_problem, Tsit5(); saveat=250)

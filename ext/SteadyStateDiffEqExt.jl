@@ -65,7 +65,7 @@ function HarmonicBalance.steady_state_sweep(
         param_val = tunable_parameters(p)
         zeros = norm(prob_np.f.f.f.f.f_oop(sol_nn.u, param_val, 0))
         jac = prob_np.f.jac.f.f.f_oop(sol_nn.u, param_val, 0)
-        eigval = jac isa Vector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
+        eigval = jac isa AbstractVector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
 
         if !isapprox(zeros, 0; atol=1e-5) || any(λ -> λ > 0, real.(eigval))
             sol_ss = solve(remake(prob_ss; p, u0), alg_ss; abstol=1e-5, reltol=1e-5)

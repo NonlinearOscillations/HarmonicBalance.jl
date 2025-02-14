@@ -19,6 +19,7 @@ pages = [
         "Parametric Oscillator" => "examples/parametron.md",
         "State Dependent Perturbation" => "examples/state_dependent_perturbation.md",
         "Ab Initio Noise spectrum" => "examples/ab_initio_noise.md",
+        "Adiabatic sweep" => "examples/steady_state_sweep.md"
         ],
     ],
     "Resources" => [

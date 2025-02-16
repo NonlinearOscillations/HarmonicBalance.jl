@@ -130,6 +130,8 @@ struct WarmUp{T} <: HarmonicBalanceMethod
     start_parameters::Vector{T}
     """Boolean indicating if threading is enabled."""
     thread::Bool
+    """Check if zero is a root"""
+    check_zero::Bool
     """Options for the tracker."""
     tracker_options::HomotopyContinuation.TrackerOptions
     """Options for the endgame."""
@@ -140,9 +142,10 @@ struct WarmUp{T} <: HarmonicBalanceMethod
     seed::UInt32
 
     function WarmUp(;
-        warm_up_method::Union{TotalDegree,Polyhedral}=Polyhedral(),
+        warm_up_method::Union{TotalDegree,Polyhedral}=TotalDegree(),
         start_parameters::Vector=Vector{ComplexF64}(),
         thread::Bool=Threads.nthreads() > 1,
+        check_zero::Bool=true,
         tracker_options::HomotopyContinuation.TrackerOptions=HomotopyContinuation.TrackerOptions(),
         endgame_options::HomotopyContinuation.EndgameOptions=HomotopyContinuation.EndgameOptions(),
         compile::Union{Bool,Symbol}=HomotopyContinuation.COMPILE_DEFAULT[],
@@ -159,6 +162,7 @@ struct WarmUp{T} <: HarmonicBalanceMethod
             warm_up_method,
             start_parameters,
             thread,
+            check_zero,
             tracker_options,
             endgame_options,
             compile,
@@ -169,6 +173,7 @@ struct WarmUp{T} <: HarmonicBalanceMethod
         warm_up_method::Union{TotalDegree,Polyhedral}=Polyhedral{T}(),
         start_parameters::Vector=Vector{T}(),
         thread::Bool=Threads.nthreads() > 1,
+        check_zero::Bool=true,
         tracker_options::HomotopyContinuation.TrackerOptions=HomotopyContinuation.TrackerOptions(),
         endgame_options::HomotopyContinuation.EndgameOptions=HomotopyContinuation.EndgameOptions(),
         compile::Union{Bool,Symbol}=HomotopyContinuation.COMPILE_DEFAULT[],
@@ -178,6 +183,7 @@ struct WarmUp{T} <: HarmonicBalanceMethod
             warm_up_method,
             start_parameters,
             thread,
+            check_zero,
             tracker_options,
             endgame_options,
             compile,

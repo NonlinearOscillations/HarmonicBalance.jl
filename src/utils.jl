@@ -1,5 +1,6 @@
 is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL || abs(x) < 1e-70
 is_real(x::Array) = is_real.(x)
+is_zero(x::Vector{ComplexF64}; atol=1e-6) = all(isapprox.(x, complex(0.0); atol))
 
 flatten(a) = collect(Iterators.flatten(a))
 

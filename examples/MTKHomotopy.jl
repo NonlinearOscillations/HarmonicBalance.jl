@@ -17,33 +17,31 @@ begin
 end
 
 @variables t x(t)
-@parameters ω₀ γ λ F η α ω
+@parameters ω₀ λ α ω
 
 natural_equation =
     d(d(x, t), t) +
-    γ * d(x, t) +
     (ω₀^2 - λ * cos(2 * ω * t)) * x +
-    α * x^3 +
-    η * d(x, t) * x^2
-forces = F * cos(ω * t)
-diff_eq = DifferentialEquation(natural_equation + forces, x)
+    α * x^3
+diff_eq = DifferentialEquation(natural_equation, x)
 
 
 add_harmonic!(diff_eq, x, ω);
 harmonic_eq = get_harmonic_equations(diff_eq)
 eqs = getfield.(rearrange_standard(harmonic_eq).equations, :lhs) .~ 0
 
-begin
+# begin
 fixed = OrderedDict(ω₀ => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3, α => 1.0, η => 0.3, ω => 1.0)
 @mtkbuild  ns = NonlinearSystem(eqs, get_variables(harmonic_eq),keys(fixed))
 
-fixed = OrderedDict(ω₀ => 1.0, γ => 1e-2, λ => 5e-2, F => 1e-3, α => 1.0, η => 0.3, ω => 1.0)
+
 fn = NonlinearFunction(ns, jac=true)
-hcp = NonlinearProblem(fn, [0.0,0.0], fixed)
+fn([0,0],[fixed[k] for k in keys(fixed)])
+hcp = NonlinearProblem(fn, [0.0,0.0], [fixed[k] for k in keys(fixed)])
 solve(hcp)
 alg = HomotopyContinuationJL{true}(;)
 solve(hcp, alg)
-end
+# end
 begin
     @mtkbuild  ns = NonlinearSystem(eqs, get_variables(harmonic_eq),harmonic_eq.parameters)
 

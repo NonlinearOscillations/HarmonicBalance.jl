@@ -64,6 +64,7 @@ function get_steady_states(
     show_progress=true,
     sorting="nearest",
     classify_default=true,
+    verbose=false,
 )
     Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
@@ -75,6 +76,7 @@ function get_steady_states(
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
+    verbose && @info "Find solutions"
     solutions = get_solutions(prob, method, input_array; show_progress)
 
     result = Result(
@@ -88,9 +90,12 @@ function get_steady_states(
         seed(method),
     )
 
+    verbose && @info "Sort solutions"
     if sorting != "no_sorting"
         sort_solutions!(result; sorting, show_progress)
     end
+
+    verbose && @info "Classify solutions"
     classify_default ? _classify_default!(result) : nothing
 
     return result

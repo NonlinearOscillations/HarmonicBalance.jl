@@ -14,10 +14,10 @@ fixed = (ω₀ => 1.0, γ => 0.002, α => 1.0)
 varied = (ω => range(0.99, 1.01, 100), λ => range(1e-6, 0.03, 100))
 
 @testset "hilbert" begin
-result_2D = get_steady_states(harmonic_eq, varied, fixed; verbose=true)
-result_2D_hilbert = get_steady_states(
-    harmonic_eq, varied, fixed; sorting="hilbert", verbose=true
-)
+    result_2D = get_steady_states(harmonic_eq, varied, fixed; verbose=true)
+    result_2D_hilbert = get_steady_states(
+        harmonic_eq, varied, fixed; sorting="hilbert", verbose=true
+    )
 end
 
 # ∨ compare sorting solutions

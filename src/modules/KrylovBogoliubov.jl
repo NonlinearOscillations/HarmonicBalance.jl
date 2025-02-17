@@ -63,20 +63,12 @@ Harmonic equations:
 
 """
 function get_krylov_equations(
-    diff_eom::DifferentialEquation; order, fast_time=nothing, slow_time=nothing
+    diff_eom::DifferentialEquation; order::Int64, fast_time=nothing, slow_time=nothing
 )
-    order < 1 && error("The order of the Krylov-Bogoliubov method must be at least 1!")
-    order > 2 && error("Krylov-Bogoliubov implementation only supports up to second order!")
+    proper_krylov_system(diff_eom, order)
 
     slow_time = isnothing(slow_time) ? (@variables T; T) : slow_time
     fast_time = isnothing(fast_time) ? get_independent_variables(diff_eom)[1] : fast_time
-
-    harmonics = values(diff_eom.harmonics)
-    all(isempty.(harmonics)) && error("No harmonics specified!")
-    any(isempty.(harmonics)) &&
-        error("Krylov-Bogoliubov method needs all variables to have a single harmonic!")
-    any(length.(harmonics) .> 1) &&
-        error("Krylov-Bogoliubov method only supports a single harmonic!")
 
     dEOM = deepcopy(diff_eom)
     !is_rearranged_standard(dEOM) ? rearrange_standard!(dEOM) : nothing
@@ -92,7 +84,6 @@ function get_krylov_equations(
 
     if order == 1
         average!(eom, fast_time)
-        return eom
     elseif order == 2
         vars_symb = get_variables(eom)
         Fₜ = Num.(getfield.(eom.equations, :lhs))
@@ -110,7 +101,28 @@ function get_krylov_equations(
         eom.equations = F₀ + G₀ .~ getfield.(eom.equations, :rhs)
     end
 
+    change_convention!(eom, slow_time)
     return eom
+end
+function proper_krylov_system(diff_eom::DifferentialEquation, order::Int)
+    order < 1 && error("The order of the Krylov-Bogoliubov method must be at least 1!")
+    order > 2 && error("Krylov-Bogoliubov implementation only supports up to second order!")
+    harmonics = values(diff_eom.harmonics)
+    all(isempty.(harmonics)) && error("No harmonics specified!")
+    any(isempty.(harmonics)) &&
+        error("Krylov-Bogoliubov method needs all variables to have a single harmonic!")
+    any(length.(harmonics) .> 1) &&
+        error("Krylov-Bogoliubov method only supports a single harmonic!")
+end
+
+function change_convention!(eom::HarmonicEquation, slow_time)
+    eqs = eom.equations
+    vars = filter(u -> u.type == "v",  eom.variables)
+    convention = Dict(v.symbol => -v.symbol for v in vars)
+
+    eom.equations = expand_derivatives.(substitute_all(eqs, convention))
+    rearrange!(eom, d(get_variables(eom), slow_time))
+    return nothing
 end
 
 function van_der_Pol(eom::DifferentialEquation, t::Num)
@@ -132,7 +144,7 @@ function van_der_Pol(eom::DifferentialEquation, t::Num)
             nvar, ω, t, "v"; new_symbol="v" * string(uv_idx)
         )
         rule = rule_u - rule_v
-        # ~ this is a choice, we use u*cos(ωt) + v*sin(ωt) as the ansatz
+        # ~ this is a choice, we use u*cos(ωt) + v*sin(ωt) as the ansatz, but later impose this by using `change_convention!`
         rules[nvar] = rule
 
         D = Differential(t)

@@ -40,6 +40,7 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false);
 
     @testset "single resonator" begin
         @variables t x(t) y(t) ω0 ω F α # symbolic variables
+        @variables T u1(T) v1(T) # symbolic variables
         eq1 = d(d(x, t), t) + ω0^2 * x + α * x^3 ~ F * cos(ω * t)
         EOM = DifferentialEquation(eq1, x)
         add_harmonic!(EOM, x, ω)
@@ -48,13 +49,13 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false);
         rearranged = HarmonicBalance.rearrange_standard(harmonic_eq)
 
         @testset for i in 1:2
-            eqk = expand_fraction(krylov_eq.equations[i].lhs)
+            eqk = krylov_eq.equations[i].lhs
             eqh = expand_fraction(rearranged.equations[i].lhs)
             @variables T u1(T) v1(T) ω0 ω F α # symbolic variables
             subs = Dict(u1 => 1, v1 => 1, α => 1, F => 1, ω0 => 1, ω => 1)
             solk = substitute(eqk, subs)
             solh = substitute(eqh, subs)
-            @test Float64(solk + solh) ≈ 0.0 atol = 1e-10
+            @test Float64(solk - solh) ≈ 0.0 atol = 1e-10
             # ^ different ansatz
         end
     end
@@ -71,13 +72,13 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false);
         rearranged = HarmonicBalance.rearrange_standard(harmonic_eq)
 
         @testset for i in 1:4
-            eqk = expand_fraction(krylov_eq.equations[i].lhs)
+            eqk = krylov_eq.equations[i].lhs
             eqh = expand_fraction(rearranged.equations[i].lhs)
-            @variables T u1(T) v1(T) ω0 ω F α # symbolic variables
-            subs = Dict([u1, v1, α, F, ω0, ω, J] .=> rand(7))
+            @variables T u1(T) v1(T) u2(T) v2(T) ω0 ω F α # symbolic variables
+            subs = Dict([u1, v1, u2, v2, α, F, ω0, ω, J] .=> rand(9))
             solk = substitute(eqk, subs)
             solh = substitute(eqh, subs)
-            @test Float64(solk + solh) ≈ 0.0 atol = 1e-10
+            @test Float64(solk - solh) ≈ 0.0 atol = 1e-10
             # ^ different ansatz
         end
     end
@@ -101,8 +102,8 @@ res2 = get_steady_states(harmonic_eq2, varied, fixed; show_progress=false);
         rearranged = HarmonicBalance.rearrange_standard(harmonic_eq)
 
         @testset for i in 1:4
-            eqk = expand_fraction(krylov_eq.equations[1].lhs)
-            eqh = expand_fraction(rearranged.equations[1].lhs)
+            eqk = krylov_eq.equations[i].lhs
+            eqh = expand_fraction(rearranged.equations[i].lhs)
             @variables T u1(T) v1(T) u2(T) v2(T)
             subs = Dict([u1, v1, u2, v2, ω₁, ω₂, ω, F, J₂, J₁, α₁, α₂] .=> rand(12))
             solk = substitute(eqk, subs)

@@ -60,7 +60,11 @@ plot_linear_response(result, x, 1, Ω_range=range(0.95, 1.05, 300), logscale=tru
 
 The response has a peak at $\omega_0$, irrespective of the driving frequency $\omega$. Indeed, the eigenvalues shown before where plotted in the rotating frame at the frequency of the drive $\omega$. Hence, the imaginary part of eigenvalues shows the frequency (energy) needed to excite the system at it natural frequency (The frequency its want to be excited at.)
 
-Note the slight "bending" of the noise peak with $\omega$ - this is given by the failure of the first-order calculation to capture response far-detuned from the drive frequency.
+Note the slight "bending" of the noise peak with $\omega$ - this is given by the failure of the first-order calculation of the jacobian to capture response far-detuned from the drive frequency. One can correct this by using higher-order derivatives of the `Differentialequation` object in the jacobian calculation. For more details on this see the [thesis](https://www.doi.org/10.3929/ethz-b-000589190). We can use this corrections by setting the `order` argument in the `plot_linear_response` function:
+
+```@example linresp
+plot_linear_response(result, x, 1, Ω_range=range(0.95, 1.05, 300), logscale=true, order=2)
+```
 
 To compute the matrix without plotting you can use the functions specified at the [linear respinse manual](@ref linresp_man).
 

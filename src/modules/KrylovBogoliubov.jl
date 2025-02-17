@@ -72,7 +72,6 @@ function get_krylov_equations(
 
     dEOM = deepcopy(diff_eom)
     !is_rearranged_standard(dEOM) ? rearrange_standard!(dEOM) : nothing
-    first_order_transform!(dEOM, fast_time)
     eom = van_der_Pol(dEOM, fast_time)
 
     eom = slow_flow(eom; fast_time=fast_time, slow_time=slow_time, degree=2)
@@ -113,11 +112,12 @@ function proper_krylov_system(diff_eom::DifferentialEquation, order::Int)
         error("Krylov-Bogoliubov method needs all variables to have a single harmonic!")
     any(length.(harmonics) .> 1) &&
         error("Krylov-Bogoliubov method only supports a single harmonic!")
+    return nothing
 end
 
 function change_convention!(eom::HarmonicEquation, slow_time)
     eqs = eom.equations
-    vars = filter(u -> u.type == "v",  eom.variables)
+    vars = filter(u -> u.type == "v", eom.variables)
     convention = Dict(v.symbol => -v.symbol for v in vars)
 
     eom.equations = expand_derivatives.(substitute_all(eqs, convention))
@@ -126,14 +126,17 @@ function change_convention!(eom::HarmonicEquation, slow_time)
 end
 
 function van_der_Pol(eom::DifferentialEquation, t::Num)
-    !is_harmonic(eom, t) && error("The differential equation is not harmonic in ", t, " !")
-    eqs = get_equations(eom)
+    dEOM = deepcopy(eom)
+    first_order_transform!(dEOM, t)
+
+    !is_harmonic(dEOM, t) && error("The differential equation is not harmonic in ", t, " !")
+    eqs = get_equations(dEOM)
     rules, vars = Dict(), []
 
     # keep count to label new variables
     uv_idx = 1
-    ω = first(flatten(unique(values(eom.harmonics))))
-    nvars = get_variables(eom)
+    ω = first(flatten(unique(values(dEOM.harmonics))))
+    nvars = get_variables(dEOM)
     nvars = nvars[(length(nvars) ÷ 2 + 1):end]
 
     for nvar in nvars # sum over natural variables

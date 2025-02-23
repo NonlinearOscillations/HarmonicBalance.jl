@@ -9,6 +9,12 @@ ODEProblem(::HarmonicEquation, ::Any; timespan::Tuple)
 AdiabaticSweep
 ```
 
+In addition, one can use the `steady_state_sweep` function from `SteadyStateDiffEqExt` to perform a parameter sweep over the steady states of a system. For this one has to load `SteadyStateDiffEq.jl`.
+
+```@docs; canonical=false
+steady_state_sweep
+```
+
 ## Plotting
 
 ```@docs; canonical=false

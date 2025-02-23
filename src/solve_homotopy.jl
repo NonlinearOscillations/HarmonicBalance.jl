@@ -64,6 +64,7 @@ function get_steady_states(
     show_progress=true,
     sorting="nearest",
     classify_default=true,
+    verbose=false,
 )
     Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
@@ -75,6 +76,7 @@ function get_steady_states(
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
+    verbose && @info "Find solutions"
     solutions = get_solutions(prob, method, input_array; show_progress)
 
     result = Result(
@@ -88,9 +90,12 @@ function get_steady_states(
         seed(method),
     )
 
+    verbose && @info "Sort solutions"
     if sorting != "no_sorting"
         sort_solutions!(result; sorting, show_progress)
     end
+
+    verbose && @info "Classify solutions"
     classify_default ? _classify_default!(result) : nothing
 
     return result
@@ -127,12 +132,11 @@ end
 function get_solutions(prob, method, input_array; show_progress)
     raw = _get_raw_solution(prob, method, input_array; show_progress)
 
-    solutions = HC.solutions.(getindex.(raw, 1))
-    if all(isempty.(solutions))
+    if all(isempty.(raw))
         @warn "No solutions found!"
-        return solutions
+        return raw
     else
-        pad_solutions(solutions)
+        pad_solutions(raw)
     end
 end
 
@@ -195,7 +199,21 @@ function _get_raw_solution(
         alg_default_options(method)...,
     )
 
-    return reshape(result_full, size(parameter_values)...)
+    raw_solutions = reshape(result_full, size(parameter_values)...)
+    raw_solutions = HC.solutions.(getindex.(raw_solutions, 1))
+    # cache = HC.NewtonCache(F)
+    if method.check_zero
+        for i in eachindex(parameter_values) # thread?
+            any(is_zero.(raw_solutions[i])) && continue
+            p = parameter_values[i]
+            zero_root = HC.newton(problem.system, zeros(length(problem.variables)), p)
+            if is_zero(zero_root.x)
+                push!(raw_solutions[i], zero_root.x)
+            end
+        end
+    end
+
+    return raw_solutions
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
@@ -227,8 +245,11 @@ function _get_raw_solution(
         ]
     end
 
+    raw_solutions = reshape(result_full, size(parameter_values)...)
+    raw_solutions = HC.solutions.(getindex.(raw_solutions, 1))
+
     # reshape back to the original shape
-    return reshape(result_full, size(parameter_values)...)
+    return raw_solutions
 end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."

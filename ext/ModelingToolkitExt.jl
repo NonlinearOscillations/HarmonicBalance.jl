@@ -40,6 +40,22 @@ end
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.ODESystem from a HarmonicEquation.
+
+### Example
+```julia
+using ModelingToolkit
+
+@variables α ω ω0 F γ t x(t)
+diff_eq = DifferentialEquation(
+    d(x, t, 2) + ω0^2 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+)
+add_harmonic!(diff_eq, x, ω) #
+harmonic_eq = get_harmonic_equations(diff_eq)
+
+sys = ODESystem(harmonic_eq)
+param = (α => 1.0, ω0 => 1.1, F => 0.01, γ => 0.01, ω => 1.1)
+ODEProblem(sys, [1.0, 0.0], (0, 100), param)
+```
 """
 function ModelingToolkit.ODESystem(eom::HarmonicEquation)
     if !is_rearranged(eom) # check if time-derivatives of the variable are on the right hand side
@@ -70,6 +86,21 @@ end
 $(TYPEDSIGNATURES)
 
 Creates and ModelingToolkit.ODESystem from a DifferentialEquation.
+
+### Example
+```julia
+using ModelingToolkit
+
+@variables α ω ω0 F γ t x(t)
+diff_eq = DifferentialEquation(
+    d(x, t, 2) + ω0^2 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+)
+sys = ODESystem(diff_eq)
+
+param = (α => 1.0, ω0 => 1.1, F => 0.01, γ => 0.01, ω => 1.1)
+
+ODEProblem(sys, [1.0, 0.0], (0, 100), param)
+```
 """
 function ModelingToolkit.ODESystem(diff_eq::DifferentialEquation)
     diff_eq = deepcopy(diff_eq)
@@ -100,7 +131,29 @@ end
 @doc """
 $(TYPEDSIGNATURES)
 
-Creates and ModelingToolkit.ODEProblem from a DifferentialEquation.
+Creates and ModelingToolkit.ODEProblem from a DifferentialEquation or HarmonicEquation.
+
+### Example
+```julia
+using ModelingToolkit, StaticArrays
+
+@variables α ω ω0 F γ t x(t)
+diff_eq = DifferentialEquation(
+    d(x, t, 2) + ω0^2 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+)
+add_harmonic!(diff_eq, x, ω) #
+harmonic_eq = get_harmonic_equations(diff_eq)
+
+# in place (most performant for large systems)
+ODEProblem(harmonic_eq, [1.0, 0.0], (0, 100), param)
+
+# out of place (most performant for small systems with StaticArrays)
+ODEProblem(
+    harmonic_eq, [1.0, 0.0], (0, 100), param;
+    in_place=false, u0_constructor=x -> SVector(x...)
+)
+```
+
 """
 function ModelingToolkit.ODEProblem(
     eom::Union{HarmonicEquation,DifferentialEquation},
@@ -123,7 +176,22 @@ end
 @doc """
 $(TYPEDSIGNATURES)
 
-Creates and ModelingToolkit.NonlinearProblem from a DifferentialEquation.
+Creates and ModelingToolkit.NonlinearProblem from a HarmonicEquation.
+
+### Example
+```julia
+using ModelingToolkit, StaticArrays
+
+@variables α ω ω0 F γ t x(t)
+diff_eq = DifferentialEquation(
+    d(x, t, 2) + ω0^2 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+)
+add_harmonic!(diff_eq, x, ω) #
+harmonic_eq = get_harmonic_equations(diff_eq)
+
+
+NonlinearProblem(harmonic_eq, [1.0, 0.0], param)
+```
 """
 function ModelingToolkit.NonlinearProblem(
     eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...
@@ -135,7 +203,22 @@ end
 @doc """
 $(TYPEDSIGNATURES)
 
-Creates and ModelingToolkit.SteadyStateProblem from a DifferentialEquation.
+Creates and ModelingToolkit.SteadyStateProblem from a HarmonicEquation.
+
+### Example
+```julia
+using ModelingToolkit, StaticArrays
+
+@variables α ω ω0 F γ t x(t)
+diff_eq = DifferentialEquation(
+    d(x, t, 2) + ω0^2 * x + α * x^3 + γ * d(x, t) ~ F * cos(ω * t), x
+)
+add_harmonic!(diff_eq, x, ω) #
+harmonic_eq = get_harmonic_equations(diff_eq)
+
+
+SteadyStateProblem(harmonic_eq, [1.0, 0.0], param)
+```
 """
 function ModelingToolkit.SteadyStateProblem(
     eom::HarmonicEquation, u0, p::AbstractDict; in_place=true, kwargs...

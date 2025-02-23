@@ -14,7 +14,7 @@ Problem(
     eom::HarmonicEquation,
     swept::AbstractDict,
     fixed::AbstractDict;
-    compute_Jacobian::Bool=true,
+    compile_Jacobian::Bool=true,
 )
 ```
 """

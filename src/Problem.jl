@@ -55,7 +55,13 @@ mutable struct Problem{
         )
     end # incomplete initialization for user-defined symbolic systems
     function Problem(
-        variables, parameters, swept::OrderedDict, fixed::OrderedDict{K,V}, system, jacobian, eom
+        variables,
+        parameters,
+        swept::OrderedDict,
+        fixed::OrderedDict{K,V},
+        system,
+        jacobian,
+        eom,
     ) where {K,V}
         return new{V,typeof(jacobian)}(
             variables, parameters, swept, fixed, system, jacobian, eom
@@ -85,8 +91,11 @@ end # Probably should merge both constructors
 
 "A constructor for Problem from explicitly entered equations, variables and parameters."
 function HarmonicBalance.Problem(
-    equations::Vector{Num}, variables::Vector{Num}, parameters::Vector{Num},
-    swept::AbstractDict, fixed::AbstractDict
+    equations::Vector{Num},
+    variables::Vector{Num},
+    parameters::Vector{Num},
+    swept::AbstractDict,
+    fixed::AbstractDict,
 )
     vars_new = declare_variable.(string.(variables))
     pars_new = declare_variable.(string.(parameters))

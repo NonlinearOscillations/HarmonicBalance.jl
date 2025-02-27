@@ -36,7 +36,7 @@ function HomotopyContinuation.System(eom::HarmonicEquation)
     eqs = expand_derivatives.(_remove_brackets(eom))
     vars = get_variables(eom)
     pars = eom.parameters
-    return  System(eqs, vars, pars)
+    return System(eqs, vars, pars)
 end
 function HomotopyContinuation.System(eqs::Vector{Num}, vars::Vector{Num}, pars::Vector{Num})
     conv_vars = Num_to_Variable.(vars)

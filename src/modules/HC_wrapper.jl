@@ -32,10 +32,15 @@ function parse_equations(eqs::Vector{Num})
     return [Expression(eval(symbol)) for symbol in parsed_strings]
 end
 
-function System(eom::HarmonicEquation)
+function HomotopyContinuation.System(eom::HarmonicEquation)
     eqs = expand_derivatives.(_remove_brackets(eom))
-    conv_vars = Num_to_Variable.(get_variables(eom))
-    conv_para = Num_to_Variable.(eom.parameters)
+    vars = get_variables(eom)
+    pars = eom.parameters
+    return  System(eqs, vars, pars)
+end
+function HomotopyContinuation.System(eqs::Vector{Num}, vars::Vector{Num}, pars::Vector{Num})
+    conv_vars = Num_to_Variable.(vars)
+    conv_para = Num_to_Variable.(pars)
     return S = HomotopyContinuation.System(
         parse_equations(eqs); variables=conv_vars, parameters=conv_para
     )

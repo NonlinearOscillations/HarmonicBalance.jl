@@ -41,21 +41,21 @@ mutable struct Problem{
     eom::HarmonicEquation
 
     function Problem(
-        variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian
+        variables, parameters, swept::OrderedDict, fixed::OrderedDict{K,V}, system, jacobian
     ) where {K,V}
         return new{V,typeof(jacobian)}(
             variables, parameters, swept, fixed, system, jacobian
         )
     end # incomplete initialization for user-defined symbolic systems
     function Problem(
-        variables, parameters, swept, fixed::OrderedDict{K,V}, system
+        variables, parameters, swept::OrderedDict, fixed::OrderedDict{K,V}, system
     ) where {K,V}
         return new{V,JacobianFunction(ComplexF64)}(
             variables, parameters, swept, fixed, system
         )
     end # incomplete initialization for user-defined symbolic systems
     function Problem(
-        variables, parameters, swept, fixed::OrderedDict{K,V}, system, jacobian, eom
+        variables, parameters, swept::OrderedDict, fixed::OrderedDict{K,V}, system, jacobian, eom
     ) where {K,V}
         return new{V,typeof(jacobian)}(
             variables, parameters, swept, fixed, system, jacobian, eom
@@ -81,7 +81,21 @@ function HarmonicBalance.Problem(
     else
         return Problem(vars_new, eom.parameters, swept, fixed, S)
     end
-end
+end # Probably should merge both constructors
+
+"A constructor for Problem from explicitly entered equations, variables and parameters."
+function HarmonicBalance.Problem(
+    equations::Vector{Num}, variables::Vector{Num}, parameters::Vector{Num},
+    swept::AbstractDict, fixed::AbstractDict
+)
+    vars_new = declare_variable.(string.(variables))
+    pars_new = declare_variable.(string.(parameters))
+
+    system = HomotopyContinuation.System(equations, vars_new, pars_new)
+    # J = HarmonicBalance.get_Jacobian(equations, variables)
+
+    return Problem(vars_new, pars_new, swept, fixed, system)
+end # Probably should merge both constructors
 
 Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
 

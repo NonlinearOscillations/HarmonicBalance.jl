@@ -61,6 +61,7 @@ transform_solutions
 ```@docs
 classify_solutions!
 get_class
+filter_result!
 ```
 
 ### Plotting

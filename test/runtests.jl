@@ -30,6 +30,7 @@ end
     include("Jacobian.jl")
     include("transform_solutions.jl")
     include("sorting.jl")
+    include("classification.jl")
 end
 
 @testset "Plotting" begin

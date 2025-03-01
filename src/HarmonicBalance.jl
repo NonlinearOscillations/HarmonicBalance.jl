@@ -59,6 +59,7 @@ export get_variables
 export get_steady_states
 export classify_solutions!
 export get_class
+export filter_result!
 export get_single_solution
 export transform_solutions
 export IM_TOL

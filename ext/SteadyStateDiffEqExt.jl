@@ -64,8 +64,8 @@ function HarmonicBalance.steady_state_sweep(
         sol_nn = solve(remake(prob_np; p, u0), alg_np; kwargs...)
 
         param_val = tunable_parameters(p)
-        zeros = norm(prob_ss.f(sol_nn.u, param_val, NaN)) # todo check NaN
-        jac = prob_ss.f.jac(sol_nn.u, param_val, NaN)
+        zeros = norm(prob_ss.f(sol_nn.u, param_val, Inf))
+        jac = prob_ss.f.jac(sol_nn.u, param_val, Inf)
         eigval = jac isa AbstractVector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
 
         if !isapprox(zeros, 0; atol=1e-5) || any(λ -> λ > 0, real.(eigval))

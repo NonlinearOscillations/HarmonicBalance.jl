@@ -1,4 +1,5 @@
 using HarmonicBalance
+using Plots
 using Test
 
 using Random
@@ -32,6 +33,7 @@ end
 @testset "Processing solutions" begin
     include("Jacobian.jl")
     include("transform_solutions.jl")
+    include("sorting.jl")
 end
 
 @testset "Plotting" begin

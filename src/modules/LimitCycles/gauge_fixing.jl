@@ -37,12 +37,12 @@ end
     is inserted. Finding the analytical Jacobian is usually extremely time-consuming.
 """
 function _gaugefixed_Jacobian(
-    eom::HarmonicEquation, fixed_var::HarmonicVariable; sym_order, rules
+    eom::HarmonicEquation, fixed_var::HarmonicVariable, soltype::DataType; sym_order, rules
 )
     rules = Dict(rules)
     setindex!(rules, 0, _remove_brackets(fixed_var))
-    jac = get_implicit_Jacobian(eom; rules=rules, sym_order=sym_order)
-    return jac
+    jac = get_implicit_Jacobian(eom; rules, sym_order=sym_order)
+    return JacobianFunction(soltype)(jac)
 end
 
 """
@@ -50,9 +50,8 @@ $(TYPEDSIGNATURES)
 
 Construct a `Problem` from `eom` in the case where U(1) symmetry is present
 due to having added a limit cycle frequency `ω_lc`.
-`explicit_Jacobian=true` attempts to derive a symbolic Jacobian (usually not possible).
 """
-function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
+function _cycle_Problem(eom::HarmonicEquation, swept, fixed, ω_lc::Num)
     eom = deepcopy(eom) # do not mutate eom
     isempty(get_cycle_variables(eom, ω_lc)) ? error("No Hopf variables found!") : nothing
     if !any(isequal.(eom.parameters, ω_lc))
@@ -69,8 +68,8 @@ function _cycle_Problem(eom::HarmonicEquation, ω_lc::Num)
     _fix_gauge!(eom, ω_lc, fixed_var)
 
     # define Problem as usual but with the Hopf Jacobian (always computed implicitly)
-    p = Problem(eom; Jacobian=false)
-    return p
+    p = Problem(eom, swept, fixed; compile_jacobian=false)
+    return eom, p
 end
 
 function _choose_fixed(eom, ω_lc)
@@ -78,15 +77,30 @@ function _choose_fixed(eom, ω_lc)
     return first(vars) # This is arbitrary; better would be to substitute with values
 end
 
-function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
-    prob = _cycle_Problem(eom, ω_lc) # the eom in this problem is gauge-fixed
+function limit_cycle_problem(
+    eom::HarmonicEquation, swept::OrderedDict, fixed::OrderedDict, ω_lc
+)
+    swept, fixed = promote_types(swept, fixed)
+    gauge_fixed_eom, prob = _cycle_Problem(eom, swept, fixed, ω_lc) # the eom in this problem is gauge-fixed
     jacobian = _gaugefixed_Jacobian(
         eom, # this is not gauge_fixed
-        _choose_fixed(eom, ω_lc);
-        sym_order=_free_symbols(prob, OrderedDict(swept)),
+        _choose_fixed(eom, ω_lc),
+        ComplexF64; # HC.jl only supports F64
+        sym_order=_free_symbols(prob),
         rules=fixed,
     )
-    return Problem(prob.variables, prob.parameters, prob.system, jacobian, prob.eom)
+    return Problem(
+        prob.variables,
+        prob.parameters,
+        prob.swept_parameters,
+        prob.fixed_parameters,
+        prob.system,
+        jacobian,
+        gauge_fixed_eom, # should this be gauge-fixed?
+    )
+end
+function limit_cycle_problem(eom::HarmonicEquation, swept, fixed, ω_lc)
+    return limit_cycle_problem(eom, OrderedDict(swept), OrderedDict(fixed), ω_lc)
 end
 
 """
@@ -128,35 +142,9 @@ function get_limit_cycles(
     classify_default=true,
     kwargs...,
 )
-    result = get_steady_states(
-        prob, method, swept, fixed; classify_default=classify_default, kwargs...
-    )
+    result = get_steady_states(prob, method; classify_default=classify_default, kwargs...)
     classify_default ? _classify_limit_cycles!(result, ω_lc) : nothing
     return result
-end
-
-# if abs(ω_lc) < tol, set all classifications to false
-# TOLERANCE HARDCODED FOR NOW
-function _classify_limit_cycles!(res::Result, ω_lc::Num)
-    ω_lc_idx = findfirst(x -> isequal(x, ω_lc), res.problem.variables)
-    for idx in CartesianIndices(res.solutions),
-        c in filter(x -> x != "binary_labels", keys(res.classes))
-
-        res.classes[c][idx] .*= abs.(getindex.(res.solutions[idx], ω_lc_idx)) .> 1e-10
-    end
-
-    classify_unique!(res, ω_lc)
-
-    unique_stable = find_branch_order(
-        map(.*, res.classes["stable"], res.classes["unique_cycle"])
-    )
-
-    # branches which are unique but never stable
-    unique_unstable = setdiff(
-        find_branch_order(map(.*, res.classes["unique_cycle"], res.classes["physical"])),
-        unique_stable,
-    )
-    return order_branches!(res, vcat(unique_stable, unique_unstable)) # shuffle to have relevant branches first
 end
 
 """

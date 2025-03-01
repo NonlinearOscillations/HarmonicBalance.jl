@@ -41,12 +41,8 @@ varied = ω => range(0.9, 1.1, 10)
 result = get_steady_states(harmonic_eq, varied, fixed; show_progress=false)
 
 @testset "first order" begin
-    plot_linear_response(
-        result, x; branch=1, Ω_range=range(0.9, 1.1, 10), order=1, logscale=true
-    )
-    plot_rotframe_jacobian_response(
-        result; Ω_range=range(0.01, 1.1, 10), branch=1, logscale=true
-    )
+    plot_linear_response(result, x, 1; Ω_range=range(0.9, 1.1, 10), order=1, logscale=true)
+    plot_rotframe_jacobian_response(result, 1; Ω_range=range(0.01, 1.1, 10), logscale=true)
 end
 
 @testset "second order" begin
@@ -54,14 +50,26 @@ end
     M = response_matrix.matrix
     @test M[1](ones(4)) isa ComplexF64
 
-    plot_linear_response(
-        result, x; branch=1, Ω_range=range(0.9, 1.1, 10), order=2, logscale=true
-    )
+    plot_linear_response(result, x, 1; Ω_range=range(0.9, 1.1, 10), order=2, logscale=true)
+end
+
+@testset "second order krylov" begin
+    @variables α, ω, ω0, F, γ, t, x(t)
+    diff_eq = DifferentialEquation(d(x, t, 2) + ω0^2 * x + α * x^3 ~ F * cos(ω * t), x)
+    add_harmonic!(diff_eq, x, ω)
+    kylov_eq = get_krylov_equations(diff_eq; order=1)
+
+    fixed = (α => 1.0, ω0 => 1.0, F => 0.002)
+    varied = ω => range(0.95, 1.1, 10)
+    result = get_steady_states(kylov_eq, varied, fixed)
+
+    Ω_range = range(0.95, 1.1, 10)
+    HarmonicBalance.get_linear_response(result, x, Ω_range, 1; order=2)
 end
 
 @testset "eigenvalues" begin
-    plot_eigenvalues(result; branch=1)
-    plot_eigenvalues(result; branch=1, type=:re, class="all")
+    plot_eigenvalues(result, 1)
+    plot_eigenvalues(result, 1; type=:re, class="all")
 
     @testset "NaN Exception Error" begin
         @variables α λ ω0 ω ωₚ γ F t x(t)

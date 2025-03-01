@@ -19,8 +19,8 @@ function sort_solutions(
         error("Only the following sorting options are allowed:  ", sorting_schemes)
     sorting == "none" && return solutions
     l = length(size(solutions))
-    l == 1 && return sort_1D(solutions; show_progress=show_progress)
-    l == 2 && return sort_2D(solutions; sorting=sorting, show_progress=show_progress)
+    l == 1 && return sort_1D(solutions; show_progress)
+    l == 2 && return sort_2D(solutions; sorting, show_progress)
     return error("do not know how to solve solution which are not 1D or 2D")
 end
 
@@ -34,9 +34,7 @@ specifies the method used to get continuous solution branches. Options are `"hil
 and `"none"`. The `show_progress` keyword argument indicates whether a progress bar should be displayed.
 """
 function sort_solutions!(res::Result; sorting="nearest", show_progress=true)
-    return res.solutions .= sort_solutions(
-        res.solutions; sorting=sorting, show_progress=show_progress
-    )
+    return res.solutions .= sort_solutions(res.solutions; sorting, show_progress)
 end
 
 #####

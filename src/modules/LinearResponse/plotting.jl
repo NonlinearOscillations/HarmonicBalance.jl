@@ -1,6 +1,22 @@
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the Jacobian response spectrum for a given system. Computes the magnitude of the Jacobian response for stable solutions across specified frequency ranges.
+
+# Arguments
+- `res::Result`: Result object containing the system's solutions
+- `nat_var::Num`: Natural variable to evaluate in the response
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int` or `followed_branches::Vector{Int}`: Branch number(s) to analyze
+- `show_progress=true`: Whether to show a progress bar
+- `force=false`: Force recalculation of spectrum even if already exists
+
+# Returns
+- Array{P,2}: Complex response matrix where rows correspond to frequencies and columns to solutions
+"""
 function get_jacobian_response(
-    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
-) where {S,P}
+    res::Result{D,S,P}, nat_var::Num, Ω_range, branch::Int; show_progress=true
+) where {D,S,P}
     stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
@@ -23,13 +39,13 @@ function get_jacobian_response(
     return C
 end
 function get_jacobian_response(
-    res::Result{S,P},
+    res::Result{D,S,P},
     nat_var::Num,
     Ω_range,
     followed_branches::Vector{Int};
     show_progress=true,
     force=false,
-) where {S,P}
+) where {D,S,P}
     spectra = [
         JacobianSpectrum(res; branch=branch, index=i, force=force) for
         (i, branch) in pairs(followed_branches)
@@ -52,9 +68,27 @@ function get_jacobian_response(
     return C
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the linear response of the system for a given branch.
+Evaluates the linear response by solving the linear response ODE for each stable solution
+and input frequency in the given range.
+
+# Arguments
+- `res`: Result object containing the system's solutions
+- `nat_var::Num`: Natural variable to evaluate in the response
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int`: Branch number to analyze
+- `order`: Order of the response to calculate
+- `show_progress=true`: Whether to show a progress bar
+
+# Returns
+- Array{P,2}: Response matrix where rows correspond to frequencies and columns to stable solutions
+"""
 function get_linear_response(
-    res::Result{S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
-) where {S,P}
+    res::Result{D,S,P}, nat_var::Num, Ω_range, branch::Int; order, show_progress=true
+) where {D,S,P}
     stable = get_class(res, branch, "stable") # boolean array
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
 
@@ -82,9 +116,27 @@ function get_linear_response(
     return C
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Calculate the rotating frame Jacobian response for a given branch.
+Computes the rotating frame Jacobian response by evaluating eigenvalues of the numerical
+Jacobian and calculating the response magnitude for each frequency in the range.
+
+# Arguments
+- `res::Result`: Result object containing the system's solutions
+- `Ω_range`: Range of frequencies to evaluate
+- `branch::Int`: Branch number to analyze
+- `show_progress=true`: Whether to show a progress bar
+- `damping_mod`: Damping modification parameter
+
+# Returns
+- Array{P,2}: Response matrix in the rotating frame
+
+"""
 function get_rotframe_jacobian_response(
-    res::Result{S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
-) where {S,P}
+    res::Result{D,S,P}, Ω_range, branch::Int; show_progress=true, damping_mod
+) where {D,S,P}
     stable = get_class(res, branch, "stable")
     !any(stable) && error("Cannot generate a spectrum - no stable solutions!")
     stableidx = findall(stable)
@@ -94,7 +146,7 @@ function get_rotframe_jacobian_response(
         bar = Progress(
             length(C);
             dt=1,
-            desc="Solving the linear response ODE for each solution and input frequency ... ",
+            desc="Solving the linear response ODE for each solution and input frequency ...",
             barlen=50,
         )
     end
@@ -118,176 +170,38 @@ function get_rotframe_jacobian_response(
 end
 
 """
-    plot_linear_response(res::Result, nat_var::Num; Ω_range, branch::Int, order=1, logscale=false, show_progress=true, kwargs...)
+    eigenvalues(res::Result, branch; class=["physical"])
 
-Plot the linear response to white noise of the variable `nat_var` for Result `res` on `branch` for input frequencies `Ω_range`.
-Slow-time derivatives up to `order` are kept in the process.
+Calculate the eigenvalues of the Jacobian matrix of the harmonic equations of a `branch`
+for a one dimensional sweep in the [Result](@ref) struct.
 
-Any kwargs are fed to Plots' gr().
+# Arguments
+- `res::Result`: Result object containing solutions and jacobian information
+- `branch`: Index of the solution branch to analyze
+- `class=["physical"]`: Filter for solution classes to include, defaults to physical solutions
 
-Solutions not belonging to the `physical` class are ignored.
+# Returns
+- Vector of filtered eigenvalues along the solution branch
+
+# Notes
+- Currently only supports 1-dimensional parameter sweeps (D=1)
+- Will throw an error if branch contains NaN values
+- Eigenvalues are filtered based on the specified solution classes
 """
-function plot_linear_response(
-    res::Result,
-    nat_var::Num;
-    Ω_range,
-    branch::Int,
-    order=1,
-    logscale=false,
-    show_progress=true,
-    kwargs...,
-)
-    length(size(res.solutions)) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
-    stable = get_class(res, branch, "stable") # boolean array
-
-    X = collect(values(res.swept_parameters))[1][stable]
-
-    C = if order == 1
-        get_jacobian_response(res, nat_var, Ω_range, branch; show_progress=show_progress)
-    else
-        get_linear_response(
-            res, nat_var, Ω_range, branch; order=order, show_progress=show_progress
-        )
-    end
-    C = logscale ? log.(C) : C
-
-    xlabel = latexify(string(first(keys(res.swept_parameters))))
-    ylabel = latexify("Ω")
-    return heatmap(
-        X,
-        Ω_range,
-        C;
-        color=:viridis,
-        xlabel=xlabel,
-        ylabel=ylabel,
-        _set_Plots_default...,
-        kwargs...,
-    )
-end
-function plot_linear_response(
-    res::Result,
-    nat_var::Num,
-    followed_branches::Vector{Int};
-    Ω_range,
-    logscale=false,
-    show_progress=true,
-    switch_axis=false,
-    force=true,
-    kwargs...,
-)
-    length(size(res.solutions)) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
-
-    X = collect(first(values(res.swept_parameters)))
-
-    C = get_jacobian_response(res, nat_var, Ω_range, followed_branches; force=force)
-    C = logscale ? log.(C) : C
-
-    xlabel = latexify(string(first(keys(res.swept_parameters))))
-    ylabel = latexify("Ω")
-    if switch_axis
-        heatmap(
-            Ω_range,
-            X,
-            C';
-            color=:viridis,
-            xlabel=ylabel,
-            ylabel=xlabel,
-            _set_Plots_default...,
-            kwargs...,
-        )
-    else
-        heatmap(
-            X,
-            Ω_range,
-            C;
-            color=:viridis,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            _set_Plots_default...,
-            kwargs...,
-        )
-    end
-end
-
-"""
-    plot_rotframe_jacobian_response(res::Result; Ω_range, branch::Int, logscale=true, damping_mod = 1.0, show_progress=true, kwargs...)
-
-Plot the linear response to white noise in the rotating frame for Result `res` on `branch` for input frequencies `Ω_range`. 'damping_mod' gets multiplied by the real part of the eigenvalues of the Jacobian in order to be able to make peaks with similar frequency separately identifiable.
-
-Any kwargs are fed to Plots' gr().
-
-Solutions not belonging to the `physical` class are ignored.
-"""
-function plot_rotframe_jacobian_response(
-    res::Result{S,P};
-    Ω_range,
-    branch::Int,
-    logscale=true,
-    damping_mod=one(P),
-    show_progress=true,
-    kwargs...,
-) where {S,P}
-    length(size(res.solutions)) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
-    stable = get_class(res, branch, "stable") # boolean array
-
-    Ω_range = vcat(Ω_range)
-    !isempty(findall(x -> x == 0, Ω_range)) &&
-        @warn("Probing with Ω=0 may lead to unexpected results")
-
-    X = Vector{P}(collect(values(res.swept_parameters))[1][stable])
-
-    C = get_rotframe_jacobian_response(
-        res, Ω_range, branch; show_progress=show_progress, damping_mod=damping_mod
-    )
-    C = logscale ? log.(C) : C
-
-    return heatmap(
-        X,
-        Ω_range,
-        C;
-        color=:viridis,
-        xlabel=latexify(string(first(keys(res.swept_parameters)))),
-        ylabel=latexify("Ω"),
-        _set_Plots_default...,
-        kwargs...,
-    )
-end
-
-"""
-    plot_eigenvalues(res::Result; branch::Int, class=["physical"], type=:imag, projection=v -> 1, cscheme=:default, kwargs...)
-
-Plot the eigenvalues of the jacobian in the rotating frame for Result `res` on `branch`. Either the real (`type=:real``) or imaginary part (`type=:imag``) can be plotted. The `projection` function ℜᵈ → ℜ is applied to the eigenvectors and defines the color of the eigenvalues. The color scheme can be set to a custom one or to the default one.
-
-Any kwargs are fed to Plots' gr().
-
-Solutions not belonging to the `physical` class are ignored.
-"""
-function plot_eigenvalues(
-    res::Result{S,P};
-    branch,
-    class=["physical"],
-    type=:imag,
-    projection=v -> 1,
-    cscheme=:default,
-    kwargs...,
-) where {S,P}
+function eigenvalues(res::Result{D,S,P}, branch; class=["physical"]) where {D,S,P}
     filter = _get_mask(res, class)
     filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
 
-    dim(res) != 1 &&
-        error("The results are two dimensional. Consider using the `cut` keyword.")
-    x = string(first(keys(res.swept_parameters)))
-    varied = Vector{P}(collect(first(values(res.swept_parameters))))
+    D != 1 && error("For the moment only 1 dimension sweep are supported.")
+    varied = Vector{P}(swept_parameters(res))
 
     eigenvalues = map(eachindex(varied)) do i
         jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
         if any(isnan, jac)
             throw(
                 ErrorException(
-                    "The branch contains NaN values. Likely, the branch has non-physical solutions in the parameter sweep",
+                    "The branch contains NaN values.
+                    Likely, the branch has non-physical solutions in the parameter sweep",
                 ),
             )
         end
@@ -295,42 +209,49 @@ function plot_eigenvalues(
     end
     eigenvalues_filtered = map(.*, eigenvalues, filter_branch)
 
-    eigenvectors = [
-        eigvecs(res.jacobian(get_variable_solutions(res; branch=branch, index=i))) for
-        i in eachindex(varied)
-    ]
+    return eigenvalues_filtered
+end
+
+"""
+    eigenvectors(res::Result, branch; class=["physical"])
+
+Calculate the eigenvectors of the Jacobian matrix of the harmonic equations of a `branch`
+for a one dimensional sweep in the [Result](@ref) struct.
+
+
+# Arguments
+- `res::Result`: Result object containing solutions and jacobian information
+- `branch`: Index of the solution branch to analyze
+- `class=["physical"]`: Filter for solution classes to include, defaults to physical solutions
+
+# Returns
+- Vector of filtered eigenvectors along the solution branch
+
+# Notes
+- Currently only supports 1-dimensional parameter sweeps (D=1)
+- Will throw an error if branch contains NaN values
+- Eigenvectors are filtered based on the specified solution classes
+"""
+function eigenvectors(res::Result{D,S,P}, branch; class=["physical"]) where {D,S,P}
+    filter = _get_mask(res, class)
+    filter_branch = map(x -> getindex(x, branch), replace.(filter, 0 => NaN))
+
+    D != 1 && error("For the moment only 1 dimension sweep are supported.")
+    varied = Vector{P}(swept_parameters(res))
+
+    eigenvectors = map(eachindex(varied)) do i
+        jac = res.jacobian(get_variable_solutions(res; branch=branch, index=i))
+        if any(isnan, jac)
+            throw(
+                ErrorException(
+                    "The branch contains NaN values.
+                    Likely, the branch has non-physical solutions in the parameter sweep",
+                ),
+            )
+        end
+        eigvecs(jac)
+    end
     eigvecs_filtered = map(.*, eigenvectors, filter_branch)
 
-    norm = reduce(
-        hcat, [[projection(vec) for vec in eachcol(vecs)] for vecs in eigvecs_filtered]
-    )
-
-    if type == :imag
-        eigval = reduce(hcat, imag.(eigenvalues_filtered))'
-        ylab = L"\Im\{\epsilon\}"
-    else
-        eigval = reduce(hcat, real.(eigenvalues_filtered))'
-        ylab = L"\Re\{\epsilon\}"
-    end
-
-    if cscheme == :default
-        colors = theme_palette(cscheme)
-        myscheme = cgrad([RGB(1.0, 1.0, 1.0), colors[branch]])
-    else
-        myscheme = cscheme
-    end
-
-    return scatter(
-        varied,
-        eigval;
-        legend=false,
-        ms=2,
-        markerstrokewidth=0,
-        xlab=latexify(x),
-        ylab=ylab,
-        zcolor=norm',
-        c=myscheme,
-        colorbar=false,
-        kwargs...,
-    )
+    return eigvecs_filtered
 end

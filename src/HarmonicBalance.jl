@@ -20,9 +20,6 @@ using BijectiveHilbert: BijectiveHilbert, Simple2D, decode_hilbert!, encode_hilb
 using HomotopyContinuation: HomotopyContinuation
 const HC = HomotopyContinuation
 
-using Plots: Plots, plot, plot!, heatmap, Plot
-using Latexify: Latexify, latexify
-
 using Symbolics:
     Symbolics,
     Num,
@@ -39,7 +36,7 @@ using Symbolics:
 using SymbolicUtils: SymbolicUtils
 
 include("modules/ExprUtils/ExprUtils.jl")
-using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, is_identity
+using .ExprUtils: is_harmonic, substitute_all, drop_powers, count_derivatives, hasnan
 
 # symbolics equations
 export @variables, d
@@ -73,18 +70,24 @@ export WarmUp
 export TotalDegree
 export Polyhedral
 
+# Result
+export swept_parameter, swept_parameters
+export get_solutions
+export attractors
+export phase_diagram
+
 # Limit cycles
 export get_cycle_variables, get_limit_cycles, add_pairs!
 
 # LinearResponse
 export get_Jacobian
+export eigenvalues, eigenvectors
 
 # plotting
 export plot_linear_response
 export plot_phase_diagram
 export plot_rotframe_jacobian_response
 export plot_eigenvalues
-export plot, plot!
 export plot_spaghetti
 
 # extension functions
@@ -112,7 +115,6 @@ include("classification.jl")
 
 include("saving.jl")
 include("transform_solutions.jl")
-include("plotting_Plots.jl")
 
 include("modules/HC_wrapper.jl")
 using .HC_wrapper
@@ -128,15 +130,15 @@ using .KrylovBogoliubov
 
 # Precompilation setup
 using PrecompileTools: @setup_workload, @compile_workload
-@setup_workload begin
-    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-    # precompile file and potentially make loading faster.
-    @compile_workload begin
-        # all calls in this block will be precompiled, regardless of whether
-        # they belong to your package or not (on Julia 1.8 and higher)
-        include("precompilation.jl")
-    end
-end
+# @setup_workload begin
+#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+#     # precompile file and potentially make loading faster.
+#     @compile_workload begin
+#         # all calls in this block will be precompiled, regardless of whether
+#         # they belong to your package or not (on Julia 1.8 and higher)
+#         include("precompilation.jl")
+#     end
+# end
 
 # Error hint for extensions stubs
 function __init__()
@@ -147,10 +149,22 @@ function __init__()
         _error_hinter("OrdinaryDiffEq", :TimeEvolution, plot_1D_solutions_branch),
         MethodError,
     )
-    return Base.Experimental.register_error_hint(
+    Base.Experimental.register_error_hint(
         _error_hinter("SteadyStateDiffEq", :SteadyStateDiffEqExt, steady_state_sweep),
         MethodError,
     )
+    for func in [
+        plot_spaghetti,
+        plot_eigenvalues,
+        plot_rotframe_jacobian_response,
+        plot_phase_diagram,
+        plot_linear_response,
+    ]
+        Base.Experimental.register_error_hint(
+            _error_hinter("Plots", :PlotsExt, func), MethodError
+        )
+    end
+    return nothing
 end
 
 end # module

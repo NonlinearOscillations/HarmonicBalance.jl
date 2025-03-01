@@ -6,6 +6,8 @@ using HarmonicBalance: HarmonicBalance, steady_state_sweep
 using SteadyStateDiffEq: solve, NonlinearProblem, SteadyStateProblem, DynamicSS, remake
 using LinearAlgebra: norm, eigvals
 using SteadyStateDiffEq.SciMLBase.SciMLStructures: Tunable, replace
+# using NonlinearSolve.NonlinearSolveBase.Utils: evaluate_f
+# evaluate_f(prob_np,[0])
 
 """
     steady_state_sweep(prob::SteadyStateProblem, alg::DynamicSS; varied::Pair, kwargs...)
@@ -27,8 +29,8 @@ function HarmonicBalance.steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? [0.0, 0.0] : result[i - 1]
         # make type-stable: FD.Dual or Float
-        parameters = get_new_parameters(prob, varied_idx, value)
-        sol = solve(remake(prob; p=parameters, u0=u0), alg; kwargs...)
+        p = get_new_parameters(prob, varied_idx, value)
+        sol = solve(remake(prob; p, u0), alg; kwargs...)
         result[i] = sol.u
     end
     return result
@@ -58,19 +60,16 @@ function HarmonicBalance.steady_state_sweep(
     foreach(pairs(sweep_range)) do (i, value)
         u0 = i == 1 ? Base.zeros(length(prob_np.u0)) : result[i - 1]
         # make type-stable: FD.Dual or Float
-        parameters = get_new_parameters(prob_np, varied_idx, value)
-        sol_nn = solve(remake(prob_np; p=parameters, u0=u0), alg_np; kwargs...)
+        p = get_new_parameters(prob_np, varied_idx, value)
+        sol_nn = solve(remake(prob_np; p, u0), alg_np; kwargs...)
 
-        # last argument is time but does not matter
-        param_val = tunable_parameters(parameters)
-        zeros = norm(prob_np.f.f.f.f.f_oop(sol_nn.u, param_val, 0))
-        jac = prob_np.f.jac.f.f.f_oop(sol_nn.u, param_val, 0)
-        eigval = jac isa Vector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
+        param_val = tunable_parameters(p)
+        zeros = norm(prob_ss.f(sol_nn.u, param_val, Inf))
+        jac = prob_ss.f.jac(sol_nn.u, param_val, Inf)
+        eigval = jac isa AbstractVector ? jac : eigvals(jac) # eigvals favourable supports FD.Dual
 
         if !isapprox(zeros, 0; atol=1e-5) || any(λ -> λ > 0, real.(eigval))
-            sol_ss = solve(
-                remake(prob_ss; p=parameters, u0=u0), alg_ss; abstol=1e-5, reltol=1e-5
-            )
+            sol_ss = solve(remake(prob_ss; p, u0), alg_ss; abstol=1e-5, reltol=1e-5)
             result[i] = sol_ss.u
         else
             result[i] = sol_nn.u

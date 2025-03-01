@@ -1,5 +1,3 @@
-const JacobianFunction(T) = FunctionWrapper{Matrix{T},Tuple{Vector{T}}}
-
 """
 Compile the Jacobian from `prob`, inserting `fixed_parameters`.
 Returns a function that takes a vector of variables and `swept_parameters` to give the Jacobian.
@@ -8,19 +6,16 @@ For LC variables called "hopf", the Jacobian is already compiled.
 For Type stability the function is wrapped in a FunctionWrapper.
 """
 function _compile_Jacobian(
-    prob::Problem,
-    soltype::DataType,
-    swept_parameters::OrderedDict,
-    fixed_parameters::OrderedDict,
+    eom::HarmonicEquation, soltype::DataType, swept::OrderedDict, fixed::OrderedDict
 )::JacobianFunction(soltype)
-    if "Hopf" ∈ getfield.(prob.eom.variables, :type)
-        compiled_J = prob.jacobian
-    elseif !is_identity(prob.jacobian)
-        compiled_J = compile_matrix(
-            prob.jacobian, _free_symbols(prob, swept_parameters); rules=fixed_parameters
-        )
+    if "Hopf" ∈ getfield.(eom.variables, :type)
+        compiled_J = eom.jacobian
+    elseif !hasnan(eom.jacobian)
+        compiled_J = compile_matrix(eom.jacobian, _free_symbols(eom, swept); rules=fixed)
     else
-        compiled_J = get_implicit_Jacobian(prob, swept_parameters, fixed_parameters)
+        compiled_J = get_implicit_Jacobian(
+            eom; sym_order=_free_symbols(eom, swept), rules=fixed
+        )
     end
     return JacobianFunction(soltype)(compiled_J)
 end
@@ -55,6 +50,10 @@ function get_Jacobian(eom::HarmonicEquation)::Matrix{Num}
     vars = _remove_brackets.(eom.variables)
 
     return get_Jacobian(lhs, vars)
+end
+
+function add_jacobian!(eom::HarmonicEquation)
+    return eom.jacobian .= get_Jacobian(eom)
 end
 
 " Obtain a Jacobian from a `DifferentialEquation` by first converting it into a `HarmonicEquation`. "
@@ -115,12 +114,18 @@ avoiding huge symbolic operations.
 Returns a function `f(soln::OrderedDict{Num,T})::Matrix{T}`.
 """
 function get_implicit_Jacobian(eom::HarmonicEquation; sym_order, rules=Dict())
-    J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules=rules)
-    J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules=rules)
+    J0c = compile_matrix(_get_J_matrix(eom; order=0), sym_order; rules)
+    J1c = compile_matrix(_get_J_matrix(eom; order=1), sym_order; rules)
     jacfunc(vals::Vector) = -inv(real.(J1c(vals))) * J0c(vals)
     return jacfunc
 end
 
-function get_implicit_Jacobian(p::Problem, swept, fixed)
-    return get_implicit_Jacobian(p.eom; sym_order=_free_symbols(p, swept), rules=fixed)
+function get_implicit_Jacobian(p::Problem)
+    return get_implicit_Jacobian(
+        p.eom; sym_order=_free_symbols(p), rules=p.fixed_parameters
+    )
+end
+
+function dummy_symbolic_Jacobian(n::Int)::Matrix{Num}
+    return Num.(float.(collect(LinearAlgebra.I(n))) .* NaN)
 end

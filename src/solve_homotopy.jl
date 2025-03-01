@@ -60,25 +60,24 @@ A steady state result for 1000 parameter points
 """
 function get_steady_states(
     prob::Problem,
-    method::HarmonicBalanceMethod,
-    swept_parameters::OrderedDict,
-    fixed_parameters::OrderedDict;
+    method::HarmonicBalanceMethod;
     show_progress=true,
     sorting="nearest",
     classify_default=true,
+    verbose=false,
 )
     Random.seed!(seed(method))
     # make sure the variables are in our namespace to make them accessible later
-    declare_variable.(string.(cat(prob.parameters, prob.variables; dims=1)))
+    declare_variables(prob)
+
+    swept_parameters = prob.swept_parameters
+    fixed_parameters = prob.fixed_parameters
 
     unique_fixed, input_array = _prepare_input_params(
         prob, swept_parameters, fixed_parameters
     )
-    solutions = get_solutions(prob, method, input_array; show_progress=show_progress)
-
-    compiled_J = _compile_Jacobian(
-        prob, solution_type(solutions), swept_parameters, unique_fixed
-    )
+    verbose && @info "Find solutions"
+    solutions = get_solutions(prob, method, input_array; show_progress)
 
     result = Result(
         solutions,
@@ -87,53 +86,57 @@ function get_steady_states(
         prob,
         Dict(),
         zeros(Int64, size(solutions)...),
-        compiled_J,
+        prob.jacobian,
         seed(method),
     )
 
+    verbose && @info "Sort solutions"
     if sorting != "no_sorting"
-        sort_solutions!(result; sorting=sorting, show_progress=show_progress)
+        sort_solutions!(result; sorting, show_progress)
     end
+
+    verbose && @info "Classify solutions"
     classify_default ? _classify_default!(result) : nothing
 
     return result
 end
 
 function get_steady_states(
-    p::Problem, method::HarmonicBalanceMethod, swept, fixed; kwargs...
-)
-    return get_steady_states(p, method, OrderedDict(swept), OrderedDict(fixed); kwargs...)
-end
-function get_steady_states(
     eom::HarmonicEquation, method::HarmonicBalanceMethod, swept, fixed; kwargs...
 )
-    return get_steady_states(Problem(eom), method, swept, fixed; kwargs...)
+    return get_steady_states(
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), method; kwargs...
+    )
 end
-function get_steady_states(eom::HarmonicEquation, pairs::Dict; kwargs...)
+function get_steady_states(eom::HarmonicEquation, pairs::Union{Dict,OrderedDict}; kwargs...)
     swept = filter(x -> length(x[2]) > 1, pairs)
     fixed = filter(x -> length(x[2]) == 1, pairs)
     return get_steady_states(eom, swept, fixed; kwargs...)
 end
 function get_steady_states(
-    eom::HarmonicEquation, method::HarmonicBalanceMethod, pairs::Dict; kwargs...
+    eom::HarmonicEquation,
+    method::HarmonicBalanceMethod,
+    pairs::Union{Dict,OrderedDict};
+    kwargs...,
 )
     swept = filter(x -> length(x[2]) > 1, pairs)
     fixed = filter(x -> length(x[2]) == 1, pairs)
     return get_steady_states(eom, method, swept, fixed; kwargs...)
 end
 function get_steady_states(eom::HarmonicEquation, swept, fixed; kwargs...)
-    return get_steady_states(Problem(eom), WarmUp(), swept, fixed; kwargs...)
+    return get_steady_states(
+        Problem(eom, OrderedDict(swept), OrderedDict(fixed)), WarmUp(); kwargs...
+    )
 end
 
 function get_solutions(prob, method, input_array; show_progress)
-    raw = _get_raw_solution(prob, method, input_array; show_progress=show_progress)
+    raw = _get_raw_solution(prob, method, input_array; show_progress)
 
-    solutions = HC.solutions.(getindex.(raw, 1))
-    if all(isempty.(solutions))
+    if all(isempty.(raw))
         @warn "No solutions found!"
-        return solutions
+        return raw
     else
-        pad_solutions(solutions)
+        pad_solutions(raw)
     end
 end
 
@@ -154,31 +157,9 @@ to sweep and kwargs
 function _prepare_input_params(
     prob::Problem, sweeps::OrderedDict, fixed_parameters::OrderedDict
 )
-    variable_names = var_name.([keys(fixed_parameters)..., keys(sweeps)...])
-    if any([var_name(var) ∈ variable_names for var in get_variables(prob)])
-        error("Cannot fix one of the variables!")
-    end
-    # sweeping takes precedence over fixed_parameters
-    unique_fixed = filter_duplicate_parameters(sweeps, fixed_parameters)
-
-    # fixed order of parameters
-    all_keys = cat(collect(keys(sweeps)), collect(keys(fixed_parameters)); dims=1)
-    # the order of parameters we have now does not correspond to that in prob!
-    # get the order from prob and construct a permutation to rearrange our parameters
-    error = ArgumentError("Some input parameters are missing or appear more than once!")
-    permutation = try
-        # find the matching position of each parameter
-        p = [findall(x -> isequal(x, par), all_keys) for par in prob.parameters]
-        all((length.(p)) .== 1) || throw(error) # some parameter exists more than twice!
-        p = getindex.(p, 1) # all exist once -> flatten
-        # ∨ parameters sorted wrong!
-        isequal(all_keys[getindex.(p, 1)], prob.parameters) || throw(error)
-        # ∨ extra parameters present!
-        #isempty(setdiff(all_keys, prob.parameters)) || throw(error)
-        p
-    catch
-        throw(error)
-    end
+    unique_fixed, permutation = unique_fixed_and_permutations(
+        prob, sweeps, fixed_parameters
+    )
 
     input_array = type_stable_parameters(sweeps, fixed_parameters)
     # order each parameter vector to match the order in prob
@@ -204,7 +185,7 @@ function _get_raw_solution(
         problem.system;
         start_system=method_symbol(warm_up_method),
         target_parameters=start_parameters,
-        show_progress=show_progress,
+        show_progress,
         alg_default_options(warm_up_method)...,
         alg_specific_options(warm_up_method)...,
     )
@@ -214,11 +195,25 @@ function _get_raw_solution(
         HC.solutions(warmup_solution);
         start_parameters=start_parameters,
         target_parameters=parameter_values,
-        show_progress=show_progress,
+        show_progress,
         alg_default_options(method)...,
     )
 
-    return reshape(result_full, size(parameter_values)...)
+    raw_solutions = reshape(result_full, size(parameter_values)...)
+    raw_solutions = HC.solutions.(getindex.(raw_solutions, 1))
+    # cache = HC.NewtonCache(F)
+    if method.check_zero
+        for i in eachindex(parameter_values) # thread?
+            any(is_zero.(raw_solutions[i])) && continue
+            p = parameter_values[i]
+            zero_root = HC.newton(problem.system, zeros(length(problem.variables)), p)
+            if is_zero(zero_root.x)
+                push!(raw_solutions[i], zero_root.x)
+            end
+        end
+    end
+
+    return raw_solutions
 end
 
 "Uses HomotopyContinuation to solve `problem` at specified `parameter_values`."
@@ -250,8 +245,11 @@ function _get_raw_solution(
         ]
     end
 
+    raw_solutions = reshape(result_full, size(parameter_values)...)
+    raw_solutions = HC.solutions.(getindex.(raw_solutions, 1))
+
     # reshape back to the original shape
-    return reshape(result_full, size(parameter_values)...)
+    return raw_solutions
 end
 
 "Add `padding_value` to `solutions` in case their number changes in parameter space."

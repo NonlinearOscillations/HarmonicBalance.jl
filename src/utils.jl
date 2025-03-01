@@ -1,5 +1,6 @@
 is_real(x) = abs(imag(x)) / abs(real(x)) < IM_TOL || abs(x) < 1e-70
 is_real(x::Array) = is_real.(x)
+is_zero(x::Vector{ComplexF64}; atol=1e-6) = all(isapprox.(x, complex(0.0); atol))
 
 flatten(a) = collect(Iterators.flatten(a))
 
@@ -29,6 +30,17 @@ function parameter_type(sweeps::OrderedDict, fixed_parameters::OrderedDict)
     return common_type(input_array)
 end
 
+function promote_types(sweeps::OrderedDict, fixed_parameters::OrderedDict{K}) where {K}
+    param_ranges = collect(values(sweeps))
+    iter = Iterators.product(param_ranges..., values(fixed_parameters)...)
+    types = Iterators.flatten(unique(unique(typeof.(ps)) for ps in iter))
+    T = promote_type(types...)
+
+    promoted_sweeps = OrderedDict{K,Vector{T}}((keys(sweeps) .=> values(sweeps))...)
+    promoted_fixed = OrderedDict{K,T}(fixed_parameters)
+    return promoted_sweeps, promoted_fixed
+end
+
 "Remove occurrences of `sweeps` elements from `fixed_parameters`."
 function filter_duplicate_parameters(sweeps, fixed_parameters)
     new_params = copy(fixed_parameters)
@@ -45,3 +57,19 @@ function show_fields(object)
         display(getfield(object, field))
     end
 end
+
+""" Project the array `a` into the real axis, warning if its contents are complex. """
+function _realify(a::Array{T}; warning="") where {T<:Number}
+    warned = false
+    a_real = similar(a, typeof(real(a[1])))
+    for i in eachindex(a)
+        if !isnan(a[i]) && !warned && !is_real(a[i])
+            @warn "Values with non-negligible complex parts have
+            been projected on the real axis! " * warning
+            warned = true
+        end
+        a_real[i] = real(a[i])
+    end
+    return a_real
+end
+_realify(a::Array{Real}; warning="") = a

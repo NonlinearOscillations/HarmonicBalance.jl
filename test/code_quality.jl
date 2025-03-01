@@ -1,4 +1,3 @@
-|
 @testset "Concretely typed" begin
     CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
     julia_version = VERSION >= v"1.11.0-DEV.0" # fails on 1.11
@@ -31,11 +30,13 @@ end
 
 @testset "Code quality" begin
     using ExplicitImports, Aqua
-    using ModelingToolkit, OrdinaryDiffEqTsit5, SteadyStateDiffEq
+    using ModelingToolkit, OrdinaryDiffEqTsit5, SteadyStateDiffEq, Plots
     ignore_deps = [:Random, :LinearAlgebra, :Printf, :Test, :Pkg]
     TimeEvolution = Base.get_extension(HarmonicBalance, :TimeEvolution)
     ModelingToolkitExt = Base.get_extension(HarmonicBalance, :ModelingToolkitExt)
     SteadyStateDiffEqExt = Base.get_extension(HarmonicBalance, :SteadyStateDiffEqExt)
+    PlotsExt = Base.get_extension(HarmonicBalance, :PlotsExt)
+
     @test check_no_stale_explicit_imports(HarmonicBalance) == nothing
     @test check_all_explicit_imports_via_owners(HarmonicBalance) == nothing
     Aqua.test_ambiguities([HarmonicBalance])
@@ -48,7 +49,7 @@ end
         ),
         ambiguities=false,
     )
-    for mod in [TimeEvolution, ModelingToolkitExt, SteadyStateDiffEqExt]
+    for mod in [TimeEvolution, ModelingToolkitExt, SteadyStateDiffEqExt, PlotsExt]
         @test check_no_stale_explicit_imports(mod) == nothing
         @test check_all_explicit_imports_via_owners(mod) == nothing
         # Aqua.test_ambiguities(mod)

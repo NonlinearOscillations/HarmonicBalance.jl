@@ -18,6 +18,8 @@ pages = [
         "Parametric Three Wave Mixing" => "examples/parametric_via_three_wave_mixing.md",
         "Parametric Oscillator" => "examples/parametron.md",
         "State Dependent Perturbation" => "examples/state_dependent_perturbation.md",
+        "Ab Initio Noise spectrum" => "examples/ab_initio_noise.md",
+        "Adiabatic sweep" => "examples/steady_state_sweep.md"
         ],
     ],
     "Resources" => [
@@ -27,11 +29,12 @@ pages = [
         "Entering Equations of Motion" => "manual/entering_eom.md",
         "Computing Effective System" => "manual/extracting_harmonics.md",
         "Computing Steady States" => "manual/methods.md",
-        "Krylov-Bogoliubov" => "manual/Krylov-Bogoliubov_method.md",
+        "Extract the Steady States" => "manual/analyse_solutions.md",
+        "Plotting" => "manual/plotting.md",
         "Time Evolution" => "manual/time_dependent.md",
         "Linear Response" => "manual/linear_response.md",
-        "Plotting" => "manual/plotting.md",
         "Saving and Loading" => "manual/saving.md",
+        "SciML Extension" => "manual/SciMLExt.md",
         ]
     ],
 ]

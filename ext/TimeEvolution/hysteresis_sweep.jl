@@ -2,10 +2,10 @@
 Calculate distance between a given state and a stable branch
 """
 function _closest_branch_index(
-    res::Result{S}, state::SteadyState(P), index::Int64
-) where {S,P}
-    #search only among stable solutions
-    stable = _apply_mask(res.solutions, _get_mask(res, ["physical", "stable"], []))
+    res::Result{D,S}, state::SteadyState(P), index::Int64
+) where {D,S,P}
+    # search only among stable solutions
+    stable = get_solutions(res; class=["physical", "stable"], not_class=[])
 
     steadystates = reduce(hcat, stable[index])
     distances = vec(sum(abs2.(steadystates .- state); dims=1))
@@ -33,11 +33,10 @@ function HarmonicBalance.follow_branch(
     )
 
     # get stable solutions
-    Y = transform_solutions(res, y; realify=true)
-    Ys = _apply_mask(Y, _get_mask(res, ["physical", "stable"], []))
+    Ys = get_solutions(res, y; class=["physical", "stable"], not_class=[], realify=true)
     Ys = sweep == "left" ? reverse(Ys) : Ys
 
-    followed_branch = zeros(Int64, length(Y))  # followed branch indexes
+    followed_branch = zeros(Int64, length(Ys))  # followed branch indexes
     followed_branch[1] = starting_branch
 
     p1 = first(keys(res.swept_parameters)) # parameter values

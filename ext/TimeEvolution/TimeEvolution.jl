@@ -8,13 +8,10 @@ using HarmonicBalance:
     HarmonicBalance,
     StateDict,
     HarmonicEquation,
-    _apply_mask,
-    _get_mask,
+    get_solutions,
     rearrange_standard,
     is_rearranged,
     filter_duplicate_parameters,
-    _parse_expression,
-    _set_Plots_default,
     Result,
     substitute_all,
     get_variables,
@@ -22,15 +19,15 @@ using HarmonicBalance:
     get_single_solution,
     follow_branch,
     SteadyState
+
 const HB = HarmonicBalance
 
 include("sweeps.jl")
 include("ODEProblem.jl")
 include("hysteresis_sweep.jl")
-include("plotting.jl")
 
 export AdiabaticSweep
-export transform_solutions, plot, plot!
+export transform_solutions
 export ODEProblem, solve
 export follow_branch
 

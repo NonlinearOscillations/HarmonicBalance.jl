@@ -7,8 +7,6 @@ function set_imaginary_tolerance(x::Float64)
 end
 
 using DocStringExtensions
-using JLD2: JLD2
-using DelimitedFiles: DelimitedFiles, writedlm
 using OrderedCollections: OrderedDict, OrderedSet
 using ProgressMeter: ProgressMeter, Progress
 using LinearAlgebra: LinearAlgebra, eigvals
@@ -112,8 +110,6 @@ include("methods.jl")
 include("solve_homotopy.jl")
 include("sorting.jl")
 include("classification.jl")
-
-include("saving.jl")
 include("transform_solutions.jl")
 
 include("modules/HC_wrapper.jl")

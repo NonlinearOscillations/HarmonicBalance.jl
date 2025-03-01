@@ -20,10 +20,6 @@ end
     include("symbolics.jl")
 end
 
-@testset "IO" begin
-    include("load.jl")
-end
-
 @testset "Computing steady states" begin
     include("steady_states/parametron.jl")
     include("steady_states/krylov.jl")

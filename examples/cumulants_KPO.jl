@@ -2,7 +2,7 @@
 
 # Let us compare the higher cumulant approximations for the Kerr parametric oscillator (KPO). The KPO is a model for a cavity with a Kerr nonlinearity and a parametric drive after one applied the Rotating Wave approximation. For this we use the `QuantumCumulants` and the `QuantumCumulantsExt` module in `HarmonicBalance`.
 
-using QuantumCumulants, HarmonicBalance
+using QuantumCumulants, HarmonicBalance, Plots
 
 # ## first order cumulant
 
@@ -37,7 +37,7 @@ plot_phase_diagram(result; class="stable")
 # The next order cumulant can be computed by setting the `order` keyword.
 
 ops = [a]
-eqs_RWA = meanfield(ops, H_RWA, Jop; rates=rates, order=2)
+eqs_RWA = meanfield(ops, H_RWA, [a]; rates=[κ], order=2)
 eqs_c2 = complete(eqs_RWA)
 problem_c2 = HarmonicBalance.Problem(eqs_c2, param, varied, fixed)
 
@@ -52,7 +52,7 @@ fixed = (U => 0.001, κ => 0.002, G => 0.01)
 varied = (Δ => range(-0.03, 0.03, 200))
 problem_c2 = HarmonicBalance.Problem(eqs_c2, param, varied, fixed)
 result = get_steady_states(problem_c2, TotalDegree())
-plot(result; y="a⁺aᵣ")
+plot(result; y="a⁺aᵣ", class="stable")
 
 # Let us classify the solutions having negative photon numbers. That way we can filter out these solutions.
 
@@ -64,19 +64,12 @@ plot(result; y="aᵣ", class="stable", not_class="neg photon number")
 # Similarly, for third order
 
 ops = [a]
-eqs_RWA = meanfield(ops, H_RWA, Jop; rates=rates, order=3)
+eqs_RWA = meanfield(ops, H_RWA, [a]; rates=[κ], order=3)
 eqs_c3 = complete(eqs_RWA)
-problem_c3 = HarmonicBalance.Problem(eqs_c3, param, varied, fixed)
-
-result = get_steady_states(problem_c3, WarmUp())
-classify_solutions!(result, "a⁺aᵣ < 0", "neg photon number");
-plot_phase_diagram(result; class="stable", clim=(0, 4))
-
-# and for a frequency sweep
 
 fixed = (U => 0.001, κ => 0.002, G => 0.01)
 varied = (Δ => range(-0.03, 0.03, 50))
 problem_c3 = HarmonicBalance.Problem(eqs_c3, param, varied, fixed)
 result = get_steady_states(problem_c3, TotalDegree())
 classify_solutions!(result, "a⁺aᵣ < 0", "neg photon number");
-plot(result; y="a⁺aᵣ")
+plot(result; y="a⁺aᵣ", class="stable")

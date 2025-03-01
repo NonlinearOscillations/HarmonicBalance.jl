@@ -194,7 +194,7 @@ Removes all solution branches from `res` where NONE of the solution falls into `
 Typically used to filter out unphysical solutions to prevent huge file sizes.
 """
 function filter_result!(res::Result, class::String)
-    bools = [any(getindex.(res.classes[class], i)) for i in 1:length(res[1])]
+    bools = [any(getindex.(res.classes[class], i)) for i in 1:branch_count(res)]
     res.solutions = [s[bools] for s in res.solutions]
     for c in keys(res.classes)
         res.classes[c] = [s[bools] for s in res.classes[c]]

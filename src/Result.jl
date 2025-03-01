@@ -7,7 +7,7 @@ Stores the steady states of a HarmonicEquation.
 $(TYPEDFIELDS)
 
 """
-struct Result{D,SolType<:Number,ParType<:Number,F<:JacobianFunction(SolType)}
+mutable struct Result{D,SolType<:Number,ParType<:Number,F<:JacobianFunction(SolType)}
     "The variable values of steady-state solutions."
     solutions::Array{Vector{Vector{SolType}},D}
     "Values of all parameters for all solutions."
@@ -81,7 +81,7 @@ function _free_symbols(res::Result)
 end
 
 # overload to use [] for indexing
-Base.getindex(r::Result, idx::Int...) = get_single_solution(r, idx)
+Base.getindex(r::Result, idx) = get_single_solution(r, idx)
 Base.size(r::Result) = size(r.solutions)
 
 branch_count(r::Result) = length(r.solutions[1])

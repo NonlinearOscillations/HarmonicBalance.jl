@@ -17,3 +17,11 @@ get_single_solution
 attractors
 phase_diagram
 ```
+
+## classifying solutions
+
+```@docs; canonical=false
+classify_solutions!
+get_class
+filter_result!
+```

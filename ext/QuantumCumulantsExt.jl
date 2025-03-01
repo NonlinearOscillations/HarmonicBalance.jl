@@ -1,8 +1,9 @@
 module QuantumCumulantsExt
 
-using QuantumCumulants: QuantumCumulants, QNumber, average, MeanfieldEquations, QSym
+using QuantumCumulants: QuantumCumulants, average, MeanfieldEquations
 using Symbolics: Symbolics, parse_expr_to_symbolic, Num, expand
 using HarmonicBalance: HarmonicBalance
+using OrderedCollections: OrderedDict
 
 export Problem
 
@@ -94,10 +95,12 @@ function compute_real_equations(eqs::MeanfieldEquations)
     return vars, eqs_real
 end # TEST: test if order of vars and eqs is correct
 
-function HarmonicBalance.Problem(MFeqs::MeanfieldEquations, parameters)
+function HarmonicBalance.Problem(MFeqs::MeanfieldEquations, parameters, swept, fixed)
     vars, equations = compute_real_equations(MFeqs)
 
-    return HarmonicBalance.Problem(equations, vars, parameters)
+    return HarmonicBalance.Problem(
+        equations, vars, parameters, OrderedDict(swept), OrderedDict(fixed)
+    )
 end
 
 end

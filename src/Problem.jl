@@ -97,16 +97,18 @@ function HarmonicBalance.Problem(
     swept::AbstractDict,
     fixed::AbstractDict,
 )
+    swept, fixed = promote_types(swept, fixed)
     vars_new = declare_variable.(string.(variables))
     pars_new = declare_variable.(string.(parameters))
 
     system = HomotopyContinuation.System(equations, vars_new, pars_new)
-    # J = HarmonicBalance.get_Jacobian(equations, variables)
-
-    return Problem(vars_new, pars_new, swept, fixed, system)
+    J = HarmonicBalance.compute_and_compile_Jacobian(
+        equations, vars_new, ComplexF64, swept, fixed
+    )
+    return Problem(vars_new, pars_new, swept, fixed, system, J)
 end # Probably should merge both constructors
 
-Symbolics.get_variables(p::Problem)::Vector{Num} = get_variables(p.eom)
+Symbolics.get_variables(p::Problem)::Vector{Num} = p.variables
 
 function Base.show(io::IO, p::Problem)
     println(io, length(p.system.expressions), " algebraic equations for steady states")
@@ -181,20 +183,4 @@ function unique_fixed_and_permutations(
     permutation = [findfirst(x -> isequal(x, par), all_keys) for par in eom.parameters]
 
     return unique_fixed, permutation
-end
-
-"A constructor for Problem from explicitly entered equations, variables and parameters."
-function HarmonicBalance.Problem(
-    equations::Vector{Num}, variables::Vector{Num}, parameters::Vector{Num}
-)
-    conv_vars = HC_wrapper.Num_to_Variable.(variables)
-    conv_para = HC_wrapper.Num_to_Variable.(parameters)
-
-    eqs_HC = [
-        Expression(eval(symbol)) for
-        symbol in [Meta.parse(s) for s in [string(eq) for eq in equations]]
-    ] #note in polar coordinates there could be imaginary factors, requiring the extra replacement "I"=>"1im"
-    system = HomotopyContinuation.System(eqs_HC; variables=conv_vars, parameters=conv_para)
-    J = HarmonicBalance.get_Jacobian(equations, variables) #all derivatives are assumed to be in the left hand side;
-    return Problem(variables, parameters, system, J)
 end

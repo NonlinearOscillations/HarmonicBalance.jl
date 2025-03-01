@@ -33,6 +33,19 @@ function compile_matrix(
     return jacfunc isa Tuple ? jacfunc[1] : jacfunc
 end
 
+function compute_and_compile_Jacobian(
+    equations::Vector{Num},
+    variables::Vector{Num},
+    soltype::DataType,
+    swept::AbstractDict,
+    fixed::AbstractDict,
+)::JacobianFunction(soltype)
+    subs = Num[variables..., keys(swept)...]
+    return JacobianFunction(soltype)(
+        compile_matrix(get_Jacobian(equations, variables), subs; rules=fixed)
+    )
+end
+
 """
 The Jacobian is stored in the Problem object as a
 function that takes a solution dictionary to give the numerical Jacobian.

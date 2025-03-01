@@ -49,6 +49,9 @@ end
 end
 
 @testset "extensions" begin
+    @testset "QuantumCumulants extension" begin
+        include("extensions/QuantumCumulantsExt.jl")
+    end
     @testset "Time evolution extension" begin
         include("extensions/time_evolution.jl")
         include("extensions/hysteresis_sweep.jl")

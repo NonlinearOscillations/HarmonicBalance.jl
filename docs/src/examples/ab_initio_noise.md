@@ -9,6 +9,7 @@ This example demonstrates how to compute the spectra obtained from probing the s
 ````@example ab_initio_noise
 using HarmonicBalance, Plots
 using ModelingToolkit, StaticArrays, StochasticDiffEq, DSP
+using ModelingToolkit: setp
 ````
 
 We first define a  gelper function to compute power spectral density of the simulated response

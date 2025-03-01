@@ -1,4 +1,3 @@
-
 using HarmonicBalance,
     ModelingToolkit,
     SteadyStateDiffEq,

@@ -24,3 +24,36 @@ using Plots
     result = get_steady_states(problem, TotalDegree())
     @test sum(any.(get_class(result, "stable"))) == 3
 end
+
+@testset "work with rnumbers and cumber" begin
+    @testset "@cnumbers" begin
+    h = FockSpace(:cavity)
+    @qnumbers a::Destroy(h)
+    @cnumbers Δ U G κ
+    param = [Δ, U, G, κ]
+
+    H_RWA = -Δ * a' * a + U * (a'^2 * a^2) / 2 - G * (a' * a' + a * a) / 2
+    ops = [a, a']
+
+    eqs = meanfield(ops, H_RWA, [a]; rates=[κ], order=1)
+
+    fixed = (U => 0.001, κ => 0.002)
+    varied = (Δ => range(-0.03, 0.03, 50), G => range(1e-5, 0.02, 50))
+    problem_c1 = HarmonicBalance.Problem(complete(eqs), param, varied, fixed)
+    end
+    @testset "@rnumbers" begin
+    h = FockSpace(:cavity)
+    @qnumbers a::Destroy(h)
+    @rnumbers Δ U G κ
+    param = [Δ, U, G, κ]
+
+    H_RWA = -Δ * a' * a + U * (a'^2 * a^2) / 2 - G * (a' * a' + a * a) / 2
+    ops = [a, a']
+
+    eqs = meanfield(ops, H_RWA, [a]; rates=[κ], order=1)
+
+    fixed = (U => 0.001, κ => 0.002)
+    varied = (Δ => range(-0.03, 0.03, 50), G => range(1e-5, 0.02, 50))
+    problem_c1 = HarmonicBalance.Problem(complete(eqs), param, varied, fixed)
+    end
+end

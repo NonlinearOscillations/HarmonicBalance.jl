@@ -203,7 +203,7 @@ function _get_raw_solution(
     raw_solutions = HC.solutions.(getindex.(raw_solutions, 1))
     # cache = HC.NewtonCache(F)
     if method.check_zero
-        for i in eachindex(parameter_values) # thread?
+        Threads.@threads for i in eachindex(parameter_values)
             any(is_zero.(raw_solutions[i])) && continue
             p = parameter_values[i]
             zero_root = HC.newton(problem.system, zeros(length(problem.variables)), p)

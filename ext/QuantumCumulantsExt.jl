@@ -99,7 +99,11 @@ function HarmonicBalance.Problem(MFeqs::MeanfieldEquations, parameters, swept, f
     vars, equations = compute_real_equations(MFeqs)
 
     return HarmonicBalance.Problem(
-        Num.(equations), Num.(vars), Num.(parameters), OrderedDict(swept), OrderedDict(fixed)
+        Num.(equations),
+        Num.(vars),
+        Num.(parameters),
+        OrderedDict(swept),
+        OrderedDict(fixed),
     )
 end
 

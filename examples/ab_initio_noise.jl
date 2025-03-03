@@ -1,4 +1,4 @@
-# Ab Initio Noise sidebands and spectra
+# # Ab Initio Noise sidebands and spectra
 
 # This example demonstrates how to compute the spectra obtained from probing the system with noisy probe.
 

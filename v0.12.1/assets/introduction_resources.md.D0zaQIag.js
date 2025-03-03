@@ -1,0 +1,1 @@
+import{_ as e,o as t,c as r}from"./chunks/framework.Dd3p9O7k.js";const _=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"introduction/resources.md","filePath":"introduction/resources.md"}'),o={name:"introduction/resources.md"};function s(c,n,a,i,d,p){return t(),r("div")}const m=e(o,[["render",s]]);export{_ as __pageData,m as default};

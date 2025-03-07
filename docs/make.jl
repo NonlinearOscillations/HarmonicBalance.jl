@@ -44,7 +44,7 @@ makedocs(;
         PlotsExt,
     ],
     format=DocumenterVitepress.MarkdownVitepress(;
-        repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
+        repo="github.com/QuantumEngineeredSystems/HarmonicBalance.jl",
         devbranch="master",
         devurl="dev",
     ),
@@ -64,7 +64,7 @@ makedocs(;
 
 if CI
     deploydocs(;
-        repo="github.com/NonlinearOscillations/HarmonicBalance.jl",
+        repo="github.com/QuantumEngineeredSystems/HarmonicBalance.jl",
         devbranch="master",
         target="build",
         branch="gh-pages",

@@ -78,7 +78,7 @@ export default defineConfig({
     sidebar: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
     editLink: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/NonlinearOscillations/HarmonicBalance.jl' },
+      { icon: 'github', link: 'https://github.com/QuantumEngineeredSystems/HarmonicBalance.jl' },
       { icon: 'twitter', link: 'https://x.com/Zilberberg_Phys' },
     ],
 

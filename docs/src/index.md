@@ -16,7 +16,7 @@ hero:
       link: /tutorials
     - theme: alt
       text: View on GitHub
-      link: https://github.com/NonlinearOscillations/HarmonicBalance.jl
+      link: https://github.com/QuantumEngineeredSystems/HarmonicBalance.jl
   image:
     src: /logo.svg
     alt: HarmonicBalance.jl

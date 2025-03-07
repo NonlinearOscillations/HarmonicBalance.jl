@@ -63,7 +63,7 @@ prob = Problem(eom, varied, fixed)
 end
 
 @testset "NaNMath" begin
-    # https://github.com/NonlinearOscillations/HarmonicBalance.jl/issues/357
+    # https://github.com/QuantumEngineeredSystems/HarmonicBalance.jl/issues/357
     using HarmonicBalance
 
     @variables t x1(t) x2(t)

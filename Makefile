@@ -9,7 +9,7 @@ format:
 	${JULIA} -e 'using JuliaFormatter; format(".")'
 
 changelog:
-	${JULIA} -e 'using Changelog; Changelog.generate(Changelog.CommonMark(), "CHANGELOG.md"; repo = "NonlinearOscillations/HarmonicBalance.jl")'
+	${JULIA} -e 'using Changelog; Changelog.generate(Changelog.CommonMark(), "CHANGELOG.md"; repo = "QuantumEngineeredSystems/HarmonicBalance.jl")'
 
 test:
 	${JULIA} --project -e 'using Pkg; Pkg.resolve(); Pkg.test()'

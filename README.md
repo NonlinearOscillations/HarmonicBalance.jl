@@ -1,6 +1,6 @@
 <img src="./logo.png" width="750" align="top">
 
-[![docs](https://img.shields.io/badge/docs-online-blue.svg)](https://nonlinearoscillations.github.io/HarmonicBalance.jl/)
+[![docs](https://img.shields.io/badge/docs-online-blue.svg)](https://QuantumEngineeredSystems.github.io/HarmonicBalance.jl/)
 [![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Ftotal_downloads%2FHarmonicBalance&query=total_requests&label=Downloads)](https://juliapkgstats.com/pkg/HarmonicBalance)
 [![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Fmonthly_downloads%2FHarmonicBalance&query=total_requests&suffix=%2Fmonth&label=Downloads)](https://juliapkgstats.com/pkg/HarmonicBalance)
 
@@ -21,11 +21,11 @@ Pkg.add("HarmonicBalance")
 
 ## Documentation
 
-For a detailed description of the package and examples, see the [documentation](https://nonlinearoscillations.github.io/HarmonicBalance.jl).
+For a detailed description of the package and examples, see the [documentation](https://QuantumEngineeredSystems.github.io/HarmonicBalance.jl).
 
-[This repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks) contains a collection of example notebooks.
+[This repo](https://github.com/QuantumEngineeredSystems/HarmonicBalance-notebooks) contains a collection of example notebooks.
 
-## [Simple example](https://nonlinearoscillations.github.io/HarmonicBalance.jl/dev/tutorials/steady_states)
+## [Simple example](https://QuantumEngineeredSystems.github.io/HarmonicBalance.jl/dev/tutorials/steady_states)
 Let's find the steady states of a driven Duffing oscillator with nonlinear damping, its equation of motion is:
 
 <img src="/docs/images/github_readme_eq.png" width="450">

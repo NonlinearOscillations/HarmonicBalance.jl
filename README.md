@@ -9,7 +9,7 @@
 [![JET](https://img.shields.io/badge/%E2%9C%88%EF%B8%8F%20tested%20with%20-%20JET.jl%20-%20red)](https://github.com/aviatesk/JET.jl)
 
 
-**HarmonicBalance.jl** is a Julia package for solving periodic differential equations using the method of harmonic balance.
+**HarmonicBalance.jl** is a Julia package for solving periodic, nonlinear differential equations using the method of harmonic balance.
 
 ## Installation
 
@@ -25,8 +25,8 @@ For a detailed description of the package and examples, see the [documentation](
 
 [This repo](https://github.com/NonlinearOscillations/HarmonicBalance-notebooks) contains a collection of example notebooks.
 
-## [Simple example](https://nonlinearoscillations.github.io/HarmonicBalance.jl/dev/tutorials/steady_states)
-Let's find the steady states of a driven Duffing oscillator with nonlinear damping, its equation of motion is:
+## [Example: steady states of a nonlinear resonator](https://nonlinearoscillations.github.io/HarmonicBalance.jl/dev/tutorials/steady_states)
+Let's find the steady states of a driven Duffing resonator with nonlinear damping, with equation of motion:
 
 <img src="/docs/images/github_readme_eq.png" width="450">
 
@@ -66,7 +66,22 @@ If you use HarmonicBalance.jl in your project, we kindly ask you to cite [this p
 Jan Košata, Javier del Pino, Toni L. Heugel, Oded Zilberberg
 SciPost Phys. Codebases 6 (2022) 
 
-## Similar software
+### BibTeX entry
 
-- [JosephsonCircuits.jl](https://github.com/kpobrien/JosephsonCircuits.jl): Performs the frequency domain behaviour with a similar Harmonic Balance method for nonlinear circuits containing Josephson junctions, capacitors, inductors, mutual inductors, and resistors.
+```bibtex
+@Article{10.21468/SciPostPhysCodeb.6,
+    title={{HarmonicBalance.jl: A Julia suite for nonlinear dynamics using harmonic balance}},
+    author={Jan Košata and Javier del Pino and Toni L. Heugel and Oded Zilberberg},
+    journal={SciPost Phys. Codebases},
+    pages={6},
+    year={2022},
+    publisher={SciPost},
+    doi={10.21468/SciPostPhysCodeb.6},
+    url={https://scipost.org/10.21468/SciPostPhysCodeb.6}
+}
+```
+
+## See also
+
+- [JosephsonCircuits.jl](https://github.com/kpobrien/JosephsonCircuits.jl): Models superconducting circuits using modified nodal analysis and harmonic balance with an analytic Jacobian.
 - [Manlab](https://manlab.lma.cnrs-mrs.fr/spip/): A similar package in Matlab also using continuation methods and using the Harmonic Balance method for periodic orbits.
